@@ -23,7 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('--print-warnings', help="print any warnings", action="store_const", const=True)
 
     # documentation
-    parser.add_argument('--create-project-pdf', help="create a single page PDF", action="store_const", const=True)
+    parser.add_argument('--create-pdf', help="create a single page PDF", action="store_const", const=True)
     parser.add_argument('--create-svg', help="create a svg of the GDS layout", action="store_const", const=True)
     parser.add_argument('--create-png', help="create a png of the GDS layout", action="store_const", const=True)
 
@@ -51,26 +51,25 @@ if __name__ == '__main__':
     if args.check_docs:
         documentation.check_yaml_docs(project_yaml)
 
-    elif args.print_cell_summary or args.print_cell_category:
+    if args.print_cell_summary or args.print_cell_category:
         reports.summarize(args)
 
-    elif args.create_cell_defs:
+    if args.create_cell_defs:
         reports.create_defs(args)
 
-    elif args.print_stats:
+    if args.print_stats:
         reports.print_stats(args)
 
-    elif args.print_warnings:
+    if args.print_warnings:
         reports.print_warnings(args)
 
-    elif args.create_user_config:
+    if args.create_user_config:
         project.create_user_config(project_yaml)
 
-    elif args.create_project_pdf:
+    if args.create_pdf:
         documentation.create_pdf(project_yaml)
 
-    elif args.create_svg or args.create_png:
+    if args.create_svg or args.create_png:
         documentation.create_svg(args)
 
-    else:
-        parser.print_help()
+    #parser.print_help()

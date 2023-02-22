@@ -1,4 +1,4 @@
 gdstk
 cairosvg
 requests
-yaml
+PyYAML
