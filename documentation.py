@@ -2,6 +2,9 @@ import logging
 import re
 import subprocess
 import os
+import glob
+import gdstk
+import cairosvg
 
 
 # documentation
@@ -57,3 +60,13 @@ def create_pdf(yaml):
     p = subprocess.run(pdf_cmd, shell=True)
     if p.returncode != 0:
         logging.error("pdf command failed")
+
+
+def create_svg(args):
+    gds = glob.glob(os.path.join(args.run_dir, 'results/final/gds/*gds'))
+    library = gdstk.read_gds(gds[0])
+    top_cells = library.top_level()
+    top_cells[0].write_svg('gds_render.svg')
+
+    if args.create_png:
+        cairosvg.svg2png(url='gds_render.svg', write_to='gds_render.png')

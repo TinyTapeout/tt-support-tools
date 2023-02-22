@@ -24,6 +24,8 @@ if __name__ == '__main__':
 
     # documentation
     parser.add_argument('--create-project-pdf', help="create a single page PDF", action="store_const", const=True)
+    parser.add_argument('--create-svg', help="create a svg of the GDS layout", action="store_const", const=True)
+    parser.add_argument('--create-png', help="create a png of the GDS layout", action="store_const", const=True)
 
     # configure
     parser.add_argument('--create-user-config', help="create the user_config.tcl file with top module and source files", action="store_const", const=True)
@@ -66,6 +68,9 @@ if __name__ == '__main__':
 
     elif args.create_project_pdf:
         documentation.create_pdf(project_yaml)
+
+    elif args.create_svg or args.create_png:
+        documentation.create_svg(args)
 
     else:
         parser.print_help()

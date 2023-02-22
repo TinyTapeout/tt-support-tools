@@ -1,0 +1,4 @@
+gdstk
+cairosvg
+requests
+yaml
