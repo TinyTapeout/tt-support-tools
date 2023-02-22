@@ -71,5 +71,3 @@ if __name__ == '__main__':
 
     if args.create_svg or args.create_png:
         documentation.create_svg(args)
-
-    #parser.print_help()
