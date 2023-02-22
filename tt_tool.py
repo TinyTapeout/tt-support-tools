@@ -12,9 +12,6 @@ if __name__ == '__main__':
     parser.add_argument('--run-dir', help="OpenLane run directory", default='runs/wokwi')  # set in the github action yaml
     parser.add_argument('--debug', help="debug logging", action="store_const", dest="loglevel", const=logging.DEBUG, default=logging.INFO)
 
-    # tests & checks
-    parser.add_argument('--check-docs', help="check the documentation part of the yaml", action="store_const", const=True)
-
     # reports & summaries
     parser.add_argument('--create-cell-defs', help="create def file", action="store_const", const=True, default=False)
     parser.add_argument('--print-cell-summary', help="print summary", action="store_const", const=True, default=False)
@@ -23,6 +20,7 @@ if __name__ == '__main__':
     parser.add_argument('--print-warnings', help="print any warnings", action="store_const", const=True)
 
     # documentation
+    parser.add_argument('--check-docs', help="check the documentation part of the yaml", action="store_const", const=True)
     parser.add_argument('--create-pdf', help="create a single page PDF", action="store_const", const=True)
     parser.add_argument('--create-svg', help="create a svg of the GDS layout", action="store_const", const=True)
     parser.add_argument('--create-png', help="create a png of the GDS layout", action="store_const", const=True)
