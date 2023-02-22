@@ -7,7 +7,8 @@ import gdstk
 import cairosvg
 
 
-# documentation
+# doc check
+# makes sure that the basic info is present
 def check_yaml_docs(yaml):
     logging.info("checking docs")
     for key in ['author', 'title', 'description', 'how_it_works', 'how_to_test', 'language']:
@@ -26,6 +27,7 @@ def check_yaml_docs(yaml):
             exit(1)
 
 
+# use pandoc to create a single page PDF preview
 def create_pdf(yaml):
     yaml = yaml['documentation']
     logging.info("creating pdf")
@@ -62,6 +64,7 @@ def create_pdf(yaml):
         logging.error("pdf command failed")
 
 
+# SVG and PNG renders of the GDS
 def create_svg(args):
     gds = glob.glob(os.path.join(args.run_dir, 'results/final/gds/*gds'))
     library = gdstk.read_gds(gds[0])
