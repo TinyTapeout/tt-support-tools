@@ -27,6 +27,7 @@ if __name__ == '__main__':
 
     # configure
     parser.add_argument('--create-user-config', help="create the user_config.tcl file with top module and source files", action="store_const", const=True)
+    parser.add_argument('--harden', help="use a local OpenLane install to harden the project", action="store_const", const=True)
 
     args = parser.parse_args()
 
@@ -63,6 +64,9 @@ if __name__ == '__main__':
 
     if args.create_user_config:
         project.create_user_config(project_yaml)
+
+    if args.harden:
+        project.harden()
 
     if args.create_pdf:
         documentation.create_pdf(project_yaml)
