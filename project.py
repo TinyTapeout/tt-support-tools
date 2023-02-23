@@ -104,5 +104,5 @@ def harden():
     env = os.environ.copy()
     p = subprocess.run(harden_cmd, shell=True, env=env)
     if p.returncode != 0:
-        logging.error(f"harden failed for {self}")
+        logging.error("harden failed")
         exit(1)
