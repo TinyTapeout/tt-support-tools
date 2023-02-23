@@ -18,3 +18,4 @@ Tools used mostly by the Tiny Tapeout github actions
 
 * creates a little TCL shim that tells OpenLane where the source is and the name of the top module
 * makes sure the top module is not called 'top'
+* if you have OpenLane installed locally, then you can harden the design with --harden
