@@ -2,6 +2,7 @@ import yaml
 import logging
 import requests
 import os
+import subprocess
 
 
 def load_yaml(args):
@@ -95,3 +96,13 @@ def get_top_module(yaml):
         return "user_module_{}".format(wokwi_id)
     else:
         return yaml['project']['top_module']
+
+
+def harden():
+    # requires PDK, PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
+    harden_cmd = 'docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME /bin/bash -c "./flow.tcl -overwrite -design /work/src -run_path /work/runs -tag wokwi"'
+    env = os.environ.copy()
+    p = subprocess.run(harden_cmd, shell=True, env=env)
+    if p.returncode != 0:
+        logging.error(f"harden failed for {self}")
+        exit(1)
