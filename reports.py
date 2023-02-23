@@ -29,7 +29,7 @@ def print_stats(args):
 
     print('# Routing stats')
     print()
-    print('| Utilisation | Wire length (um) |')
+    print('| Utilisation (%) | Wire length (um) |')
     print('|-------------|------------------|')
     print('| {} | {} |'.format(report['OpenDP_Util'], report['wire_length']))
 
