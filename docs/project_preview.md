@@ -4,9 +4,7 @@
 
 * Author: {author}
 * Description: {description}
-* [Extra docs]({doc_link})
-* Clock: {clock_hz} Hz
-* External hardware: {external_hw}
+* Language: {language}
 
 ### How it works
 

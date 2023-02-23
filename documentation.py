@@ -11,7 +11,7 @@ import cairosvg
 # makes sure that the basic info is present
 def check_yaml_docs(yaml):
     logging.info("checking docs")
-    for key in ['author', 'title', 'description', 'how_it_works', 'how_to_test', 'language']:
+    for key in ['author', 'title', 'description', 'how_it_works', 'how_to_test', 'language', 'inputs', 'outputs']:
         if key not in yaml['documentation']:
             logging.error("missing key {} in documentation".format(key))
             exit(1)
