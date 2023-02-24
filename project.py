@@ -83,6 +83,9 @@ def get_project_source(yaml):
             exit(1)
 
         for filename in source_files:
+            if '*' in filename:
+                logging.error("* not allowed, please specify each file")
+                exit(1)
             if not os.path.exists(os.path.join('src', filename)):
                 logging.error(f"{filename} doesn't exist in the repo")
                 exit(1)
