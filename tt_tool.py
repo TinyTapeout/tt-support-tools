@@ -13,21 +13,21 @@ if __name__ == '__main__':
     parser.add_argument('--debug', help="debug logging", action="store_const", dest="loglevel", const=logging.DEBUG, default=logging.INFO)
 
     # reports & summaries
-    parser.add_argument('--create-cell-defs', help="create def file", action="store_const", const=True, default=False)
-    parser.add_argument('--print-cell-summary', help="print summary", action="store_const", const=True, default=False)
-    parser.add_argument('--print-cell-category', help="print category", action="store_const", const=True, default=False)
-    parser.add_argument('--print-stats', help="print some stats from the run", action="store_const", const=True)
-    parser.add_argument('--print-warnings', help="print any warnings", action="store_const", const=True)
+    parser.add_argument('--create-cell-defs', help="create def file", action="store_true")
+    parser.add_argument('--print-cell-summary', help="print summary", action="store_true")
+    parser.add_argument('--print-cell-category', help="print category", action="store_true")
+    parser.add_argument('--print-stats', help="print some stats from the run", action="store_true")
+    parser.add_argument('--print-warnings', help="print any warnings", action="store_true")
 
     # documentation
-    parser.add_argument('--check-docs', help="check the documentation part of the yaml", action="store_const", const=True)
-    parser.add_argument('--create-pdf', help="create a single page PDF", action="store_const", const=True)
-    parser.add_argument('--create-svg', help="create a svg of the GDS layout", action="store_const", const=True)
-    parser.add_argument('--create-png', help="create a png of the GDS layout", action="store_const", const=True)
+    parser.add_argument('--check-docs', help="check the documentation part of the yaml", action="store_true")
+    parser.add_argument('--create-pdf', help="create a single page PDF", action="store_true")
+    parser.add_argument('--create-svg', help="create a svg of the GDS layout", action="store_true")
+    parser.add_argument('--create-png', help="create a png of the GDS layout", action="store_true")
 
     # configure
-    parser.add_argument('--create-user-config', help="create the user_config.tcl file with top module and source files", action="store_const", const=True)
-    parser.add_argument('--harden', help="use a local OpenLane install to harden the project", action="store_const", const=True)
+    parser.add_argument('--create-user-config', help="create the user_config.tcl file with top module and source files", action="store_true")
+    parser.add_argument('--harden', help="use a local OpenLane install to harden the project", action="store_true")
 
     args = parser.parse_args()
 
