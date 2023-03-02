@@ -10,6 +10,10 @@ def load_yaml(args):
         return (yaml.safe_load(stream))
 
 
+def print_wokwi_id(yaml):
+    print(yaml['project']['wokwi_id'])
+
+
 def create_user_config(yaml):
     logging.info("creating include file")
     sources = get_project_source(yaml)
