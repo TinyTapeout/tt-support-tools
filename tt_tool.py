@@ -18,6 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('--print-cell-category', help="print category", action="store_const", const=True, default=False)
     parser.add_argument('--print-stats', help="print some stats from the run", action="store_const", const=True)
     parser.add_argument('--print-warnings', help="print any warnings", action="store_const", const=True)
+    parser.add_argument('--print-wokwi-id', help="prints the Wokwi project id", action="store_const", const=True)
 
     # documentation
     parser.add_argument('--check-docs', help="check the documentation part of the yaml", action="store_const", const=True)
@@ -62,6 +63,9 @@ if __name__ == '__main__':
     if args.print_warnings:
         reports.print_warnings(args)
 
+    elif args.print_wokwi_id:
+        project.print_wokwi_id(project_yaml)
+    
     if args.create_user_config:
         project.create_user_config(project_yaml)
 
