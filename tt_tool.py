@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     elif args.print_wokwi_id:
         project.print_wokwi_id()
-    
+
     if args.create_user_config:
         project.create_user_config()
 

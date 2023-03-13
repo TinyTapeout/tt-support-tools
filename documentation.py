@@ -1,3 +1,5 @@
+import os, logging, subprocess, shutil, json
+
 
 class Docs():
 
@@ -30,9 +32,9 @@ class Docs():
             design = project.get_yaml()
             designs.append(design)
 
-        with open(args.dump_json, "w") as fh:
+        with open(self.args.dump_json, "w") as fh:
             fh.write(json.dumps(designs, indent=4))
-        logging.info(f'wrote json to {args.dump_json}')
+        logging.info(f'wrote json to {self.args.dump_json}')
 
     def dump_markdown(self):
 
@@ -51,7 +53,7 @@ class Docs():
         with open("CREDITS.md") as fh:
             doc_credits = fh.read()
 
-        with open(args.dump_markdown, 'w') as fh:
+        with open(self.args.dump_markdown, 'w') as fh:
             fh.write(doc_header)
 
             for project in self.projects:
@@ -86,17 +88,17 @@ class Docs():
             fh.write("\n\pagebreak\n")
             fh.write(doc_credits)
 
-        logging.info(f'wrote markdown to {args.dump_markdown}')
+        logging.info(f'wrote markdown to {self.args.dump_markdown}')
 
-        if args.dump_pdf:
-            pdf_cmd = f'pandoc --toc --toc-depth 2 --pdf-engine=xelatex -i {args.dump_markdown} -o {args.dump_pdf}'
+        if self.args.dump_pdf:
+            pdf_cmd = f'pandoc --toc --toc-depth 2 --pdf-engine=xelatex -i {self.args.dump_markdown} -o {self.args.dump_pdf}'
             logging.info(pdf_cmd)
             p = subprocess.run(pdf_cmd, shell=True)
             if p.returncode != 0:
                 logging.error("pdf command failed")
 
     def build_hugo_content(self):
-        hugo_root = args.build_hugo_content
+        hugo_root = self.args.build_hugo_content
         hugo_images = os.path.join(hugo_root, 'images')
         shutil.rmtree(hugo_root)
         os.makedirs(hugo_root)
@@ -144,4 +146,3 @@ class Docs():
                     doc = doc_template.format(**yaml_data)
                     with open(os.path.join(project_dir, '_index.md'), 'w') as pfh:
                         pfh.write(doc)
-

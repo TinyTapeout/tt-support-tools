@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-import re, glob, json, csv
 from orders import Orders
 import datetime
 import yaml
-import subprocess
-import argparse, logging, shutil, sys, os, collections
-from git_utils import install_artifacts, get_latest_action_url, unique
-import git
+import argparse, logging, sys, os, collections
 from project import Project
+from documentation import Docs
+from caravel import CaravelConfig
 
 
 # pipe handling
@@ -66,7 +64,6 @@ class Projects():
             except KeyError:
                 email = 'none'
             """
-            
             git_url = self.project_config[index]['url']
             filler = self.project_config[index]['fill']
 
@@ -126,7 +123,6 @@ class Projects():
         all_gds_files = [project.get_macro_gds_filename() for project in self.projects if not project.is_fill()]
         self.assert_unique(all_gds_files)
 
-
     def assert_unique(self, check):
         duplicates = [item for item, count in collections.Counter(check).items() if count > 1]
         if duplicates:
@@ -174,7 +170,6 @@ class Projects():
                     max_util_project = project
                 if util < min_util:
                     min_util = util
-
 
         logging.info(f"build time for all projects {total_seconds / 3600} hrs")
         logging.info(f"total wire length {total_wire_length} um")
@@ -230,8 +225,8 @@ if __name__ == '__main__':
 
     projects = Projects(config, args)
 
-#    docs = Docs(projects.projects, args=args)
-#    caravel = CaravelConfig(projects.projects, num_projects=args.limit_num_projects)
+    docs = Docs(projects.projects, args=args)
+    caravel = CaravelConfig(projects.projects, num_projects=args.limit_num_projects)
 
     if args.list:
         caravel.list()
@@ -243,7 +238,7 @@ if __name__ == '__main__':
         orders = Orders(config)
         orders.fetch_orders()
         orders.update_project_list()
-        
+
     if args.update_caravel:
         caravel.create_macro_config()
         caravel.instantiate()

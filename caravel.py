@@ -1,3 +1,6 @@
+import logging
+
+
 class CaravelConfig():
 
     def __init__(self, projects, num_projects):
@@ -267,5 +270,3 @@ class CaravelConfig():
     def list(self):
         for project in self.projects:
             logging.info(project)
-
-

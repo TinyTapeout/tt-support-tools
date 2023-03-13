@@ -1,22 +1,16 @@
 import yaml
-import logging
-import requests
+import glob
 import os
-import subprocess
 import logging
 import re
 import subprocess
-import os
-import glob
 import gdstk
 import cairosvg
-import os
 import csv
 import json
-import re
-import glob
 import git_utils
 import git
+import shutil
 
 # can't find a google version
 CELL_URL = 'https://antmicro-skywater-pdk-docs.readthedocs.io/en/test-submodules-in-rtd/contents/libraries/sky130_fd_sc_ls/cells/'
@@ -43,7 +37,6 @@ class Project():
         except FileNotFoundError:
             self.metrics = {}
 
-
     def check_ports(self):
         top = self.get_macro_name()
         sources = [os.path.join(self.local_dir, 'src', src) for src in self.src_files]
@@ -69,7 +62,6 @@ class Project():
                 logging.error(f"{self} {port} doesn't have 8 bits")
                 exit(1)
 
-
     def check_num_cells(self):
         num_cells = self.get_cell_count_from_gl()
         if self.is_hdl():
@@ -79,15 +71,12 @@ class Project():
             if num_cells < 11:
                 logging.warning(f"{self} only has {num_cells} cells")
 
-
     def is_fill(self):
         return self.fill
-
 
     def is_wokwi(self):
         if self.wokwi_id != 0:
             return True
-
 
     def is_hdl(self):
         return not self.is_wokwi()
@@ -99,7 +88,6 @@ class Project():
         except FileNotFoundError:
             logging.error(f"yaml file not found for {self} - do you need to --clone the project repos?")
             exit(1)
-
 
     # find and save the location of the source files
     # get name of top module and the verilog module that contains the top
@@ -125,12 +113,9 @@ class Project():
         self.macro_instance         = f"{self.top_module}_{self.index :03}"
         self.scanchain_instance     = f"scanchain_{self.index :03}"
 
-
     def get_wokwi_source(self):
         src_file = "user_module_{}.v".format(self.wokwi_id)
         return [src_file, 'cells.v']
-
-
 
     def get_hdl_source(self):
         if 'source_files' not in self.yaml['project']:
@@ -163,7 +148,6 @@ class Project():
                 exit(1)
 
         return source_files
-
 
     def get_yaml(self):
         return self.yaml
@@ -224,18 +208,19 @@ class Project():
         o = repo.remotes.origin
         o.pull()
 
-
     def __str__(self):
-#        if self.args.log_email:
-#            return f"[{self.index:03} : {self.email} : {self.git_url}]"
-#        else:
+        """
+        if self.args.log_email:
+            return f"[{self.index:03} : {self.email} : {self.git_url}]"
+        else:
+        """
         return f"[{self.index:03} : {self.git_url}]"
 
     def fetch_gds(self):
-        install_artifacts(self.git_url, self.local_dir)
+        git_utils.install_artifacts(self.git_url, self.local_dir)
 
     def get_latest_action_url(self):
-        return get_latest_action_url(self.git_url, self.local_dir)
+        return git_utils.get_latest_action_url(self.git_url, self.local_dir)
 
     def get_macro_name(self):
         return self.top_module
@@ -296,13 +281,12 @@ class Project():
             logging.debug(f"copy {from_path} to {to_path}")
             shutil.copyfile(from_path, to_path)
 
-
     def print_wokwi_id(self):
         print(self.wokwi_id)
 
-
     def fetch_wokwi_files(self):
         logging.info("fetching wokwi files")
+        src_file = self.src_files[0]
         url = "https://wokwi.com/api/projects/{}/verilog".format(self.wokwi_id)
         git_utils.fetch_file(url, os.path.join(self.local_dir, "src", src_file))
 
@@ -310,7 +294,6 @@ class Project():
         url = "https://wokwi.com/api/projects/{}/diagram.json".format(self.wokwi_id)
         diagram_file = "wokwi_diagram.json"
         git_utils.fetch_file(url, os.path.join(self.local_dir, "src", diagram_file))
-
 
     def create_user_config(self):
         self.fetch_wokwi_files()
@@ -325,7 +308,6 @@ class Project():
                 if line != len(self.src_files) - 1:
                     fh.write(' \\\n')
             fh.write('"\n')
-
 
     """
     def harden(self):
@@ -392,7 +374,6 @@ class Project():
                 logging.error('Invalid format for discord username')
                 exit(1)
 
-
     # use pandoc to create a single page PDF preview
     def create_pdf(self):
         yaml = self.yaml
@@ -430,7 +411,6 @@ class Project():
         if p.returncode != 0:
             logging.error("pdf command failed")
 
-
     # SVG and PNG renders of the GDS
     def create_svg(self):
         gds = glob.glob(os.path.join(self.local_dir, 'runs/wokwi/results/final/gds/*gds'))
@@ -440,7 +420,6 @@ class Project():
 
         if self.args.create_png:
             cairosvg.svg2png(url='gds_render.svg', write_to='gds_render.png')
-
 
     def print_warnings(self):
         warnings = []
@@ -456,14 +435,12 @@ class Project():
             for warning in warnings:
                 print(f'* {warning}')
 
-
     def print_stats(self):
         print('# Routing stats')
         print()
         print('| Utilisation (%) | Wire length (um) |')
         print('|-------------|------------------|')
         print('| {} | {} |'.format(self.metrics['OpenDP_Util'], self.metrics['wire_length']))
-
 
     # Print the summaries
     def summarize(self):
@@ -509,7 +486,6 @@ class Project():
                 cell_links = [f'[{name}]({CELL_URL}{name})' for name in cat_dict['examples']]
                 print(f'|{cat_name} | {" ".join(cell_links)} | {cat_dict["count"]}|')
 
-
     # Parse the lib, cell and drive strength an OpenLane gate-level Verilog file
     def get_cell_count_from_gl(self):
         cell_count = {}
@@ -530,7 +506,6 @@ class Project():
                     except KeyError:
                         cell_count[cell_name] = 1
         return (cell_count)
-
 
     # Load all the json defs and combine into one big dict, keyed by cellname
     # Needs access to the PDK
