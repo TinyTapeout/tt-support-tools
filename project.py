@@ -63,7 +63,7 @@ class Project():
                 exit(1)
 
     def check_num_cells(self):
-        num_cells = self.get_cell_count_from_gl()
+        num_cells = self.get_cell_count_from_synth()
         if self.is_hdl():
             if num_cells < 20:
                 logging.warning(f"{self} only has {num_cells} cells")
@@ -486,8 +486,24 @@ class Project():
                 cell_links = [f'[{name}]({CELL_URL}{name})' for name in cat_dict['examples']]
                 print(f'|{cat_name} | {" ".join(cell_links)} | {cat_dict["count"]}|')
 
+    # get cell count from synth report
+    def get_cell_count_from_synth(self):
+        num_cells = 0
+        try:
+            yosys_report = glob.glob(f'{self.local_dir}/runs/wokwi/reports/synthesis/1-synthesis.*0.stat.rpt')[0]  # can't open a file with \ in the path
+            with open(yosys_report) as fh:
+                for line in fh.readlines():
+                    m = re.search(r'Number of cells:\s+(\d+)', line)
+                    if m is not None:
+                        num_cells = int(m.group(1))
+
+        except IndexError:
+            logging.warning(f"couldn't open yosys cell report for cell checking {self}")
+
+        return num_cells
+        
     # Parse the lib, cell and drive strength an OpenLane gate-level Verilog file
-    def get_cell_count_from_gl(self):
+    def get_cell_counts_from_gl(self):
         cell_count = {}
         total = 0
         gl_files = glob.glob(os.path.join(self.local_dir, 'runs/wokwi/results/final/verilog/gl/*.nl.v'))

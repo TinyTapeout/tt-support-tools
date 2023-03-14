@@ -56,16 +56,20 @@ class Projects():
                 continue
             if args.end_at != 0 and index > args.end_at:
                 continue
-            if self.project_config[index]['status'] == 'disable':
-                continue
+
             """
             try:
                 email = self.git_url_to_email_map[git_url]
             except KeyError:
                 email = 'none'
             """
+
             git_url = self.project_config[index]['url']
             filler = self.project_config[index]['fill']
+
+            # not sure if this is a good idea
+            if self.project_config[index]['status'] == 'disable':
+                filler = True
 
             # fill projects don't have their own directory, reuse the first project which is always fill
             if filler:
@@ -123,6 +127,8 @@ class Projects():
         all_gds_files = [project.get_macro_gds_filename() for project in self.projects if not project.is_fill()]
         self.assert_unique(all_gds_files)
 
+        logging.info(f"loaded {len(self.projects)} projects")
+
     def assert_unique(self, check):
         duplicates = [item for item, count in collections.Counter(check).items() if count > 1]
         if duplicates:
@@ -136,8 +142,10 @@ class Projects():
         total_physical_cells = 0
         max_cells = 0
         min_cells = 1000
+        max_cell_project = None
         max_util = 0
         min_util = 100
+        max_util_project = None
         languages = {}
 
         for project in self.projects:
@@ -149,7 +157,7 @@ class Projects():
                 total_wire_length += int(project.metrics['wire_length'])
                 total_wires_count += int(project.metrics['wires_count'])
                 util = float(project.metrics['OpenDP_Util'])
-                num_cells = project.check_num_cells()
+                num_cells = project.get_cell_count_from_synth()
                 total_physical_cells += num_cells
 
                 yaml_data = project.get_project_doc_yaml()
