@@ -444,7 +444,7 @@ class Project():
 
     # Print the summaries
     def summarize(self):
-        cell_count = self.get_cell_count_from_gl()
+        cell_count = self.get_cell_counts_from_gl()
         script_dir = os.path.dirname(os.path.realpath(__file__))
 
         with open(os.path.join(script_dir, 'categories.json')) as fh:
@@ -469,6 +469,7 @@ class Project():
 
         if self.args.print_cell_category:
             by_category = {}
+            total = 0
             for cell_name in cell_count:
                 cat_index = categories['map'][cell_name]
                 cat_name = categories['categories'][cat_index]
@@ -478,6 +479,9 @@ class Project():
                 else:
                     by_category[cat_name] = {'count' : cell_count[cell_name], 'examples' : [cell_name]}
 
+                if cat_name not in ['Fill', 'Tap']:
+                    total += cell_count[cell_name]
+
             print('# Cell usage by Category')
             print()
             print('| Category | Cells | Count |')
@@ -485,6 +489,8 @@ class Project():
             for cat_name, cat_dict in sorted(by_category.items(), key=lambda x: x[1]['count'], reverse=True):
                 cell_links = [f'[{name}]({CELL_URL}{name})' for name in cat_dict['examples']]
                 print(f'|{cat_name} | {" ".join(cell_links)} | {cat_dict["count"]}|')
+
+            print(f'## {total} total cells (excluding fill and tap cells)')
 
     # get cell count from synth report
     def get_cell_count_from_synth(self):
@@ -501,7 +507,7 @@ class Project():
             logging.warning(f"couldn't open yosys cell report for cell checking {self}")
 
         return num_cells
-        
+
     # Parse the lib, cell and drive strength an OpenLane gate-level Verilog file
     def get_cell_counts_from_gl(self):
         cell_count = {}
