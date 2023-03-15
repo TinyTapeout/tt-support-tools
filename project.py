@@ -32,6 +32,7 @@ def create_user_config(yaml):
             if line != len(sources) - 1:
                 fh.write(' \\\n')
         fh.write('"\n')
+        fh.write("set ::env(VERILOG_INCLUDE_DIRS) \"$::env(DESIGN_DIR)/include $::env(DESIGN_DIR)\"\n")
 
 
 def fetch_file(url, filename):
