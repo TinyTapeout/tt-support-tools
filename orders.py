@@ -1,6 +1,9 @@
 import stripe, os
 from datetime import datetime
 import yaml
+import requests
+import pytz
+import logging
 
 
 class Orders():
@@ -12,8 +15,30 @@ class Orders():
         self.orders = []
 
     def fetch_orders(self):
+        orders = self.fetch_stripe_orders() + self.fetch_university_orders()
+        self.orders = sorted(orders, key=lambda d: d['time'])
+
+    def fetch_university_orders(self):
+        name = self.config['name']
+        url = f'https://app.tinytapeout.com/api/submissions?shuttle={name}'
+        r = requests.get(url)
+        if r.status_code != 200:
+            logging.warning("couldn't download {}".format(url))
+            exit(1)
+
+        orders = []
+        for item in r.json()['items']:
+            orders.append({
+                'git_url'   : item['repo'],
+                'email'     : None,
+                'time'      : datetime.strptime(item['time'], '%Y-%m-%dT%H:%M:%S.%f%z').replace(tzinfo=pytz.UTC)
+                })
+        return orders
+
+    def fetch_stripe_orders(self):
         start_id = None
         after_open_date = True
+        orders = []
 
         while after_open_date:
             checkouts = stripe.checkout.Session.list(limit=10, starting_after=start_id)
@@ -29,15 +54,15 @@ class Orders():
                         order = {
                             'git_url' : git_url,
                             'email'   : checkout['customer_details']['email'],
+                            'time'    : datetime.fromtimestamp(checkout['created']).replace(tzinfo=pytz.UTC),
                             }
-                        self.orders.append(order)
+                        orders.append(order)
 
                 # pagination
                 start_id = checkout['id']
 
         # put in date order
-        self.orders.reverse()
-        return self.orders
+        return orders
 
     def update_project_list(self):
         project_list = {}

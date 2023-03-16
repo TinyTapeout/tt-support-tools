@@ -231,6 +231,11 @@ if __name__ == '__main__':
     ch.setFormatter(log_format)
     log.addHandler(ch)
 
+    if args.update_orders:
+        orders = Orders(config)
+        orders.fetch_orders()
+        orders.update_project_list()
+
     projects = Projects(config, args)
 
     docs = Docs(projects.projects, args=args)
@@ -241,11 +246,6 @@ if __name__ == '__main__':
 
     if args.metrics:
         projects.build_metrics()
-
-    if args.update_orders:
-        orders = Orders(config)
-        orders.fetch_orders()
-        orders.update_project_list()
 
     if args.update_caravel:
         caravel.create_macro_config()
