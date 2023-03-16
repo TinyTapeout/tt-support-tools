@@ -1,7 +1,7 @@
 ---
 title: |
   ![](ttlogo.png){width=15cm}  
-    Tiny Tapeout 02 Datasheet
+    Tiny Tapeout 03 Datasheet
 subtitle: Project Repository [https://github.com/TinyTapeout/tinytapeout-02](https://github.com/TinyTapeout/tinytapeout-02)
 documentclass: scrartcl
 date: \today{}
