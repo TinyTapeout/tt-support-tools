@@ -111,9 +111,9 @@ class Projects():
                 if filler is False:
                     project.copy_files_to_caravel()
 
-                # check all top level module ports are correct
-                project.check_ports()
-                project.check_num_cells()
+                    # check all top level module ports are correct
+                    project.check_ports()
+                    project.check_num_cells()
 
             self.projects.append(project)
 

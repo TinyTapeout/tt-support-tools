@@ -24,12 +24,12 @@
   fill: false
 6:
   url: https://github.com/dgarrett/tt03-num-latch
-  status: disable
+  status: active
   fill: false
 7:
-  url: https://github.com/TinyTapeout/tt03-test-invert
+  url: https://github.com/MichaelBell/tt03-hovalaag
   status: active
-  fill: true
+  fill: false
 8:
   url: https://github.com/TinyTapeout/tt03-test-invert
   status: active

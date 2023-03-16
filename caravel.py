@@ -1,4 +1,5 @@
 import logging
+import json
 
 
 class CaravelConfig():
@@ -86,53 +87,34 @@ class CaravelConfig():
 
         logging.info(f"total user macros placed: {num_macros_placed}")
 
-        # macro_power.tcl: extra file for macro power hooks
-        logging.info("creating macro_power.tcl")
-        with open("openlane/user_project_wrapper/macro_power.tcl", 'w') as fh:
-            fh.write('set ::env(FP_PDN_MACRO_HOOKS) "\\\n')
-            fh.write("	")
-            fh.write("scan_controller")
-            fh.write(" vccd1 vssd1 vccd1 vssd1")
-            fh.write(", \\\n")
-            for i in range(self.num_projects):
-                fh.write("	")
-                fh.write(self.projects[i].get_scanchain_instance())
-                fh.write(" vccd1 vssd1 vccd1 vssd1, \\\n")
-                fh.write("	")
-                fh.write(self.projects[i].get_macro_instance())
-                fh.write(" vccd1 vssd1 vccd1 vssd1")
-                if i != self.num_projects - 1:
-                    fh.write(", \\\n")
-            fh.write('"\n')
+        with open("upw_config.json") as fh:
+            caravel_config = json.load(fh)
 
-        # extra_lef_gds.tcl
-        lefs = []
-        gdss = []
-        logging.info("creating extra_lef_gds.tcl")
+        power_domains = "vccd1 vssd1 vccd1 vssd1"
+        power_config = []
+        logging.info("creating macro hooks")
+
+        for i in range(self.num_projects):
+            power_config.append(f"{self.projects[i].get_scanchain_instance()} {power_domains},")
+            power_config.append(f"{self.projects[i].get_macro_instance()} {power_domains},")
+        power_config.append(f"scan_controller {power_domains}")  # no trailing comma
+
+        caravel_config["FP_PDN_MACRO_HOOKS"] = power_config
+
+        logging.info("GDS and LEF")
+        lef_prefix = "dir::../../lef/"
+        gds_prefix = "dir::../../gds/"
+        caravel_config["EXTRA_LEFS"].append(lef_prefix + "scan_controller.lef")
+        caravel_config["EXTRA_LEFS"].append(lef_prefix + "scanchain.lef")
+        caravel_config["EXTRA_GDS_FILES"].append(gds_prefix + "scan_controller.gds")
+        caravel_config["EXTRA_GDS_FILES"].append(gds_prefix + "scanchain.gds")
         for project in self.projects:
             if not project.is_fill():
-                lefs.append(project.get_macro_lef_filename())
-                gdss.append(project.get_macro_gds_filename())
+                caravel_config["EXTRA_LEFS"].append(lef_prefix + project.get_macro_lef_filename())
+                caravel_config["EXTRA_GDS_FILES"].append(gds_prefix + project.get_macro_gds_filename())
 
-        with open("openlane/user_project_wrapper/extra_lef_gds.tcl", 'w') as fh:
-            fh.write('set ::env(EXTRA_LEFS) "\\\n')
-            fh.write("$script_dir/../../lef/scan_controller.lef \\\n")
-            fh.write("$script_dir/../../lef/scanchain.lef \\\n")
-            for i, lef in enumerate(lefs):
-                fh.write("$script_dir/../../lef/{}".format(lef))
-                if i != len(lefs) - 1:
-                    fh.write(" \\\n")
-                else:
-                    fh.write('"\n')
-            fh.write('set ::env(EXTRA_GDS_FILES) "\\\n')
-            fh.write("$script_dir/../../gds/scan_controller.gds \\\n")
-            fh.write("$script_dir/../../gds/scanchain.gds \\\n")
-            for i, gds in enumerate(gdss):
-                fh.write("$script_dir/../../gds/{}".format(gds))
-                if i != len(gdss) - 1:
-                    fh.write(" \\\n")
-                else:
-                    fh.write('"\n')
+        with open("openlane/user_project_wrapper/config.json", 'w') as fh:
+            json.dump(caravel_config, fh, indent=4)
 
     # instantiate inside user_project_wrapper
     def instantiate(self):

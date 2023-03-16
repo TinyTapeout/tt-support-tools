@@ -198,7 +198,7 @@ class Project():
                 logging.error(f"{self.git_url} != {git_remote}")
                 exit(1)
         else:
-            logging.info("clone")
+            logging.debug("clone")
             git.Repo.clone_from(self.git_url, self.local_dir, recursive=True)
 
     def pull(self):
