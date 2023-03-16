@@ -1,5 +1,6 @@
 import logging
 import json
+import os
 
 
 class CaravelConfig():
@@ -7,6 +8,7 @@ class CaravelConfig():
     def __init__(self, projects, num_projects):
         self.projects = projects
         self.num_projects = num_projects
+        self.script_dir = os.path.dirname(os.path.realpath(__file__))
 
     # create macro file & positions, power hooks
     def create_macro_config(self):
@@ -87,7 +89,7 @@ class CaravelConfig():
 
         logging.info(f"total user macros placed: {num_macros_placed}")
 
-        with open("upw_config.json") as fh:
+        with open(os.path.join(self.script_dir, 'caravel_template', 'upw_config.json')) as fh:
             caravel_config = json.load(fh)
 
         power_domains = "vccd1 vssd1 vccd1 vssd1"
@@ -215,12 +217,12 @@ class CaravelConfig():
         # Write to file
         with open('verilog/rtl/user_project_wrapper.v', 'w') as fh:
             # Insert the Caravel preamble
-            with open("upw_pre.v", "r") as fh_pre:
+            with open(os.path.join(self.script_dir, 'caravel_template', 'upw_pre.v')) as fh_pre:
                 fh.write(fh_pre.read())
             # Indent, join, and insert the module instances
             fh.write("\n".join([("    " + x).rstrip() for x in body]))
             # Insert the Caravel postamble
-            with open("upw_post.v", "r") as fh_post:
+            with open(os.path.join(self.script_dir, 'caravel_template', 'upw_post.v')) as fh_post:
                 fh.write(fh_post.read())
 
         # build the blackbox_project_includes.v file - used for blackboxing when building the GDS

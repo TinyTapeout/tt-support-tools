@@ -6,11 +6,12 @@ class Docs():
     def __init__(self, projects, args):
         self.projects = projects
         self.args = args
+        self.script_dir = os.path.dirname(os.path.realpath(__file__))
 
     # stuff related to docs
     def build_index(self):
         logging.info("building doc index")
-        with open("README_init.md") as fh:
+        with open(os.path.join(self.script_dir, 'docs', 'README_init.md')) as fh:
             readme = fh.read()
         with open("README.md", 'w') as fh:
             fh.write(readme)
@@ -21,7 +22,10 @@ class Docs():
                     fh.write(project.get_index_row())
 
     def update_image(self):
-        cmd = "klayout -l caravel.lyp gds/user_project_wrapper.gds -r dump_pic.rb -c klayoutrc"
+        ruby = os.path.join(self.script_dir, 'caravel_template', 'dump_pic.rb')
+        klayoutrc = os.path.join(self.script_dir, 'caravel_template', 'klayoutrc')
+        lyp = os.path.join(self.script_dir, 'caravel_template', 'caravel.lyp')
+        cmd = f'klayout -l {lyp} gds/user_project_wrapper.gds -r {ruby} -c {klayoutrc}'
         logging.info(cmd)
         os.system(cmd)
 
@@ -32,25 +36,24 @@ class Docs():
             design = project.get_yaml()
             designs.append(design)
 
-        with open(self.args.dump_json, "w") as fh:
+        with open(self.args.dump_json, 'w') as fh:
             fh.write(json.dumps(designs, indent=4))
         logging.info(f'wrote json to {self.args.dump_json}')
 
     def dump_markdown(self):
-
-        with open("doc_header.md") as fh:
+        with open(os.path.join(self.script_dir, 'docs', 'doc_header.md')) as fh:
             doc_header = fh.read()
 
-        with open("doc_template.md") as fh:
+        with open(os.path.join(self.script_dir, 'docs', 'doc_template.md')) as fh:
             doc_template = fh.read()
 
-        with open("INFO.md") as fh:
+        with open(os.path.join(self.script_dir, 'docs', 'INFO.md')) as fh:
             doc_info = fh.read()
 
-        with open("VERIFICATION.md") as fh:
+        with open(os.path.join(self.script_dir, 'docs', 'VERIFICATION.md')) as fh:
             doc_verification = fh.read()
 
-        with open("CREDITS.md") as fh:
+        with open(os.path.join(self.script_dir, 'docs', 'CREDITS.md')) as fh:
             doc_credits = fh.read()
 
         with open(self.args.dump_markdown, 'w') as fh:
@@ -104,10 +107,10 @@ class Docs():
         os.makedirs(hugo_root)
         os.makedirs(hugo_images)
 
-        with open("hugo_template.md") as fh:
+        with open(os.path.join(self.script_dir, 'docs', 'hugo_template.md')) as fh:
             doc_template = fh.read()
 
-        with open("hugo_index_template.md") as fh:
+        with open(os.path.join(self.script_dir, 'docs', 'hugo_index_template.md')) as fh:
             index_template = fh.read()
 
         # copy image

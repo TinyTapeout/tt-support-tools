@@ -13,16 +13,6 @@ from signal import signal, SIGPIPE, SIG_DFL
 signal(SIGPIPE, SIG_DFL)
 
 
-"""
-# if the project is a filler, then use the config from the first fill project
-def gen_local_dir(self, fill_id):
-    if self.fill:
-        return os.path.join(os.path.join(self.project_dir, f'{fill_id :03}'))
-    else:
-        return os.path.join(os.path.join(self.project_dir, f'{self.index :03}'))
-"""
-
-
 class Projects():
 
     def __init__(self, config, args):
