@@ -114,7 +114,7 @@ class Docs():
             index_template = fh.read()
 
         # copy image
-        shutil.copyfile('tinytapeout.png', os.path.join(hugo_images, 'tinytapeout.png'))
+        shutil.copyfile('pics/tinytapeout.png', os.path.join(hugo_images, 'tinytapeout-03.png')) #todo fix hardcoded run
 
         # index page
         logging.info("building pages - can take a minute as fetching latest GDS action URLs for all projects")

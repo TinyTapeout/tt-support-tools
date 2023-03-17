@@ -1,6 +1,6 @@
 ---
-title: "Tiny Tapeout 02"
-weight: 10
+title: "Tiny Tapeout 03"
+weight: 20
 description: Overview
 
 ---
@@ -9,45 +9,28 @@ description: Overview
 
 # Design details
 
-* [Github repository](https://github.com/TinyTapeout/tinytapeout-02)
-* [PDF datasheet](https://github.com/TinyTapeout/tinytapeout-02/raw/tt02/datasheet.pdf)
-* [Verification](https://github.com/TinyTapeout/tinytapeout-02/blob/tt02/VERIFICATION.md)
-* [Efabless MPW submission](https://platform.efabless.com/projects/1410)
+* [Github repository](https://github.com/TinyTapeout/tinytapeout-03)
+* [PDF datasheet](https://github.com/TinyTapeout/tinytapeout-03/raw/tt03/datasheet.pdf)
+* [Verification](https://github.com/TinyTapeout/tinytapeout-03/blob/tt03/VERIFICATION.md)
+* [Efabless MPW submission](https://platform.efabless.com/projects/1971)
 
 # Launch stats
 
-* Launched: 9 November 2023
-* Submission closed: 2 December 2023
-* Submitted to Efabless 2211Q chipIgnite shuttle using Skywater 130nm open source PDK
+* Launched: 1 March 2023
+* Submission closed: 24 April 2023
+* Submitted to Efabless 2304C chipIgnite shuttle using Skywater 130nm open source PDK
 
 # Project statistics
 
-* 165 projects submitted. Each project is 150 x 170um
-* Youngest submitter: [4 years old](https://tinytapeout.com/runs/tt02/031)
-* 64 used Wokwi graphical editor, 82 Verilog, 5 Amaranth, 1 Chisel
-* 39935 standard cells used across all projects.
-* Most cells used in a design was 1105, the least was 8.
-* Max utilisation was 52%
-* Total wire length 2024 mm.
+* TBA
 
 ## Whole die render
 
-![whole die](images/tinytapeout.png)
+![whole die](images/tinytapeout-03.png)
 
 # Project Showcase
 
-## Wokwi projects
-* [UART-CC](https://tinytapeout.com/runs/tt02/057)
-* [Nano-neuron](https://tinytapeout.com/runs/tt02/066)
-* [Worm in a Maze](https://tinytapeout.com/runs/tt02/084)
-* [Wolf sheep cabbage river crossing puzzle ASIC design](https://tinytapeout.com/runs/tt02/111)
-
-## HDL projects 
-* [Avalon Semiconductors 'TBB1143' Programmable Sound Generator](https://tinytapeout.com/runs/tt02/024/)
-* [Pi (π) to 1000+ decimal places](https://tinytapeout.com/runs/tt02/036)
-* [FPGA test](https://tinytapeout.com/runs/tt02/090)
-* [RV8U - 8-bit RISC-V Microcore Processor](https://tinytapeout.com/runs/tt02/107)
-* [8-bit CPU](https://tinytapeout.com/runs/tt02/085/)
+* TBA
 
 # Testimonials / Endorsements
 
