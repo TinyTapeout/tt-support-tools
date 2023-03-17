@@ -1,6 +1,6 @@
 # To rebuild all gds
 
-Build notes are also in the tt-02-build of discord
+Build notes are also in the tt-03-build of discord
 
 On git tag tapeout
 
