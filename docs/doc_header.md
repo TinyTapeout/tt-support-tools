@@ -5,7 +5,7 @@ title: |
 subtitle: Project Repository [https://github.com/TinyTapeout/tinytapeout-03](https://github.com/TinyTapeout/tinytapeout-03)
 documentclass: scrartcl
 date: \today{}
-geometry: margin=2cm
+geometry: "left=2cm,right=2cm,top=2cm,bottom=2.5cm"
 fontsize: 14pt
 mainfont: Latin Modern Sans
 header-includes:
