@@ -17,13 +17,20 @@ class Projects():
 
     def __init__(self, config, args):
         self.args = args
-        self.project_dir = config['project_dir']
         self.config = config
+
+        if args.test:
+            self.projects_file = 'test_projects.yaml'
+            self.project_dir = config['test_project_dir']
+        else:
+            self.projects_file = 'projects.yaml'
+            self.project_dir = config['project_dir']
+
         if not os.path.exists(self.project_dir):
             os.makedirs(self.project_dir)
 
         try:
-            with open('projects.yaml') as fh:
+            with open(self.projects_file) as fh:
                 self.project_config = yaml.safe_load(fh)
         except FileNotFoundError:
             logging.error("projects.yaml not found, create it with --update-orders")
@@ -87,10 +94,15 @@ class Projects():
                     project.pull()
 
             # projects should now be installed, so load all the data from the yaml files
-            logging.debug("post clone setup")
             # fill projects will load from the fill project's directory
+            logging.debug("post clone setup")
             project.post_clone_setup()
             logging.debug(project)
+
+            # fetch the wokwi source
+            if args.clone_all:
+                if not project.is_fill() and project.is_wokwi():
+                    project.fetch_wokwi_files()
 
             if args.harden:
                 if filler is False:

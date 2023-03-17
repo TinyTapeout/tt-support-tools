@@ -296,8 +296,6 @@ class Project():
         git_utils.fetch_file(url, os.path.join(self.local_dir, "src", diagram_file))
 
     def create_user_config(self):
-        self.fetch_wokwi_files()
-
         logging.info("creating include file")
         filename = 'user_config.tcl'
         with open(os.path.join(self.local_dir, 'src', filename), 'w') as fh:
