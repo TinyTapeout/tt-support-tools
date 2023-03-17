@@ -1,6 +1,6 @@
 ---
 title: |
-  ![](ttlogo.png){width=15cm}  
+  ![](pics/ttlogo.png){width=15cm}  
     Tiny Tapeout 03 Datasheet
 subtitle: Project Repository [https://github.com/TinyTapeout/tinytapeout-03](https://github.com/TinyTapeout/tinytapeout-03)
 documentclass: scrartcl
@@ -18,7 +18,7 @@ header-includes:
 
 # Render of whole chip
 
-![Full GDS](tinytapeout.png)
+![Full GDS](pics/tinytapeout.png)
 
 \pagebreak
 

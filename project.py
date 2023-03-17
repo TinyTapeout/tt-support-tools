@@ -248,6 +248,9 @@ class Project():
     def get_macro_lef_filename(self):
         return f"{self.top_module}.lef"
 
+    def get_macro_spef_filename(self):
+        return f"{self.top_module}.spef"
+
     # for GL sims & blackboxing
     def get_gl_verilog_filename(self):
         return f"{self.top_module}.v"
@@ -266,10 +269,10 @@ class Project():
     def get_git_url(self):
         return self.git_url
 
-    # todo add spef
     def copy_files_to_caravel(self):
         files = [
             (f"runs/wokwi/results/final/gds/{self.get_macro_gds_filename()}", f"gds/{self.get_macro_gds_filename()}"),
+            (f"runs/wokwi/results/final/spef/{self.get_macro_spef_filename()}", f"spef/{self.get_macro_spef_filename()}"),
             (f"runs/wokwi/results/final/lef/{self.get_macro_lef_filename()}", f"lef/{self.get_macro_lef_filename()}"),
             (f"runs/wokwi/results/final/verilog/gl/{self.get_gl_verilog_filename()}", f"verilog/gl/{self.get_gl_verilog_filename()}"),
             (f"src/{self.top_verilog_filename}", f"verilog/rtl/{self.get_top_verilog_filename()}"),

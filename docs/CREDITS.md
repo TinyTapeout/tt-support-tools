@@ -1,6 +1,6 @@
 # Sponsored by
 
-[![efabless](efabless.png)](https://efabless.com/)
+[![efabless](pics/efabless.png)](https://efabless.com/)
 
 # Team
 

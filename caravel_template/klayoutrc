@@ -152,7 +152,7 @@
  <menu-items-hidden/>
  <min-inst-label-size>16</min-inst-label-size>
  <mouse-wheel-mode>0</mouse-wheel-mode>
- <mru>'/home/matt/work/asic-workshop/shuttle6/zero_to_asic_mpw6/gds/user_project_wrapper.gds.gz' '/home/matt/work/asic-workshop/shuttle7/zero_to_asic_mpw7/gds/user_project_wrapper.gds.gz' '/home/matt/work/asic-workshop/shuttle7/tinytapeout-02/gds/user_project_wrapper.gds' '/home/matt/work/asic-workshop/shuttle8/tinytapeout-02/gds/user_project_wrapper.gds' '/home/matt/work/asic-workshop/shuttle9/caravel_user_project/gds/user_project_wrapper.gds'</mru>
+ <mru>'/home/matt/work/asic-workshop/shuttle6/zero_to_asic_mpw6/gds/user_project_wrapper.gds.gz' '/home/matt/work/asic-workshop/shuttle7/zero_to_asic_mpw7/gds/user_project_wrapper.gds.gz' '/home/matt/work/asic-workshop/shuttle7/tinytapeout-02/gds/user_project_wrapper.gds' '/home/matt/work/asic-workshop/shuttle8/tinytapeout-02/gds/user_project_wrapper.gds' '/home/matt/work/asic-workshop/shuttle9/caravel_user_project/gds/user_project_wrapper.gds' '/home/matt/work/asic-workshop/shuttle9/tinytapeout-03/gds/user_project_wrapper.gds'</mru>
  <navigator-show-all-hier-levels>false</navigator-show-all-hier-levels>
  <navigator-show-images>true</navigator-show-images>
  <no-stipple>false</no-stipple>
