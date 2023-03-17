@@ -1,4 +1,6 @@
 gdstk
+stripe
+GitPython
 cairosvg
 requests
 PyYAML
