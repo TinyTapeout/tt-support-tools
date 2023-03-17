@@ -17,8 +17,8 @@ class CaravelConfig():
         c = self.config['layout']
 
         # step sizes
-        step_x  = c['scanchain_w'] + c['module_w'] + c['scanchain_spc'] +c['space_x'] 
-        step_y  = c['module_h'] + c['space_y'] 
+        step_x  = c['scanchain_w'] + c['module_w'] + c['scanchain_spc'] + c['space_x']
+        step_y  = c['module_h'] + c['space_y']
 
         logging.info(f"start_x {c['start_x']} start_y {c['start_y']} step_x {step_x} step_y {step_y}")
 
