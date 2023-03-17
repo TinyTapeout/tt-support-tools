@@ -5,7 +5,8 @@ import os
 
 class CaravelConfig():
 
-    def __init__(self, projects, num_projects):
+    def __init__(self, config, projects, num_projects):
+        self.config = config
         self.projects = projects
         self.num_projects = num_projects
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -13,42 +14,27 @@ class CaravelConfig():
     # create macro file & positions, power hooks
     def create_macro_config(self):
         # array size
-        rows    = 18
-        cols    = 14
-
-        # start point (lower left)
-        start_x = 50
-        start_y = 95
-
-        # module block sizes
-        scanchain_w = 30
-        scanchain_spc = 6
-        module_w = 150
-        module_h = 170
-
-        # how much x & y space to leave between blocks
-        space_x = 15
-        space_y = 15
+        c = self.config['layout']
 
         # step sizes
-        step_x  = scanchain_w + module_w + scanchain_spc + space_x
-        step_y  = module_h + space_y
+        step_x  = c['scanchain_w'] + c['module_w'] + c['scanchain_spc'] +c['space_x'] 
+        step_y  = c['module_h'] + c['space_y'] 
 
-        logging.info(f"start_x {start_x} start_y {start_y} step_x {step_x} step_y {step_y }")
+        logging.info(f"start_x {c['start_x']} start_y {c['start_y']} step_x {step_x} step_y {step_y}")
 
         num_macros_placed = 0
 
         # macro.cfg: where macros are placed
         logging.info("creating macro.cfg")
         with open("openlane/user_project_wrapper/macro.cfg", 'w') as fh:
-            fh.write("scan_controller 100 100 N\n")
-            for row in range(rows):
+            fh.write(f"scan_controller {c['scan_control_x']} {c['scan_control_y']} N\n")
+            for row in range(c['rows']):
                 if row % 2 == 0:
-                    col_order = range(cols)
+                    col_order = range(c['cols'])
                     orientation = 'N'
                 else:
                     # reverse odd rows to place instances in a zig zag pattern, shortening the scan chain wires
-                    col_order = range(cols - 1, -1, -1)
+                    col_order = range(c['cols'] - 1, -1, -1)
                     orientation = 'S'
                 for col in col_order:
                     # skip the space where the scan controller goes on the first row
@@ -62,26 +48,26 @@ class CaravelConfig():
                             # co-ords are bottom left corner
                             macro_instance = self.projects[num_macros_placed].get_scanchain_instance()
                             instance = "{} {:<4} {:<4} {}\n".format(
-                                macro_instance, start_x + col * step_x, start_y + row * step_y, orientation
+                                macro_instance, c['start_x'] + col * step_x, c['start_y'] + row * step_y, orientation
                             )
                             fh.write(instance)
 
                             macro_instance = self.projects[num_macros_placed].get_macro_instance()
                             instance = "{} {:<4} {:<4} {}\n".format(
-                                macro_instance, start_x + scanchain_spc + scanchain_w + col * step_x, start_y + row * step_y, orientation
+                                macro_instance, c['start_x'] + c['scanchain_spc'] + c['scanchain_w'] + col * step_x, c['start_y'] + row * step_y, orientation
                             )
                             fh.write(instance)
                         else:
                             # macro first
                             macro_instance = self.projects[num_macros_placed].get_macro_instance()
                             instance = "{} {:<4} {:<4} {}\n".format(
-                                macro_instance, start_x + col * step_x, start_y + row * step_y, orientation
+                                macro_instance, c['start_x'] + col * step_x, c['start_y'] + row * step_y, orientation
                             )
                             fh.write(instance)
 
                             macro_instance = self.projects[num_macros_placed].get_scanchain_instance()
                             instance = "{} {:<4} {:<4} {}\n".format(
-                                macro_instance, start_x + module_w + scanchain_spc + col * step_x, start_y + row * step_y, orientation
+                                macro_instance, c['start_x'] + c['module_w'] + c['scanchain_spc'] + col * step_x, c['start_y'] + row * step_y, orientation
                             )
                             fh.write(instance)
 

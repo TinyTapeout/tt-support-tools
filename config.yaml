@@ -4,3 +4,24 @@ filler_project: https://github.com/TinyTapeout/tt03-test-invert
 project_dir: 'projects'
 tmp_dir: '/tmp/tt'
 num_projects: 250
+
+layout:
+    rows: 18
+    cols: 14
+
+    # start point (lower left)
+    start_x: 50
+    start_y: 95
+
+    # module block sizes
+    scanchain_w:  30
+    scanchain_spc:  6
+    module_w: 150
+    module_h: 170
+
+    # how much x & y space to leave between blocks
+    space_x: 15
+    space_y: 15
+
+    scan_control_x: 100
+    scan_control_y: 100

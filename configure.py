@@ -229,7 +229,7 @@ if __name__ == '__main__':
     projects = Projects(config, args)
 
     docs = Docs(projects.projects, args=args)
-    caravel = CaravelConfig(projects.projects, num_projects=args.limit_num_projects)
+    caravel = CaravelConfig(config, projects.projects, num_projects=args.limit_num_projects)
 
     if args.list:
         caravel.list()
