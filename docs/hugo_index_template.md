@@ -20,14 +20,17 @@ description: Overview
 * Submission closed: 24 April 2023
 * Submitted to Efabless 2304C chipIgnite shuttle using Skywater 130nm open source PDK
 
+<!--
 # Project statistics
 
 * TBA
+-->
 
-## Whole die render
+# Whole die render
 
 ![whole die](images/tinytapeout-03.png)
 
+<!--
 # Project Showcase
 
 * TBA
@@ -54,3 +57,4 @@ Aside from that, It was amazing how seamless and easy was the whole process.
 ---
 More on [Twitter](https://twitter.com/search?q=tinytapeout).
 
+-->
