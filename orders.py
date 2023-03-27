@@ -33,6 +33,7 @@ class Orders():
                 'email'     : None,
                 'time'      : datetime.strptime(item['time'], '%Y-%m-%dT%H:%M:%S.%f%z').replace(tzinfo=pytz.UTC)
                 })
+        logging.info(f"fetched university {len(orders)} orders")
         return orders
 
     def fetch_stripe_orders(self):
@@ -62,6 +63,7 @@ class Orders():
                 start_id = checkout['id']
 
         # put in date order
+        logging.info(f"fetched stripe {len(orders)} orders")
         return orders
 
     def update_project_list(self):
