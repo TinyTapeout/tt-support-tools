@@ -25,7 +25,7 @@ class Docs():
         ruby = os.path.join(self.script_dir, 'caravel_template', 'dump_pic.rb')
         klayoutrc = os.path.join(self.script_dir, 'caravel_template', 'klayoutrc')
         lyp = os.path.join(self.script_dir, 'caravel_template', 'caravel.lyp')
-        cmd = f'klayout -l {lyp} gds/user_project_wrapper.gds -r {ruby} -c {klayoutrc}'
+        cmd = f'klayout -l {lyp} gds/user_project_wrapper.gds* -r {ruby} -c {klayoutrc}'
         logging.info(cmd)
         os.system(cmd)
 
@@ -52,6 +52,9 @@ class Docs():
 
         with open(os.path.join(self.script_dir, 'docs', 'VERIFICATION.md')) as fh:
             doc_verification = fh.read()
+
+        with open(os.path.join(self.script_dir, 'docs', 'STA.md')) as fh:
+            doc_sta = fh.read()
 
         with open(os.path.join(self.script_dir, 'docs', 'CREDITS.md')) as fh:
             doc_credits = fh.read()
@@ -88,6 +91,8 @@ class Docs():
             fh.write(doc_info)
             fh.write("\n\pagebreak\n")
             fh.write(doc_verification)
+            fh.write("\n\pagebreak\n")
+            fh.write(doc_sta)
             fh.write("\n\pagebreak\n")
             fh.write(doc_credits)
 
