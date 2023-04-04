@@ -1,4 +1,5 @@
 ---
+hidden: true
 title: "{index} {title}"
 weight: {weight}
 ---

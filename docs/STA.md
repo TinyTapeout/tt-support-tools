@@ -55,11 +55,13 @@ substitute the [nnn] with _nnn_ in the names
 
 eg:
 
-    sta_top/toplevel_sta.py ./verilog/gl/user_project_wrapper.v ./spef/user_project_wrapper.spef ./sta_top/top.sdc > sta.log
+    sta_top/toplevel_sta.py ./verilog/gl/user_project_wrapper.v 
+    ./spef/user_project_wrapper.spef ./sta_top/top.sdc > sta.log
 
-Alternately you can enter interactive mode after analysis:
+Alternatively you can enter interactive mode after analysis:
 
-    sta_top/toplevel_sta.py ./verilog/gl/user_project_wrapper.v ./spef/user_project_wrapper.spef ./sta_top/top.sdc -i
+    sta_top/toplevel_sta.py ./verilog/gl/user_project_wrapper.v 
+    ./spef/user_project_wrapper.spef ./sta_top/top.sdc -i
 
 ## How it works
 
@@ -109,5 +111,5 @@ needs to be set in ~/spice.rc and/or ~/.spiceinit:
 
 This chart shows the input clock and how it changes after 250 blocks. It was simulated for 200n to capture a clean pair of clock pulses.
 
-[clock_spice.png](pics/clock_spice.png)
+![clock_spice.png](pics/clock_spice.png)
 

@@ -41,7 +41,6 @@ class CaravelConfig():
                     if row == 0 and col <= 1:
                         continue
 
-                    logging.debug(self.num_projects)
                     if num_macros_placed < self.num_projects:
                         if orientation == 'N':
                             # scanchain first
@@ -71,7 +70,7 @@ class CaravelConfig():
                             )
                             fh.write(instance)
 
-                    num_macros_placed += 1
+                        num_macros_placed += 1
 
         logging.info(f"total user macros placed: {num_macros_placed}")
 

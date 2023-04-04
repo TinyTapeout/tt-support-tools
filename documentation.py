@@ -83,17 +83,17 @@ class Docs():
                 try:
                     doc = doc_template.format(**yaml_data)
                     fh.write(doc)
-                    fh.write("\n\pagebreak\n")
+                    fh.write("\n\clearpage\n")
                 except IndexError:
                     logging.warning("missing pins in info.yaml, skipping")
 
             # ending
             fh.write(doc_info)
-            fh.write("\n\pagebreak\n")
+            fh.write("\n\clearpage\n")
             fh.write(doc_verification)
-            fh.write("\n\pagebreak\n")
+            fh.write("\n\clearpage\n")
             fh.write(doc_sta)
-            fh.write("\n\pagebreak\n")
+            fh.write("\n\clearpage\n")
             fh.write(doc_credits)
 
         logging.info(f'wrote markdown to {self.args.dump_markdown}')
