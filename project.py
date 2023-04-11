@@ -3,6 +3,9 @@ import logging
 import requests
 import os
 import subprocess
+import shutil
+import glob
+import re
 
 
 def load_yaml(args):
@@ -39,13 +42,75 @@ def fetch_file(url, filename):
     r = requests.get(url)
     if r.status_code != 200:
         logging.warning("couldn't download {}".format(url))
-        exit(1)
+        return False
 
     with open(filename, 'wb') as fh:
         logging.info("written to {}".format(filename))
         fh.write(r.content)
+        
+    return True
 
 
+def fetch_wokwi_file(wokwi_id:int, file_requested:str, 
+                     destination_name:str = None):
+    '''
+        fetch_wokwi_file -- perform a request on the wokwi api to 
+                            retrieve a file from a given project.
+                            
+        @param wokwi_id: project id (integer)
+        @param file_requested: the specific file requested for the 
+                project, e.g. verilog or diagram.json
+        @param destination_name: file to write out to with result
+    '''
+    if destination_name is None or not len(destination_name):
+        destination_name = file_requested
+        
+    url = f'https://wokwi.com/api/projects/{wokwi_id}/{file_requested}'
+    return fetch_file(url, destination_name)
+
+
+def install_wokwi_testing(wokwi_id:int, destination_dir:str='src', 
+                          resource_dir:str=None):
+    
+    wokwi_id_str = str(wokwi_id)
+    #wokwi_user_module = f'user_module_{wokwi_'
+    
+    if resource_dir is None or not len(resource_dir):
+        resource_dir = os.path.join(os.path.dirname(__file__), 'testing')
+        
+        
+    # directories in testing/lib to copy over
+    pyLibsDir = os.path.join(resource_dir, 'lib')
+    
+    # src template dir
+    srcTplDir = os.path.join(resource_dir, 'src-tpl')
+    
+    for libfullpath in glob.glob(os.path.join(pyLibsDir, '*')):
+        logging.info(f'Copying {libfullpath} to {destination_dir}')
+        shutil.copytree(
+            libfullpath,
+            os.path.join(destination_dir, os.path.basename(libfullpath)),
+            dirs_exist_ok=True)
+        
+        
+    
+    
+    for srcTemplate in glob.glob(os.path.join(srcTplDir, '*')):
+        with open(srcTemplate, 'r') as f:
+            contents = f.read()
+            customizedContents = re.sub('WOKWI_ID', wokwi_id_str, contents)
+            outputFname = os.path.basename(srcTemplate)
+            with open(os.path.join(destination_dir, outputFname), 'w') as outf:
+                logging.info(f'writing src tpl to {outputFname}')
+                outf.write(customizedContents)
+                outf.close()
+    
+    
+            
+            
+        
+    
+        
 def get_project_source(yaml):
     # wokwi_id must be an int or 0
     try:
@@ -56,15 +121,27 @@ def get_project_source(yaml):
 
     # it's a wokwi project
     if wokwi_id != 0:
-        url = "https://wokwi.com/api/projects/{}/verilog".format(wokwi_id)
-        src_file = "user_module_{}.v".format(wokwi_id)
-        fetch_file(url, os.path.join("src", src_file))
+        src_file = f'user_module_{wokwi_id}.v'
+        if not fetch_wokwi_file(wokwi_id, 'verilog', 
+                         os.path.join("src", src_file) ):
+            logging.error(f'Could not fetch verilog file for wokwi project {wokwi_id}')
+            exit(1)
+        
 
         # also fetch the wokwi diagram
-        url = "https://wokwi.com/api/projects/{}/diagram.json".format(wokwi_id)
-        diagram_file = "wokwi_diagram.json"
-        fetch_file(url, os.path.join("src", diagram_file))
-
+        if not fetch_wokwi_file(wokwi_id, 'diagram.json', 
+                            os.path.join("src", 'wokwi_diagram.json')):
+            logging.error(f'Could not fetch diagram.json file for wokwi project {wokwi_id}')
+            exit(1)
+        
+        
+        # attempt to download the *optional* truthtable for the project
+        if fetch_wokwi_file(wokwi_id, 'truthtable.md', 
+                            os.path.join('src', 'truthtable.md')):
+            logging.info(f'Wokwi project {wokwi_id} has a truthtable included, will test!')
+            install_wokwi_testing(wokwi_id)
+        
+        
         return [src_file, 'cells.v']
 
     # else it's HDL, so check source files
