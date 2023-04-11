@@ -79,6 +79,8 @@ Any entry with a bit set to 'c' will:
 * setup any specified bits (0 or 1) and toggle any bits as required
 * then toggle (i.e. invert) the clock bit(s), without changing anything else
 * then re-toggle the same clock bit(s), returning them to their original state
+
+
 |IN:  CBA  RC  |    output    | comment   |
 |--------------|--------------|-----------|
 | 000 000  00  | -- ----- -   | init      |
@@ -102,11 +104,16 @@ Any entry with a bit set to 'c' will:
 Note that using ‘c’ is optional.  A row like
 
 
+|IN:  CBA  RC  |    output    | comment   |
+|--------------|--------------|-----------|
 | --- 110  -c  | -- 11111 -   | success   |
+
 
 Could be done manually, with
 
 
+|IN:  CBA  RC  |    output    | comment   |
+|--------------|--------------|-----------|
 | --- 110  --  | -- ----- -   | set combo |
 | --- ---  -1  | -- ----- -   | clock     |
 | --- ---  -0  | -- 11111 -   | success   |
