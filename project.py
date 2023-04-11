@@ -44,6 +44,10 @@ def fetch_file(url, filename):
         logging.warning("couldn't download {}".format(url))
         return False
 
+    if len(r.content) == 0:
+        logging.warning("file was 0 bytes {}".format(url))
+        return False
+
     with open(filename, 'wb') as fh:
         logging.info("written to {}".format(filename))
         fh.write(r.content)
