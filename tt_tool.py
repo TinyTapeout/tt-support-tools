@@ -63,9 +63,9 @@ if __name__ == '__main__':
     if args.print_warnings:
         reports.print_warnings(args)
 
-    elif args.print_wokwi_id:
+    if args.print_wokwi_id:
         project.print_wokwi_id(project_yaml)
-    
+
     if args.create_user_config:
         project.create_user_config(project_yaml)
 
