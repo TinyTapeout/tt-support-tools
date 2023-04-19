@@ -62,6 +62,7 @@ def create_pdf(yaml):
     p = subprocess.run(pdf_cmd, shell=True)
     if p.returncode != 0:
         logging.error("pdf command failed")
+        exit(1)
 
 
 # SVG and PNG renders of the GDS
