@@ -42,12 +42,20 @@ def create_pdf(yaml):
         # handle pictures
         yaml['picture_link'] = ''
         if yaml['picture']:
-            # skip SVG for now, not supported by pandoc
             picture_name = yaml['picture']
-            if 'svg' not in picture_name:
-                yaml['picture_link'] = '![picture]({})'.format(picture_name)
-            else:
+
+            # check it's actually there
+            if not os.path.exists(picture_name):
+                logging.warning(f"picture {picture_name} not found")
+                exit(1)
+
+            # and not SVG
+            if picture_name.endswith('.svg'):
                 logging.warning("svg not supported")
+                exit(1)
+
+            # create the link
+            yaml['picture_link'] = '![picture]({})'.format(picture_name)
 
         # now build the doc & print it
         try:
