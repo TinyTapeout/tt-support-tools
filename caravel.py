@@ -11,68 +11,75 @@ class CaravelConfig():
         self.num_projects = num_projects
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
 
+    # co-ords are bottom left corner
+    def place_macro(self, x, y, instance, rotate, fh):
+        c = self.config['layout']
+        if not rotate:
+            # scanchain first
+            orientation = 'N'
+            macro_instance = self.projects[instance].get_scanchain_instance()
+            fh.write(f"{macro_instance} {x:<4} {y:<4} {orientation}\n")
+
+            macro_instance = self.projects[instance].get_macro_instance()
+            x = x + c['scanchain_w'] + c['scanchain_spc']
+            fh.write(f"{macro_instance} {x:<4} {y:<4} {orientation}\n")
+        else:
+            # macro first
+            orientation = 'S'
+            macro_instance = self.projects[instance].get_macro_instance()
+            fh.write(f"{macro_instance} {x:<4} {y:<4} {orientation}\n")
+
+            macro_instance = self.projects[instance].get_scanchain_instance()
+            x = x + c['module_w'] + c['scanchain_spc']
+            y = y + c['module_h'] - c['scanchain_h']
+            fh.write(f"{macro_instance} {x:<4} {y:<4} {orientation}\n")
+
     # create macro file & positions, power hooks
     def create_macro_config(self):
         # array size
         c = self.config['layout']
 
-        # step sizes
-        step_x  = c['scanchain_w'] + c['module_w'] + c['scanchain_spc'] + c['space_x']
-        step_y  = c['module_h'] + c['space_y']
-
-        logging.info(f"start_x {c['start_x']} start_y {c['start_y']} step_x {step_x} step_y {step_y}")
-
-        num_macros_placed = 0
+        pos_x = 2
+        pos_y = 0
+        dir_x = 1
+        dir_y = 1
 
         # macro.cfg: where macros are placed
         logging.info("creating macro.cfg")
         with open("openlane/user_project_wrapper/macro.cfg", 'w') as fh:
             fh.write(f"scan_controller {c['scan_control_x']} {c['scan_control_y']} N\n")
-            for row in range(c['rows']):
-                if row % 2 == 0:
-                    col_order = range(c['cols'])
-                    orientation = 'N'
+            for i in range(self.num_projects):
+                logging.debug(f"Block {i:d} at ({pos_x:d}, {pos_y:d})")
+                # calculate 0, 0 point
+                macro_x = c['start_x'] + pos_x * (c['module_w'] + c['scanchain_w'] + c['scanchain_spc'] + c['space_x'])
+                macro_y = c['start_y'] + pos_y * (c['module_h'] + c['space_y'])
+
+                # rotated?
+                if dir_x == 1:
+                    rotate = False
                 else:
-                    # reverse odd rows to place instances in a zig zag pattern, shortening the scan chain wires
-                    col_order = range(c['cols'] - 1, -1, -1)
-                    orientation = 'S'
-                for col in col_order:
-                    # skip the space where the scan controller goes on the first row
-                    if row == 0 and col <= 1:
-                        continue
+                    rotate = True
 
-                    if num_macros_placed < self.num_projects:
-                        if orientation == 'N':
-                            # scanchain first
-                            # co-ords are bottom left corner
-                            macro_instance = self.projects[num_macros_placed].get_scanchain_instance()
-                            instance = "{} {:<4} {:<4} {}\n".format(
-                                macro_instance, c['start_x'] + col * step_x, c['start_y'] + row * step_y, orientation
-                            )
-                            fh.write(instance)
+                self.place_macro(macro_x, macro_y, i, rotate, fh)
 
-                            macro_instance = self.projects[num_macros_placed].get_macro_instance()
-                            instance = "{} {:<4} {:<4} {}\n".format(
-                                macro_instance, c['start_x'] + c['scanchain_spc'] + c['scanchain_w'] + col * step_x, c['start_y'] + row * step_y, orientation
-                            )
-                            fh.write(instance)
-                        else:
-                            # macro first
-                            macro_instance = self.projects[num_macros_placed].get_macro_instance()
-                            instance = "{} {:<4} {:<4} {}\n".format(
-                                macro_instance, c['start_x'] + col * step_x, c['start_y'] + row * step_y, orientation
-                            )
-                            fh.write(instance)
+                # next position
+                pos_x += 2 * dir_x
 
-                            macro_instance = self.projects[num_macros_placed].get_scanchain_instance()
-                            instance = "{} {:<4} {:<4} {}\n".format(
-                                macro_instance, c['start_x'] + c['module_w'] + c['scanchain_spc'] + col * step_x, c['start_y'] + row * step_y, orientation
-                            )
-                            fh.write(instance)
+                if pos_x >= c['cols']:
+                    pos_x  = c['cols'] - 1
+                    pos_y += dir_y
+                    dir_x  = - dir_x
 
-                        num_macros_placed += 1
+                elif pos_x < 0:
+                    pos_x  = 0
+                    pos_y += dir_y
+                    dir_x  = - dir_x
 
-        logging.info(f"total user macros placed: {num_macros_placed}")
+                if pos_y >= c['rows']:
+                    pos_y = c['rows'] - 1
+                    dir_y = - dir_y
+
+        logging.info(f"total user macros placed: {self.num_projects}")
 
         with open(os.path.join(self.script_dir, 'caravel_template', 'upw_config.json')) as fh:
             caravel_config = json.load(fh)
