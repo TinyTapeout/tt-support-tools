@@ -1,4 +1,5 @@
 import stripe, os
+import time
 from datetime import datetime
 import yaml
 import requests
@@ -15,8 +16,31 @@ class Orders():
         self.orders = []
 
     def fetch_orders(self):
-        orders = self.fetch_stripe_orders() + self.fetch_university_orders()
+        orders = self.fetch_stripe_orders() + self.fetch_university_orders() + self.fetch_extra_orders()
         self.orders = sorted(orders, key=lambda d: d['time'])
+
+    def add_extra_project(self, git_url):
+        with open(self.config['extra_projects']) as fh:
+            config = yaml.safe_load(fh)
+        config.append({'project': {'url' : git_url, 'timestamp' : time.time()}})
+        with open(self.config['extra_projects'], 'w') as fh:
+            yaml.safe_dump(config, fh)
+        logging.info(f"added {git_url} to {self.config['extra_projects']}")
+
+    def fetch_extra_orders(self):
+        with open(self.config['extra_projects']) as fh:
+            config = yaml.safe_load(fh)
+
+        orders = []
+        for project in config:
+            orders.append({
+                'git_url'   : project['project']['url'],
+                'email'     : None,
+                'time'      : datetime.fromtimestamp(project['project']['timestamp']).replace(tzinfo=pytz.UTC)
+                })
+
+        logging.info(f"fetched extra {len(orders)} orders")
+        return orders
 
     def fetch_university_orders(self):
         name = self.config['name']

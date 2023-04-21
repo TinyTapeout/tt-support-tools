@@ -219,6 +219,7 @@ if __name__ == '__main__':
     parser.add_argument('--dump-pdf', help="create pdf from the markdown")
     parser.add_argument('--build-hugo-content', help="directory to where to build hugo content")
     parser.add_argument('--metrics', help="print some project metrics", action="store_const", const=True)
+    parser.add_argument('--add-extra-project', help="specify a github url to add. Project is added to the extra_projects list specifed in config.yaml")
 
     args = parser.parse_args()
 
@@ -235,10 +236,14 @@ if __name__ == '__main__':
     ch.setFormatter(log_format)
     log.addHandler(ch)
 
+    orders = Orders(config)
+
     if args.update_orders:
-        orders = Orders(config)
         orders.fetch_orders()
         orders.update_project_list()
+
+    if args.add_extra_project:
+        orders.add_extra_project(args.add_extra_project)
 
     projects = Projects(config, args)
 
