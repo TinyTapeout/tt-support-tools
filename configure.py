@@ -236,13 +236,14 @@ if __name__ == '__main__':
     ch.setFormatter(log_format)
     log.addHandler(ch)
 
-    orders = Orders(config)
-
     if args.update_orders:
+        # don't instantiate orders unless we have to as it needs stripe token
+        orders = Orders(config)
         orders.fetch_orders()
         orders.update_project_list()
 
     if args.add_extra_project:
+        orders = Orders(config)
         orders.add_extra_project(args.add_extra_project)
 
     projects = Projects(config, args)
