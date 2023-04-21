@@ -2,6 +2,7 @@
 [![verification](https://github.com/tinytapeout/tinytapeout-03/actions/workflows/verification.yaml/badge.svg)](https://github.com/tinytapeout/tinytapeout-03/actions/workflows/verification.yaml)
 [![tt_datasheet](https://github.com/tinytapeout/tinytapeout-03/actions/workflows/tt_datasheet.yaml/badge.svg)](https://github.com/tinytapeout/tinytapeout-03/actions/workflows/tt_datasheet.yaml)
 [![gl_verification](https://github.com/TinyTapeout/tinytapeout-03/actions/workflows/gl_verification.yaml/badge.svg)](https://github.com/TinyTapeout/tinytapeout-03/actions/workflows/gl_verification.yaml)
+[![formal](https://github.com/TinyTapeout/tinytapeout-03/actions/workflows/formal.yaml/badge.svg)](https://github.com/TinyTapeout/tinytapeout-03/actions/workflows/formal.yaml)
 
 # TinyTapeout 03
 
