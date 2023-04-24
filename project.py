@@ -177,7 +177,7 @@ class Project():
 
     # top module name is defined in one of the source files, which one?
     def find_top_verilog(self):
-        rgx_mod  = re.compile(r"(?:^|[\W])module[\s]{1,}([\w]+)")
+        rgx_mod  = re.compile(r"(?:^|[\s])module[\s]{1,}([\w]+)")
         top_verilog = []
         for src in self.src_files:
             with open(os.path.join(self.local_dir, 'src', src)) as fh:
