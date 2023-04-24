@@ -246,4 +246,5 @@ class CaravelConfig():
 
     def list(self):
         for project in self.projects:
-            logging.info(project)
+            if not project.is_fill():
+                logging.info(project)
