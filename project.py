@@ -310,36 +310,11 @@ class Project():
                     fh.write(' \\\n')
             fh.write('"\n')
 
-    """
-    def harden(self):
+    def golden_harden(self):
         logging.info(f"hardening {self}")
-
         # copy golden config
         shutil.copyfile('golden_config.tcl', os.path.join(self.local_dir, 'src', 'config.tcl'))
-
-        cwd = os.getcwd()
-        os.chdir(self.local_dir)
-
-        # setup user config, not including python fails on github action
-        if 'LOCAL' in os.environ:
-            configure_cmd = './configure.py --create-user-config'
-        else:
-            configure_cmd = 'python ./configure.py --create-user-config'
-        p = subprocess.run(configure_cmd, shell=True)
-        if p.returncode != 0:
-            logging.error(f"configure failed for {self}")
-            exit(1)
-
-        # requires PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
-        harden_cmd = 'docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME /bin/bash -c "./flow.tcl -overwrite -design /work/src -run_path /work/runs -tag wokwi"'
-        env = os.environ.copy()
-        p = subprocess.run(harden_cmd, shell=True, env=env)
-        if p.returncode != 0:
-            logging.error(f"harden failed for {self}")
-            exit(1)
-
-        os.chdir(cwd)
-    """
+        self.harden()
 
     def harden(self):
         cwd = os.getcwd()

@@ -106,7 +106,8 @@ class Projects():
 
             if args.harden:
                 if filler is False:
-                    project.harden()
+                    project.create_user_config()
+                    project.golden_harden()
 
             if args.update_caravel:
                 logging.debug("copying files to caravel")
