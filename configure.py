@@ -155,10 +155,15 @@ class Projects():
         min_util = 100
         max_util_project = None
         languages = {}
+        tags = []
 
         for project in self.projects:
             if not project.is_fill():
-                dt = datetime.datetime.strptime(project.metrics['total_runtime'][:-3], '%Hh%Mm%Ss')
+                try:
+                    dt = datetime.datetime.strptime(project.metrics['total_runtime'][:-3], '%Hh%Mm%Ss')
+                except KeyError:
+                    continue
+
                 delt = datetime.timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second)
                 total_seconds += delt.total_seconds()
 
@@ -187,6 +192,11 @@ class Projects():
                 if util < min_util:
                     min_util = util
 
+                try:
+                    tags += yaml_data['tag'].split(',')
+                except KeyError:
+                    pass
+
         logging.info(f"build time for all projects {total_seconds / 3600} hrs")
         logging.info(f"total wire length {total_wire_length} um")
         logging.info(f"total cells {total_physical_cells}")
@@ -195,7 +205,23 @@ class Projects():
         logging.info(f"max util {max_util} for project {max_util_project}")
         logging.info(f"min util {min_util}")
         logging.info(f"languages {languages}")
+        tags = [ x.strip().lower() for x in tags ]
+        tags = list(filter(lambda a: a != "", tags))
 
+        def count_items(lst):
+            freq = {}
+            for item in lst:
+                if item not in freq:
+                    freq[item] = 1
+                else:
+                    freq[item] += 1
+
+            sorted_items = sorted(freq.items(), key=lambda x: x[1], reverse=True)
+            for item, count in sorted_items[0:9]:
+                logging.info(f"{item:10}: {count}")
+
+        logging.info("top 10 tags")
+        count_items(tags)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="TinyTapeout configuration and docs")
