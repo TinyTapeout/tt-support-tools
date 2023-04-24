@@ -17,6 +17,7 @@ class Orders():
 
     def fetch_orders(self):
         orders = self.fetch_stripe_orders() + self.fetch_university_orders() + self.fetch_extra_orders()
+        logging.info(f"total = {len(orders)}")
         self.orders = sorted(orders, key=lambda d: d['time'])
 
     def add_extra_project(self, git_url):
@@ -90,14 +91,17 @@ class Orders():
                 if checkout['payment_status'] == 'paid':
                     if 'github' in checkout['metadata']:
                         git_url = checkout['metadata']['github']
+
+                        if checkout['payment_intent'] in refunded_orders:
+                            logging.warning(f"found a refunded order! {git_url}")
+                            continue
+
                         order = {
                             'git_url' : git_url,
                             'email'   : checkout['customer_details']['email'],
                             'time'    : datetime.fromtimestamp(checkout['created']).replace(tzinfo=pytz.UTC),
                             }
                         orders.append(order)
-                        if checkout['payment_intent'] in refunded_orders:
-                            logging.warning(f"found a refunded order! {git_url}")
 
                 # pagination
                 start_id = checkout['id']

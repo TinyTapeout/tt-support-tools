@@ -121,6 +121,11 @@ class Projects():
             self.projects.append(project)
 
         # now do some sanity checks
+        for project in self.projects:
+            if project.get_git_remote() != project.git_url:
+                logging.warning(f"{project} doesn't match remote: {project.get_git_remote()}")
+                exit(1)
+
         all_macro_instances = [project.get_macro_instance() for project in self.projects]
         self.assert_unique(all_macro_instances)
 

@@ -188,9 +188,12 @@ class Project():
         assert len(top_verilog) == 1
         return top_verilog[0]
 
+    def get_git_remote(self):
+        return list(git.Repo(self.local_dir).remotes[0].urls)[0]
+
     def clone(self):
         if os.path.exists(self.local_dir):
-            git_remote = list(git.Repo(self.local_dir).remotes[0].urls)[0]
+            git_remote = self.get_git_remote()
             if self.git_url == git_remote:
                 logging.info("git repo already exists and is correct - skipping")
             else:
