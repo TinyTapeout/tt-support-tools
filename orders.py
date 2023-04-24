@@ -64,6 +64,20 @@ class Orders():
         start_id = None
         after_open_date = True
         orders = []
+        refunded_orders = []
+
+        while after_open_date:
+            refunds = stripe.Refund.list(limit=10, starting_after=start_id)
+            for refund in refunds: 
+                created = datetime.fromtimestamp(refund['created'])
+                if created < self.open_date:
+                    after_open_date = False
+
+                refunded_orders.append(refund['payment_intent'])
+                start_id = refund['id']
+
+        start_id = None
+        after_open_date = True
 
         while after_open_date:
             checkouts = stripe.checkout.Session.list(limit=10, starting_after=start_id)
@@ -82,6 +96,8 @@ class Orders():
                             'time'    : datetime.fromtimestamp(checkout['created']).replace(tzinfo=pytz.UTC),
                             }
                         orders.append(order)
+                        if checkout['payment_intent'] in refunded_orders:
+                            logging.warning(f"found a refunded order! {git_url}")
 
                 # pagination
                 start_id = checkout['id']
