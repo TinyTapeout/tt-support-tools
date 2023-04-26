@@ -26,7 +26,7 @@ description: 249 designs, closed 24th April 2023
 * total cells 79674
 * max cells 1287 for [project 072](./072)
 * max utilisation 59.95% for [project 044](./044)
-* total wire length 4079353mm
+* total wire length 4079 mm
 * 94 used Wokwi, 135 Verilog, 1 myhdl, 7 Amaranth, spade 1, xls 2, migen 1, systemverilog 3, mixed radix circuit synthesis (mrcs) 1, chisel 1.
 * top 10 tags:
     - test      : 21
