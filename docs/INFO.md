@@ -6,9 +6,68 @@ All 250 designs are joined together in a long chain similiar to JTAG. We provide
 
 The default is to use an external driver, this is in case anything goes wrong with the Caravel logic analyser or the internal driver.
 
-The scan chain is identical for each little project, and you can [read it here](https://github.com/mattvenn/wokwi-verilog-gds-test/blob/main/template/scan_wrapper.v).
+The scan chain is identical for each little project, and you can [read it here](verilog/rtl/scanchain/scanchain.v).
 
 ![block diagram](pics/block_diagram.png)
+
+## Scan chain changes since TT02
+
+After doing more simulation, we found that the 500 buffers in the scanchain
+were distorting the clock pulse to the point where we needed to further slow
+the clock. For more information [watch this video](https://youtu.be/eQxAseGVMoo).
+
+Sylvain 'tnt' Munaut suggested a change to the scanchain that prevents the distortion
+and reduces the number of buffers:
+
+The main change to the `scanchain` block is related to the clocking and the
+data output. Previously, you'd have something like this :
+
+    clk_in ---|>----|>---- clk_out
+                  |
+                  '------- Internal FFs
+
+That is, you had an input buffer receving clock from the previous block and
+sending it to all the scan chain FF and to a strong output buffer that would
+send it to the next block.
+
+The issues that were identified there are :
+
+ - 2 buffers per block means 500 buffers in the whole chain and the more
+   stages, the more delay.
+
+ - The buffers don't have symmetrical rise/fall time. So each buffer would
+   slightly alter the pulse width. Multiply that by 500 buffers and the shape
+   at the end of the scan chain would be nowhere close to what was fed in.
+
+The new block is like this :
+
+    clk_in ---|>o--------- clk_out
+                  |
+                  '-|>o--- Internal FFs
+              
+You have a single inverter that receives the clock and sends it inverted to
+the next block. That inverted clock is also fed to another small inverter
+whose output will be used to clock all the internal effects.
+
+The result is that we have half as many stages in the chain of inverter.
+And also because the clock is inverted at each stage, any change in duty
+cycle that one stage causes on the clock pulses is "undone" by the next.
+It's not perfect of course since they are not perfectly match, but it's
+MUCH MUCH better.
+
+Of course this required some other changes to deal with the fact the clock
+is inverted at the output.
+
+The first change is in scanchain block itself. Previously we'd have a negative
+edge FF at the output so that the output clock rising edge would happen in
+the middle of the output data valid window. Now because the clock is inverted,
+this has the same effect by itself. We still need a FF though (else the last
+bit of each block would always be reflected to the first bit of the next), but
+now it needs to be a rising edge FF.
+
+The second change is in the scan controller since the drive waveform needs
+to be slightly different. Every two stages, a clock pulse is "lost" effectively
+and so an extra pulse must be injected to keep moving the data long.
 
 ### Updating inputs and outputs of a specified design
 
@@ -23,11 +82,11 @@ This design connects an inverter between each input and output.
 
 * Set scan_select low so that the data is clocked into the scan flops (rather than from the design)
 * For the next 8 clocks, set scan_data_out to 0, 0, 0, 0, 0, 0, 1, 0
-* Toggle scan_clk_out 16 times to deliver the data to the DUT
+* Toggle scan_clk_out 17 times to deliver the data to the DUT (new scanchain needs 1 extra clock for every odd numbered project in the chain)
 * Toggle scan_latch_en to deliver the data from the scan chain to the DUT
 * Set scan_select high to set the scan flop's input to be from the DUT
 * Toggle the scan_clk_out to capture the DUT's data into the scan chain
-* Toggle the scan_clk_out another 8 x number of remaining designs to receive the data at scan_data_in
+* Toggle the scan_clk_out another 8.5 x number of remaining designs to receive the data at scan_data_in
 
 ![update cycle](pics/update_cycle.png)
 
@@ -36,6 +95,7 @@ This design connects an inverter between each input and output.
 * There are large wait times between the latch and scan signals to ensure no hold violations across the whole chain. For the internal scan controller, these can be configured (see section on wait states below).
 * The input looks wrong (0x03) because the input is incremented by the test bench as soon as the scan controller captures the data. The input is actually 0x02.
 * The output in the trace looks wrong (0xFE) because it's updated after a full refresh, the output is 0xFD.
+* Generate the trace yourself by running `make test_single` in `verilog/dv/scan_controller`. See [VERIFICATION.md](VERIFICATION.md) for more info on running tests.
 
 ## Clocking
 

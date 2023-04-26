@@ -18,7 +18,7 @@ header-includes:
 
 # Render of whole chip
 
-![Full GDS](pics/tinytapeout.png)
+![Full GDS](pics/tinytapeout_numbered.png)
 
 \pagebreak
 

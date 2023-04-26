@@ -19,7 +19,7 @@ For the most recent automatic build, click the tt_datasheet badge above, then do
 
 # GDS layout of all projects
 
-![tiny tapeout](pics/tinytapeout.png)
+![tiny tapeout](pics/tinytapeout_numbered.png)
 
 # Project Index
 
