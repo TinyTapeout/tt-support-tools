@@ -33,7 +33,7 @@ class Projects():
             with open(self.projects_file) as fh:
                 self.project_config = yaml.safe_load(fh)
         except FileNotFoundError:
-            logging.error("projects.yaml not found, create it with --update-orders")
+            logging.error(f"{self.projects_file} not found, create it with --update-orders")
             exit(1)
 
         """
