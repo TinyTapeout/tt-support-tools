@@ -57,11 +57,13 @@ class Orders():
 
         orders = []
         for item in r.json()['items']:
-            orders.append({
+            order = {
                 'git_url'   : item['repo'],
                 'email'     : None,
                 'time'      : datetime.strptime(item['time'], '%Y-%m-%dT%H:%M:%S.%f%z').replace(tzinfo=pytz.UTC)
-                })
+                }
+            if order['time'] > self.open_date.replace(tzinfo=pytz.UTC):
+                orders.append(order)
         logging.info(f"fetched university {len(orders)} orders")
         return orders
 
