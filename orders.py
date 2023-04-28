@@ -21,8 +21,12 @@ class Orders():
         self.orders = sorted(orders, key=lambda d: d['time'])
 
     def add_extra_project(self, git_url):
-        with open(self.config['extra_projects']) as fh:
-            config = yaml.safe_load(fh)
+        try:
+            with open(self.config['extra_projects']) as fh:
+                config = yaml.safe_load(fh)
+        except FileNotFoundError as e:
+            config = []
+
         config.append({'project': {'url' : git_url, 'timestamp' : time.time()}})
         with open(self.config['extra_projects'], 'w') as fh:
             yaml.safe_dump(config, fh)
