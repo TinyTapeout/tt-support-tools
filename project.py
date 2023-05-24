@@ -58,12 +58,22 @@ class Project():
         os.unlink(json_file)
 
         module_ports = ports['modules'][top]['ports']
-        for port in ['io_in', 'io_out']:
+        required_ports = [
+            ['clk', 1],
+            ['ena', 1],
+            ['rst_n', 1],
+            ['ui_in', 8],
+            ['uio_in', 8],
+            ['uio_oe', 8],
+            ['uio_out', 8],
+            ['uo_out', 8],
+        ]
+        for port, bits in required_ports:
             if port not in module_ports:
                 logging.error(f"{self} {port} not found in top")
                 exit(1)
-            if len(module_ports[port]['bits']) != 8:
-                logging.error(f"{self} {port} doesn't have 8 bits")
+            if len(module_ports[port]['bits']) != bits:
+                logging.error(f"{self} {port} doesn't have {bits} bits")
                 exit(1)
 
     def check_num_cells(self):

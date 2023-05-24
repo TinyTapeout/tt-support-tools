@@ -224,9 +224,7 @@ if __name__ == '__main__':
 
     with open('config.yaml') as fh:
         config = yaml.safe_load(fh)
-    # default max projects is row * col - 2 (scan controller takes first 2 slots)
-    config['num_projects'] = config['layout']['rows'] * config['layout']['cols'] - 2
-
+    
     parser.add_argument('--update-orders', help="update the order config file", action="store_const", const=True)
     parser.add_argument('--list', help="list projects", action='store_const', const=True)
     parser.add_argument('--clone-all', help="clone all projects", action="store_const", const=True)
