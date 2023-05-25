@@ -16,6 +16,10 @@ import shutil
 CELL_URL = 'https://antmicro-skywater-pdk-docs.readthedocs.io/en/test-submodules-in-rtd/contents/libraries/sky130_fd_sc_ls/cells/'
 
 
+with open(os.path.join(os.path.dirname(__file__), 'tile_sizes.yaml'), 'r') as stream:
+    tile_sizes = (yaml.safe_load(stream))
+
+
 class Project():
 
     def __init__(self, index, git_url, local_dir, args, fill=False):
@@ -350,7 +354,12 @@ class Project():
                 fh.write("    $::env(DESIGN_DIR)/" + source)
                 if line != len(self.src_files) - 1:
                     fh.write(' \\\n')
-            fh.write('"\n')
+            fh.write('"\n\n')
+            tiles = self.yaml['project']['tiles']
+            die_area = tile_sizes[tiles]
+            fh.write(f'# Project area: {tiles} tiles\n')
+            fh.write(f'set ::env(DIE_AREA) "{die_area}"\n')
+            fh.write(f'set ::env(FP_DEF_TEMPLATE) "$::env(DESIGN_DIR)/../tt/def/tt_block_{tiles}.def"\n')
 
     def golden_harden(self):
         logging.info(f"hardening {self}")
