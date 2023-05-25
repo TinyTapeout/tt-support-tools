@@ -24,7 +24,7 @@ class Orders():
         try:
             with open(self.config['extra_projects']) as fh:
                 config = yaml.safe_load(fh)
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             config = []
 
         config.append({'project': {'url' : git_url, 'timestamp' : time.time()}})
@@ -75,7 +75,7 @@ class Orders():
 
         while after_open_date:
             refunds = stripe.Refund.list(limit=10, starting_after=start_id)
-            for refund in refunds: 
+            for refund in refunds:
                 created = datetime.fromtimestamp(refund['created'])
                 if created < self.open_date:
                     after_open_date = False
