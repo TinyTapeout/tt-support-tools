@@ -99,11 +99,6 @@ class Projects():
             project.post_clone_setup()
             logging.debug(project)
 
-            # fetch the wokwi source
-            if args.clone_all:
-                if not project.is_fill() and project.is_wokwi():
-                    project.fetch_wokwi_files()
-
             if args.harden:
                 if filler is False:
                     project.create_user_config()
