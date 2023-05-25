@@ -2,18 +2,15 @@
 import sys
 import logging
 import argparse
-import documentation
-import project
-import reports
+from project import Project
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="TT setup")
+    parser.add_argument('--project-dir', help="location of the project", default='.')
     parser.add_argument('--yaml', help="the project's yaml configuration file", default='info.yaml')
-    parser.add_argument('--run-dir', help="OpenLane run directory", default='runs/wokwi')  # set in the github action yaml
     parser.add_argument('--debug', help="debug logging", action="store_const", dest="loglevel", const=logging.DEBUG, default=logging.INFO)
 
     # reports & summaries
-    parser.add_argument('--create-cell-defs', help="create def file", action="store_const", const=True, default=False)
     parser.add_argument('--print-cell-summary', help="print summary", action="store_const", const=True, default=False)
     parser.add_argument('--print-cell-category', help="print category", action="store_const", const=True, default=False)
     parser.add_argument('--print-stats', help="print some stats from the run", action="store_const", const=True)
@@ -45,35 +42,33 @@ if __name__ == '__main__':
     ch.setFormatter(log_format)
     log.addHandler(ch)
 
-    project_yaml = project.load_yaml(args)
+    project = Project(0, 'unknown', args.project_dir, args)
+    project.post_clone_setup()
 
     # handle the options
     if args.check_docs:
-        documentation.check_yaml_docs(project_yaml)
+        project.check_yaml_docs()
 
     if args.print_cell_summary or args.print_cell_category:
-        reports.summarize(args)
-
-    if args.create_cell_defs:
-        reports.create_defs(args)
+        project.summarize()
 
     if args.print_stats:
-        reports.print_stats(args)
+        project.print_stats()
 
     if args.print_warnings:
-        reports.print_warnings(args)
+        project.print_warnings()
 
     if args.print_wokwi_id:
-        project.print_wokwi_id(project_yaml)
+        project.print_wokwi_id()
 
     if args.create_user_config:
-        project.create_user_config(project_yaml)
+        project.create_user_config()
 
     if args.harden:
         project.harden()
 
     if args.create_pdf:
-        documentation.create_pdf(project_yaml)
+        project.create_pdf()
 
     if args.create_svg or args.create_png:
-        documentation.create_svg(args)
+        project.create_svg()
