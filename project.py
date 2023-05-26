@@ -120,7 +120,7 @@ class Project():
             self.src_files              = self.get_hdl_source()
             self.top_verilog_filename   = self.find_top_verilog()
         else:
-            self.top_module             = f"user_module_{self.wokwi_id}"
+            self.top_module             = f"tt_um_wokwi_{self.wokwi_id}"
             self.src_files              = self.get_wokwi_source()
             self.top_verilog_filename   = self.src_files[0]
 
@@ -128,7 +128,7 @@ class Project():
         self.scanchain_instance     = f"scanchain_{self.index :03}"
 
     def get_wokwi_source(self):
-        src_file = "user_module_{}.v".format(self.wokwi_id)
+        src_file = "tt_um_wokwi_{}.v".format(self.wokwi_id)
         return [src_file, 'cells.v']
 
     def get_hdl_source(self):

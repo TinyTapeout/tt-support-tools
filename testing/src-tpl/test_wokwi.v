@@ -6,7 +6,7 @@ module test_wokwi ();
   wire [7:0] io_out;
   wire [7:0] io_in;
 
-  user_module_WOKWI_ID dut (
+  tt_um_wokwi_WOKWI_ID dut (
   `ifdef GL_TEST
       .vccd1( 1'b1),
       .vssd1( 1'b0),

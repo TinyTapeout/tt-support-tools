@@ -9,7 +9,7 @@ TOPLEVEL_LANG ?= verilog
 ifneq ($(GATES),yes)
 
 # this is the only part you should need to modify:
-VERILOG_SOURCES += $(PWD)/cells.v  $(PWD)/user_module_WOKWI_ID.v $(PWD)/test_wokwi.v
+VERILOG_SOURCES += $(PWD)/cells.v  $(PWD)/tt_um_wokwi_WOKWI_ID.v $(PWD)/test_wokwi.v
 
 
 else
