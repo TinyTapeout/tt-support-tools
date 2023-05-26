@@ -16,8 +16,8 @@ async def truthTableCompare(parentDUT):
         truthTableCompare  -- loads markdown truth table and, if load succeeded, actually performs the tests.
     '''
     usermodule = parentDUT.dut
-    i_bus = parentDUT.io_in
-    o_bus = parentDUT.io_out
+    i_bus = parentDUT.ui_in
+    o_bus = parentDUT.uo_out
     tt = truthtable.loadMarkdownTruthTable('truthtable.md', usermodule._log)
     if tt is None:
         usermodule._log.info('No truth table loaded, no table compare test to run')
