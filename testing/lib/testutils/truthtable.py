@@ -4,7 +4,7 @@
 
 	A simple system to take truth table data from yosys, like
 
-		 io_in | io_out
+		 ui_in  | uo_out
 	 ---------- | -----------
 	 8'11111000 | 8'xxxxxxx0
 	 8'11111001 | 8'xxxxxxx1
@@ -30,8 +30,8 @@
 
 	@cocotb.test()
 	async def truthTableCompare(dut):
-		i_bus = dut.io_in
-		o_bus = dut.io_out
+		i_bus = dut.ui_in
+		o_bus = dut.uo_out
 		tt = truthtable.loadSimpleTruthTable('test/truthtable.txt')
 		await tt.testAll(i_bus, o_bus, dut._log)
 		
@@ -497,7 +497,7 @@ def loadMarkdownTruthTable(filepath:str, logger=None):
 	return None
 
 TruthTableExample = '''
-     \\io_in | \\io_out
+     \\ui_in | \\uo_out
  ---------- | -----------
  8'11111000 | 8'xxxxxxx0
  8'11111001 | 8'xxxxxxx1

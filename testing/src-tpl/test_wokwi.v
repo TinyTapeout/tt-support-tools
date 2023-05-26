@@ -3,16 +3,16 @@
 `default_nettype none
 
 module test_wokwi ();
-  wire [7:0] io_out;
-  wire [7:0] io_in;
+  wire [7:0] uo_out;
+  wire [7:0] ui_in;
 
   tt_um_wokwi_WOKWI_ID dut (
   `ifdef GL_TEST
       .vccd1( 1'b1),
       .vssd1( 1'b0),
   `endif
-      .io_in (io_in),
-      .io_out(io_out)
+      .ui_in(ui_in),
+      .uo_out(uo_out)
   );
 
   initial begin
