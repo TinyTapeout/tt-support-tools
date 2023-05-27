@@ -5,7 +5,7 @@
 [![formal](https://github.com/TinyTapeout/tinytapeout-03/actions/workflows/formal.yaml/badge.svg)](https://github.com/TinyTapeout/tinytapeout-03/actions/workflows/formal.yaml)
 [![sta](https://github.com/TinyTapeout/tinytapeout-03/actions/workflows/sta.yaml/badge.svg)](https://github.com/TinyTapeout/tinytapeout-03/actions/workflows/sta.yaml)
 
-# TinyTapeout 03
+# TinyTapeout 03.5
 
 * Visit https://tinytapeout.com for more information on the project and how to get involved.
 * Read [INFO](INFO.md) for how the project is built and technical project notes.
