@@ -123,6 +123,10 @@ class Project():
             self.top_module             = f"tt_um_wokwi_{self.wokwi_id}"
             self.src_files              = self.get_wokwi_source()
             self.top_verilog_filename   = self.src_files[0]
+        
+        if not self.top_module.startswith("tt_um_"):
+            logging.error(f'top module name must start with "tt_um_" (current value: "{self.top_module}")')
+            exit(1)
 
         self.macro_instance         = f"{self.top_module}_{self.index :03}"
 
