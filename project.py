@@ -125,7 +125,6 @@ class Project():
             self.top_verilog_filename   = self.src_files[0]
 
         self.macro_instance         = f"{self.top_module}_{self.index :03}"
-        self.scanchain_instance     = f"scanchain_{self.index :03}"
 
     def get_wokwi_source(self):
         src_file = "tt_um_wokwi_{}.v".format(self.wokwi_id)
@@ -245,10 +244,6 @@ class Project():
     # instance name of the project, different for each id
     def get_macro_instance(self):
         return self.macro_instance
-
-    # instance name of the scanchain module, different for each id
-    def get_scanchain_instance(self):
-        return self.scanchain_instance
 
     # unique id
     def get_index(self):
