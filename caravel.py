@@ -38,8 +38,18 @@ class CaravelConfig():
         # build complete list of filenames for sim
         with open('verilog/includes/includes.rtl.caravel_user_project', 'w') as fh:
             fh.write('-v $(USER_PROJECT_VERILOG)/rtl/user_project_wrapper.v\n')
-            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/scan_controller/scan_controller.v\n')
-            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/scanchain/scanchain.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/tt_top.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/tt_ctrl.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/tt_mux.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/tt_user_module.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/prim_generic/tt_prim_buf.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/prim_generic/tt_prim_dfrbp.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/prim_generic/tt_prim_diode.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/prim_generic/tt_prim_inv.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/prim_generic/tt_prim_mux4.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/prim_generic/tt_prim_tbuf_pol.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/prim_generic/tt_prim_tbuf.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/rtl/tt-multiplexer/proto/prim_generic/tt_prim_zbuf.v\n')
             fh.write('-v $(USER_PROJECT_VERILOG)/rtl/cells.v\n')
             for project in self.projects:
                 if not project.is_fill():
@@ -48,8 +58,8 @@ class CaravelConfig():
         # build GL includes
         with open('verilog/includes/includes.gl.caravel_user_project', 'w') as fh:
             fh.write('-v $(USER_PROJECT_VERILOG)/gl/user_project_wrapper.v\n')
-            fh.write('-v $(USER_PROJECT_VERILOG)/gl/scan_controller.v\n')
-            fh.write('-v $(USER_PROJECT_VERILOG)/gl/scanchain.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/gl/tt_ctrl.v\n')
+            fh.write('-v $(USER_PROJECT_VERILOG)/gl/tt_mux.v\n')
             for project in self.projects:
                 if not project.is_fill():
                     fh.write(f'-v $(USER_PROJECT_VERILOG)/gl/{project.get_gl_verilog_filename()}\n')
