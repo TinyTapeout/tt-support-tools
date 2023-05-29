@@ -9,7 +9,6 @@
     "VERILOG_FILES_BLACKBOX": [
         "dir::../../tt-multiplexer/proto/tt_mux.v",
         "dir::../../tt-multiplexer/proto/tt_ctrl.v",
-        "dir::../../tt-multiplexer/proto/tt_um_test.v",
         "dir::../../verilog/blackbox_project_includes.v"
     ],
     "ROUTING_CORES": 8,
@@ -26,13 +25,11 @@
     "MAGIC_DEF_LABELS": 0,
     "EXTRA_LEFS": [
         "dir::../../lef/tt_ctrl.lef",
-        "dir::../../lef/tt_mux.lef",
-        "dir::../../lef/tt_um_test.lef"
+        "dir::../../lef/tt_mux.lef"
     ],
     "EXTRA_GDS_FILES": [
         "dir::../../gds/tt_ctrl.gds",
-        "dir::../../gds/tt_mux.gds",
-        "dir::../../gds/tt_um_test.gds"
+        "dir::../../gds/tt_mux.gds"
     ],
     "RUN_KLAYOUT_XOR": 0,
     "RUN_KLAYOUT_DRC": 0,
