@@ -293,6 +293,9 @@ class Project():
             (f"runs/wokwi/results/final/verilog/gl/{self.get_gl_verilog_filename()}", f"verilog/gl/{self.get_gl_verilog_filename()}"),
             (f"src/{self.top_verilog_filename}", f"verilog/rtl/{self.get_top_verilog_filename()}"),
             ]
+        # copy RTL verilog to openlane2 mux directory:
+        if os.path.isdir("tt-multiplexer/ol2/tt_top/verilog"):
+            files.append((f"src/{self.top_verilog_filename}", f"tt-multiplexer/ol2/tt_top/verilog/{self.get_gl_verilog_filename()}"))
 
         logging.debug("copying files into position")
         for from_path, to_path in files:
