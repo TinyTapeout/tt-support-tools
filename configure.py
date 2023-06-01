@@ -246,6 +246,7 @@ if __name__ == '__main__':
     parser.add_argument('--build-hugo-content', help="directory to where to build hugo content")
     parser.add_argument('--metrics', help="print some project metrics", action="store_const", const=True)
     parser.add_argument('--add-extra-project', help="specify a github url to add. Project is added to the extra_projects list specifed in config.yaml")
+    parser.add_argument('--sram-support', help="include sram LEF/GDS in caravel config", action="store_const", const=True)
 
     args = parser.parse_args()
 
@@ -284,8 +285,11 @@ if __name__ == '__main__':
         projects.build_metrics()
 
     if args.update_caravel:
-        caravel.create_macro_config()
-        caravel.instantiate()
+        extra_macros = []
+        if args.sram_support:
+            extra_macros = ["sky130_sram_2kbyte_1rw1r_32x512_8"]
+        caravel.create_macro_config(extra_macros)
+        caravel.instantiate(extra_macros)
         if not args.test:
             docs.build_index()
 
