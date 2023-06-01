@@ -12,8 +12,7 @@ import git_utils
 import git
 import shutil
 
-# can't find a google version
-CELL_URL = 'https://antmicro-skywater-pdk-docs.readthedocs.io/en/test-submodules-in-rtd/contents/libraries/sky130_fd_sc_ls/cells/'
+CELL_URL = 'https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/'
 
 
 class Project():
