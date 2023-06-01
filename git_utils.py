@@ -6,6 +6,7 @@ import os
 import zipfile
 import io
 import errno
+import sys
 
 
 def unique(duplist):
@@ -35,19 +36,43 @@ def check_status(r):
         logging.error("unauthorised, check INFO.md for information about GitHub API keys")
         exit(1)
 
+def headers_try_to_add_authorization_from_environment(headers: dict) -> bool:
+    gh_token = os.getenv('GH_TOKEN', '')                 # override like gh CLI
+    if not gh_token:
+        gh_token = os.getenv('GITHUB_TOKEN', '')         # GHA inherited
+
+    if len(gh_token) > 0:
+        # As per https://docs.github.com/en/rest/overview/authenticating-to-the-rest-api
+        headers['authorization'] = 'Bearer ' + gh_token
+        return True
+
+    # Use a token instead which is designed to limit exposure of passwords
+    # I can't find any GH docs explaining use cases for Basic auth and confirming a token
+    # can be used instead of PASSWORD in the password field of authorization header.
+    gh_username = os.getenv('GH_USERNAME', '')           # override like gh CLI
+    if not gh_username:
+        gh_username = os.getenv('GITHUB_ACTOR', '')      # GHA inherited
+
+    gh_password = os.getenv('GH_PASSWORD', '')
+
+    if len(gh_username) > 0 and len(gh_password) > 0:
+        auth_string = gh_username + ':' + gh_password
+        encoded = base64.b64encode(auth_string.encode('ascii'))
+        headers['authorization'] = 'Basic ' + encoded.decode('ascii')
+        return True
+
+    print("WARNING: No github token found from environment, trying public API requests without, see docs/INFO.md#instructions-to-build-gds", file=sys.stderr)
+    return False
 
 def fetch_file_from_git(git_url, path):
     # get the basics
     user_name, repo = split_git_url(git_url)
 
-    # authenticate for rate limiting
-    auth_string = os.environ['GH_USERNAME'] + ':' + os.environ['GH_TOKEN']
-    encoded = base64.b64encode(auth_string.encode('ascii'))
     headers = {
-        "authorization" : 'Basic ' + encoded.decode('ascii'),
         "Accept"        : "application/vnd.github+json",
         }
-    encoded = base64.b64encode(auth_string.encode('ascii'))
+    # authenticate for rate limiting
+    headers_try_to_add_authorization_from_environment(headers)
 
     api_url = 'https://api.github.com/repos/%s/%s/contents/%s' % (user_name, repo, path)
 
@@ -107,13 +132,11 @@ def install_artifacts(url, directory):
     logging.debug(url)
     user_name, repo = split_git_url(url)
 
-    # authenticate for rate limiting
-    auth_string = os.environ['GH_USERNAME'] + ':' + os.environ['GH_TOKEN']
-    encoded = base64.b64encode(auth_string.encode('ascii'))
     headers = {
-        "authorization" : 'Basic ' + encoded.decode('ascii'),
         "Accept"        : "application/vnd.github+json",
         }
+    # authenticate for rate limiting
+    headers_try_to_add_authorization_from_environment(headers)
 
     # first fetch the git commit history
     api_url = f'https://api.github.com/repos/{user_name}/{repo}/commits'
@@ -172,13 +195,11 @@ def get_latest_action_url(url, directory):
     logging.debug(url)
     user_name, repo = split_git_url(url)
 
-    # authenticate for rate limiting
-    auth_string = os.environ['GH_USERNAME'] + ':' + os.environ['GH_TOKEN']
-    encoded = base64.b64encode(auth_string.encode('ascii'))
     headers = {
-        "authorization" : 'Basic ' + encoded.decode('ascii'),
         "Accept"        : "application/vnd.github+json",
         }
+    # authenticate for rate limiting
+    headers_try_to_add_authorization_from_environment(headers)
 
     # first fetch the git commit history
     api_url = f'https://api.github.com/repos/{user_name}/{repo}/commits'
