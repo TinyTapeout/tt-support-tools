@@ -194,6 +194,7 @@ class Project():
         rgx_mod  = re.compile(r"(?:^|[\s])module[\s]{1,}([\w]+)")
         top_verilog = []
         for src in self.src_files:
+            print(f'SRC {src}')
             with open(os.path.join(self.local_dir, 'src', src)) as fh:
                 for line in fh.readlines():
                     for match in rgx_mod.finditer(line):
@@ -396,7 +397,7 @@ class Project():
     def check_yaml_docs(self):
         yaml = self.yaml
         logging.info("checking docs")
-        for key in ['author', 'title', 'description', 'how_it_works', 'how_to_test', 'language', 'inputs', 'outputs']:
+        for key in ['author', 'title', 'description', 'how_it_works', 'how_to_test', 'language', 'inputs', 'outputs', 'bidirectional']:
             if key not in yaml['documentation']:
                 logging.error("missing key {} in documentation".format(key))
                 exit(1)
