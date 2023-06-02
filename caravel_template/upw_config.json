@@ -18,6 +18,7 @@
     "FP_PDN_MACRO_HOOKS": [
         "tt_top1\\.ctrl_I vccd1 vssd1 vccd1 vssd1,",
         "tt_top1\\..*mux_I vccd1 vssd1 vccd1 vssd1,",
+        "tt_top1\\..*sram vccd1 vssd1 vccd1 vssd1,",
         "tt_top1\\..*tt_um_I vccd1 vssd1 vccd1 vssd1"
     ],
     "MACRO_PLACEMENT_CFG": "dir::macro.cfg",
