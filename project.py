@@ -19,6 +19,42 @@ CELL_URL = 'https://antmicro-skywater-pdk-docs.readthedocs.io/en/test-submodules
 with open(os.path.join(os.path.dirname(__file__), 'tile_sizes.yaml'), 'r') as stream:
     tile_sizes = (yaml.safe_load(stream))
 
+class SVGElement:
+    def __init__(self, layer):
+        self.layer = layer
+
+class SVGLabel(SVGElement):
+    def __init__(self, layer, stroke:str='red', fill:str='blue', fontsize='24px'):
+        super().__init__(layer)
+        self.stroke = stroke
+        self.fill = fill
+        self.fontsize = fontsize
+
+    def hide(self):
+        self.stroke = 'none'
+        self.fill = 'none'
+
+    @property
+    def style(self):
+        return {'stroke':self.stroke, 'fill':self.fill, 'font-size':self.fontsize}
+
+
+
+class GDSLabels:
+    SKY130LabelLayers = [(69, 5), (70, 5), (71, 5), (68, 5)]
+    def __init__(self):
+        self.layers = list(map(lambda ly: SVGLabel(ly, stroke='blue', fill='black'), GDSLabels.SKY130LabelLayers))
+
+    def style(self):
+        stdict = {}
+        for ly in self.layers:
+            stdict[ly.layer] = ly.style
+        return stdict
+
+    @property
+    def layer_type_tuples(self):
+        return list(map(lambda ly: ly.layer, self.layers))
+
 
 class Project():
 
@@ -28,6 +64,7 @@ class Project():
         self.index = index
         self.fill = fill
         self.local_dir = local_dir
+        self.remove_all_labels_from_svg = True # remove ALL labels, otherwise styled as defined
 
     def post_clone_setup(self):
         self.load_yaml()
@@ -450,10 +487,14 @@ class Project():
 
     # SVG and PNG renders of the GDS
     def create_svg(self):
+        labels = GDSLabels()
+        lab_style_dict = labels.style()
         gds = glob.glob(os.path.join(self.local_dir, 'runs/wokwi/results/final/gds/*gds'))
         library = gdstk.read_gds(gds[0])
         top_cells = library.top_level()
-        top_cells[0].write_svg('gds_render.svg')
+        if self.remove_all_labels_from_svg:
+            top_cells[0].filter(labels.layer_type_tuples)
+        top_cells[0].write_svg('gds_render.svg', label_style=lab_style_dict)
 
         if self.args.create_png:
             cairosvg.svg2png(url='gds_render.svg', write_to='gds_render.png')
