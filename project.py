@@ -196,7 +196,6 @@ class Project():
         rgx_mod  = re.compile(r"(?:^|[\s])module[\s]{1,}([\w]+)")
         top_verilog = []
         for src in self.src_files:
-            print(f'SRC {src}')
             with open(os.path.join(self.local_dir, 'src', src)) as fh:
                 for line in fh.readlines():
                     for match in rgx_mod.finditer(line):
