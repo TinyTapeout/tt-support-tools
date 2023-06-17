@@ -11,25 +11,6 @@ class CaravelConfig():
         self.num_projects = num_projects
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
 
-    # update caravel config
-    def create_macro_config(self, extra_macros=[]):
-        with open(os.path.join(self.script_dir, 'caravel_template', 'upw_config.json')) as fh:
-            caravel_config = json.load(fh)
-
-        logging.info("GDS and LEF")
-        lef_prefix = "dir::../../lef/"
-        gds_prefix = "dir::../../gds/"
-        for macro_name in extra_macros:
-            caravel_config["EXTRA_LEFS"].append(f"{lef_prefix}{macro_name}.lef")
-            caravel_config["EXTRA_GDS_FILES"].append(f"{gds_prefix}{macro_name}.gds")
-        for project in self.projects:
-            if not project.is_fill():
-                caravel_config["EXTRA_LEFS"].append(lef_prefix + project.get_macro_lef_filename())
-                caravel_config["EXTRA_GDS_FILES"].append(gds_prefix + project.get_macro_gds_filename())
-
-        with open("openlane/user_project_wrapper/config.json", 'w') as fh:
-            json.dump(caravel_config, fh, indent=4)
-
     # instantiate inside user_project_wrapper
     def instantiate(self, extra_macros=[]):
         # build the blackbox_project_includes.v file - used for blackboxing when building the GDS

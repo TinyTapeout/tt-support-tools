@@ -288,7 +288,6 @@ if __name__ == '__main__':
         extra_macros = []
         if args.sram_support:
             extra_macros = ["sky130_sram_2kbyte_1rw1r_32x512_8"]
-        caravel.create_macro_config(extra_macros)
         caravel.instantiate(extra_macros)
         if not args.test:
             docs.build_index()
