@@ -405,13 +405,6 @@ class Project():
                 logging.error("missing value for {} in documentation".format(key))
                 exit(1)
 
-        # if provided, check discord handle is valid
-        if len(yaml['documentation']['discord']):
-            parts = yaml['documentation']['discord'].split('#')
-            if len(parts) != 2 or len(parts[0]) == 0 or not re.match('^[0-9]{4}$', parts[1]):
-                logging.error('Invalid format for discord username')
-                exit(1)
-
     # use pandoc to create a single page PDF preview
     def create_pdf(self):
         yaml = self.yaml
