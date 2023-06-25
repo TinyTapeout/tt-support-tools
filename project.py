@@ -69,10 +69,11 @@ class Project():
         ]
         for port, bits in required_ports:
             if port not in module_ports:
-                logging.error(f"{self} {port} not found in top")
+                logging.error(f"{self} port '{port}' missing from top module ('{top}')")
                 exit(1)
-            if len(module_ports[port]['bits']) != bits:
-                logging.error(f"{self} {port} doesn't have {bits} bits")
+            actual_bits = len(module_ports[port]['bits'])
+            if actual_bits != bits:
+                logging.error(f"{self} incorrect width for port '{port}' in module '{top}': {bits} bits required, {actual_bits} found")
                 exit(1)
 
     def check_num_cells(self):
@@ -201,7 +202,12 @@ class Project():
                     for match in rgx_mod.finditer(line):
                         if match.group(1) == self.top_module:
                             top_verilog.append(src)
-        assert len(top_verilog) == 1
+        if len(top_verilog) == 0:
+            logging.error(f"Couldn't find verilog module '{self.top_module}' in any of the project's source files")
+            exit(1)
+        if len(top_verilog) > 1:
+            logging.error(f"Top verilog module '{self.top_module}' found in multiple source files: {', '.join(top_verilog)}")
+            exit(1)
         return top_verilog[0]
 
     def get_git_remote(self):
