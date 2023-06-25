@@ -46,7 +46,7 @@ class Project():
         source_list = " ".join(sources)
 
         json_file = 'ports.json'
-        yosys_cmd = f"yosys -qp 'read_verilog -lib -sv {source_list}; hierarchy -top {top} ; proc; write_json {json_file}'"
+        yosys_cmd = f"yowasp-yosys -qp 'read_verilog -lib -sv {source_list}; hierarchy -top {top} ; proc; write_json {json_file}'"
         p = subprocess.run(yosys_cmd, shell=True)
         if p.returncode != 0:
             logging.error(f"yosys port read failed for {self}")
