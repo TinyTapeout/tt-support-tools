@@ -212,6 +212,20 @@ class Project():
 
     def get_git_remote(self):
         return list(git.Repo(self.local_dir).remotes[0].urls)[0]
+    
+    def get_git_commit_hash(self):
+        return git.Repo(self.local_dir).commit().hexsha
+    
+    def get_tt_tools_version(self):
+        repo = git.Repo(os.path.join(self.local_dir, "tt"))
+        return f"{repo.active_branch.name} {repo.commit().hexsha[:8]}"
+    
+    def get_workflow_url(self):
+        GITHUB_SERVER_URL = os.getenv('GITHUB_SERVER_URL')
+        GITHUB_REPOSITORY = os.getenv('GITHUB_REPOSITORY')
+        GITHUB_RUN_ID = os.getenv('GITHUB_RUN_ID')
+        if GITHUB_SERVER_URL and GITHUB_REPOSITORY and GITHUB_RUN_ID:
+            return f"{GITHUB_SERVER_URL}/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}"
 
     def clone(self):
         if os.path.exists(self.local_dir):
@@ -266,6 +280,9 @@ class Project():
     def get_macro_gds_filename(self):
         return f"{self.top_module}.gds"
 
+    def get_macro_info_filename(self):
+        return f"{self.top_module}.info.json"
+
     def get_macro_lef_filename(self):
         return f"{self.top_module}.lef"
 
@@ -293,6 +310,7 @@ class Project():
     def copy_files_to_caravel(self):
         files = [
             (f"runs/wokwi/results/final/gds/{self.get_macro_gds_filename()}", f"gds/{self.get_macro_gds_filename()}"),
+            (f"runs/wokwi/results/final/commit-id.json", f"gds/{self.get_macro_info_filename()}"),
             (f"runs/wokwi/results/final/spef/{self.get_macro_spef_filename()}", f"spef/{self.get_macro_spef_filename()}"),
             (f"runs/wokwi/results/final/lef/{self.get_macro_lef_filename()}", f"lef/{self.get_macro_lef_filename()}"),
             (f"runs/wokwi/results/final/verilog/gl/{self.get_gl_verilog_filename()}", f"verilog/gl/{self.get_gl_verilog_filename()}"),
@@ -387,6 +405,12 @@ class Project():
     def harden(self):
         cwd = os.getcwd()
         os.chdir(self.local_dir)
+      
+        repo = self.get_git_remote()
+        commit_hash = self.get_git_commit_hash()
+        tt_version = self.get_tt_tools_version()
+        workflow_url = self.get_workflow_url()
+      
         # requires PDK, PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
         harden_cmd = 'docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME /bin/bash -c "./flow.tcl -overwrite -design /work/src -run_path /work/runs -tag wokwi"'
         logging.debug(harden_cmd)
@@ -395,7 +419,17 @@ class Project():
         if p.returncode != 0:
             logging.error("harden failed")
             exit(1)
-
+        
+        # Write commit information
+        with open(os.path.join(self.local_dir, 'runs/wokwi/results/final/commit-id.json'), 'w') as f:
+            json.dump({
+                "app": f"Tiny Tapeout {tt_version}",
+                "repo": repo,
+                "commit": commit_hash,
+                "workflow_url": workflow_url,
+            }, f, indent=2)
+            f.write("\n")
+        
         os.chdir(cwd)
 
     # doc check
