@@ -62,7 +62,6 @@ if __name__ == '__main__':
         project.print_wokwi_id()
 
     if args.create_user_config:
-        project.check_ports()
         project.create_user_config()
 
     if args.harden:

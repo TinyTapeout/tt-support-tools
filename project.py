@@ -380,6 +380,7 @@ class Project():
     def create_user_config(self):
         if self.is_wokwi():
             self.fetch_wokwi_files()
+        self.check_ports()
         logging.info("creating include file")
         filename = 'user_config.tcl'
         with open(os.path.join(self.local_dir, 'src', filename), 'w') as fh:
