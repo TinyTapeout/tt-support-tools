@@ -6,6 +6,7 @@ import argparse, logging, sys, os, collections
 from project import Project
 from documentation import Docs
 from caravel import CaravelConfig
+from rom import ROMFile
 
 
 # pipe handling
@@ -277,6 +278,7 @@ if __name__ == '__main__':
 
     docs = Docs(projects.projects, args=args)
     caravel = CaravelConfig(config, projects.projects, num_projects=args.limit_num_projects)
+    rom = ROMFile(config, projects.projects)
 
     if args.list:
         caravel.list()
@@ -289,6 +291,7 @@ if __name__ == '__main__':
         if args.sram_support:
             extra_macros = ["sky130_sram_2kbyte_1rw1r_32x512_8"]
         caravel.instantiate(extra_macros)
+        rom.write_rom()
         if not args.test:
             docs.build_index()
 
