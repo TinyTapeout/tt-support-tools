@@ -310,7 +310,7 @@ class Project():
     def copy_files_to_caravel(self):
         files = [
             (f"runs/wokwi/results/final/gds/{self.get_macro_gds_filename()}", f"gds/{self.get_macro_gds_filename()}"),
-            (f"runs/wokwi/results/final/commit-id.json", f"gds/{self.get_macro_info_filename()}"),
+            (f"runs/wokwi/results/final/commit_id.json", f"gds/{self.get_macro_info_filename()}"),
             (f"runs/wokwi/results/final/spef/{self.get_macro_spef_filename()}", f"spef/{self.get_macro_spef_filename()}"),
             (f"runs/wokwi/results/final/lef/{self.get_macro_lef_filename()}", f"lef/{self.get_macro_lef_filename()}"),
             (f"runs/wokwi/results/final/verilog/gl/{self.get_gl_verilog_filename()}", f"verilog/gl/{self.get_gl_verilog_filename()}"),
@@ -318,7 +318,7 @@ class Project():
             ]
         # copy RTL verilog to openlane2 mux directory:
         if os.path.isdir("tt-multiplexer/ol2/tt_top/verilog"):
-            files.append((f"src/{self.top_verilog_filename}", f"tt-multiplexer/ol2/tt_top/verilog/{self.get_gl_verilog_filename()}"))
+            files.append((f"runs/wokwi/results/final/verilog/gl/{self.get_gl_verilog_filename()}", f"tt-multiplexer/ol2/tt_top/verilog/{self.get_gl_verilog_filename()}"))
 
         logging.debug("copying files into position")
         for from_path, to_path in files:
@@ -422,7 +422,7 @@ class Project():
             exit(1)
         
         # Write commit information
-        with open(os.path.join(self.local_dir, 'runs/wokwi/results/final/commit-id.json'), 'w') as f:
+        with open(os.path.join(self.local_dir, 'runs/wokwi/results/final/commit_id.json'), 'w') as f:
             json.dump({
                 "app": f"Tiny Tapeout {tt_version}",
                 "repo": repo,
