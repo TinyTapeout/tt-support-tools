@@ -3,57 +3,58 @@ DIVIDERCHAR "/" ;
 BUSBITCHARS "[]" ;
 DESIGN tt_um_template ;
 UNITS DISTANCE MICRONS 1000 ;
-DIEAREA ( 0 0 ) ( 167900 108800 ) ;
-ROW ROW_0 unithd 2760 2720 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_1 unithd 2760 5440 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_2 unithd 2760 8160 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_3 unithd 2760 10880 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_4 unithd 2760 13600 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_5 unithd 2760 16320 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_6 unithd 2760 19040 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_7 unithd 2760 21760 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_8 unithd 2760 24480 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_9 unithd 2760 27200 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_10 unithd 2760 29920 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_11 unithd 2760 32640 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_12 unithd 2760 35360 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_13 unithd 2760 38080 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_14 unithd 2760 40800 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_15 unithd 2760 43520 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_16 unithd 2760 46240 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_17 unithd 2760 48960 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_18 unithd 2760 51680 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_19 unithd 2760 54400 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_20 unithd 2760 57120 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_21 unithd 2760 59840 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_22 unithd 2760 62560 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_23 unithd 2760 65280 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_24 unithd 2760 68000 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_25 unithd 2760 70720 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_26 unithd 2760 73440 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_27 unithd 2760 76160 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_28 unithd 2760 78880 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_29 unithd 2760 81600 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_30 unithd 2760 84320 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_31 unithd 2760 87040 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_32 unithd 2760 89760 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_33 unithd 2760 92480 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_34 unithd 2760 95200 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_35 unithd 2760 97920 FS DO 353 BY 1 STEP 460 0 ;
-ROW ROW_36 unithd 2760 100640 N DO 353 BY 1 STEP 460 0 ;
-ROW ROW_37 unithd 2760 103360 FS DO 353 BY 1 STEP 460 0 ;
-TRACKS X 230 DO 365 STEP 460 LAYER li1 ;
-TRACKS Y 170 DO 320 STEP 340 LAYER li1 ;
-TRACKS X 170 DO 494 STEP 340 LAYER met1 ;
-TRACKS Y 170 DO 320 STEP 340 LAYER met1 ;
-TRACKS X 230 DO 365 STEP 460 LAYER met2 ;
-TRACKS Y 230 DO 236 STEP 460 LAYER met2 ;
+DIEAREA ( 0 0 ) ( 168360 111520 ) ;
+ROW ROW_0 unithd 2760 2720 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_1 unithd 2760 5440 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_2 unithd 2760 8160 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_3 unithd 2760 10880 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_4 unithd 2760 13600 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_5 unithd 2760 16320 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_6 unithd 2760 19040 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_7 unithd 2760 21760 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_8 unithd 2760 24480 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_9 unithd 2760 27200 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_10 unithd 2760 29920 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_11 unithd 2760 32640 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_12 unithd 2760 35360 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_13 unithd 2760 38080 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_14 unithd 2760 40800 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_15 unithd 2760 43520 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_16 unithd 2760 46240 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_17 unithd 2760 48960 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_18 unithd 2760 51680 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_19 unithd 2760 54400 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_20 unithd 2760 57120 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_21 unithd 2760 59840 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_22 unithd 2760 62560 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_23 unithd 2760 65280 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_24 unithd 2760 68000 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_25 unithd 2760 70720 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_26 unithd 2760 73440 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_27 unithd 2760 76160 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_28 unithd 2760 78880 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_29 unithd 2760 81600 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_30 unithd 2760 84320 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_31 unithd 2760 87040 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_32 unithd 2760 89760 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_33 unithd 2760 92480 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_34 unithd 2760 95200 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_35 unithd 2760 97920 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_36 unithd 2760 100640 N DO 354 BY 1 STEP 460 0 ;
+ROW ROW_37 unithd 2760 103360 FS DO 354 BY 1 STEP 460 0 ;
+ROW ROW_38 unithd 2760 106080 N DO 354 BY 1 STEP 460 0 ;
+TRACKS X 230 DO 366 STEP 460 LAYER li1 ;
+TRACKS Y 170 DO 328 STEP 340 LAYER li1 ;
+TRACKS X 170 DO 495 STEP 340 LAYER met1 ;
+TRACKS Y 170 DO 328 STEP 340 LAYER met1 ;
+TRACKS X 230 DO 366 STEP 460 LAYER met2 ;
+TRACKS Y 230 DO 242 STEP 460 LAYER met2 ;
 TRACKS X 340 DO 247 STEP 680 LAYER met3 ;
-TRACKS Y 340 DO 160 STEP 680 LAYER met3 ;
-TRACKS X 460 DO 182 STEP 920 LAYER met4 ;
-TRACKS Y 460 DO 118 STEP 920 LAYER met4 ;
+TRACKS Y 340 DO 164 STEP 680 LAYER met3 ;
+TRACKS X 460 DO 183 STEP 920 LAYER met4 ;
+TRACKS Y 460 DO 121 STEP 920 LAYER met4 ;
 TRACKS X 1700 DO 49 STEP 3400 LAYER met5 ;
-TRACKS Y 1700 DO 32 STEP 3400 LAYER met5 ;
+TRACKS Y 1700 DO 33 STEP 3400 LAYER met5 ;
 COMPONENTS 25 ;
     - TIE_ZERO_zero_ sky130_fd_sc_hd__conb_1 ;
     - _00_ sky130_fd_sc_hd__buf_2 ;
@@ -85,175 +86,175 @@ PINS 43 ;
     - clk + NET clk + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 158700 108300 ) N ;
+        + PLACED ( 158700 111020 ) N ;
     - ena + NET ena + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 162380 108300 ) N ;
+        + PLACED ( 162380 111020 ) N ;
     - rst_n + NET rst_n + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 155020 108300 ) N ;
+        + PLACED ( 155020 111020 ) N ;
     - ui_in[0] + NET ui_in[0] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 151340 108300 ) N ;
+        + PLACED ( 151340 111020 ) N ;
     - ui_in[1] + NET ui_in[1] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 147660 108300 ) N ;
+        + PLACED ( 147660 111020 ) N ;
     - ui_in[2] + NET ui_in[2] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 143980 108300 ) N ;
+        + PLACED ( 143980 111020 ) N ;
     - ui_in[3] + NET ui_in[3] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 140300 108300 ) N ;
+        + PLACED ( 140300 111020 ) N ;
     - ui_in[4] + NET ui_in[4] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 136620 108300 ) N ;
+        + PLACED ( 136620 111020 ) N ;
     - ui_in[5] + NET ui_in[5] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 132940 108300 ) N ;
+        + PLACED ( 132940 111020 ) N ;
     - ui_in[6] + NET ui_in[6] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 129260 108300 ) N ;
+        + PLACED ( 129260 111020 ) N ;
     - ui_in[7] + NET ui_in[7] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 125580 108300 ) N ;
+        + PLACED ( 125580 111020 ) N ;
     - uio_in[0] + NET uio_in[0] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 121900 108300 ) N ;
+        + PLACED ( 121900 111020 ) N ;
     - uio_in[1] + NET uio_in[1] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 118220 108300 ) N ;
+        + PLACED ( 118220 111020 ) N ;
     - uio_in[2] + NET uio_in[2] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 114540 108300 ) N ;
+        + PLACED ( 114540 111020 ) N ;
     - uio_in[3] + NET uio_in[3] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 110860 108300 ) N ;
+        + PLACED ( 110860 111020 ) N ;
     - uio_in[4] + NET uio_in[4] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 107180 108300 ) N ;
+        + PLACED ( 107180 111020 ) N ;
     - uio_in[5] + NET uio_in[5] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 103500 108300 ) N ;
+        + PLACED ( 103500 111020 ) N ;
     - uio_in[6] + NET uio_in[6] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 99820 108300 ) N ;
+        + PLACED ( 99820 111020 ) N ;
     - uio_in[7] + NET uio_in[7] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 96140 108300 ) N ;
+        + PLACED ( 96140 111020 ) N ;
     - uio_oe[0] + NET uio_oe[0] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 33580 108300 ) N ;
+        + PLACED ( 33580 111020 ) N ;
     - uio_oe[1] + NET uio_oe[1] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 29900 108300 ) N ;
+        + PLACED ( 29900 111020 ) N ;
     - uio_oe[2] + NET uio_oe[2] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 26220 108300 ) N ;
+        + PLACED ( 26220 111020 ) N ;
     - uio_oe[3] + NET uio_oe[3] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 22540 108300 ) N ;
+        + PLACED ( 22540 111020 ) N ;
     - uio_oe[4] + NET uio_oe[4] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 18860 108300 ) N ;
+        + PLACED ( 18860 111020 ) N ;
     - uio_oe[5] + NET uio_oe[5] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 15180 108300 ) N ;
+        + PLACED ( 15180 111020 ) N ;
     - uio_oe[6] + NET uio_oe[6] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 11500 108300 ) N ;
+        + PLACED ( 11500 111020 ) N ;
     - uio_oe[7] + NET uio_oe[7] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 7820 108300 ) N ;
+        + PLACED ( 7820 111020 ) N ;
     - uio_out[0] + NET uio_out[0] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 63020 108300 ) N ;
+        + PLACED ( 63020 111020 ) N ;
     - uio_out[1] + NET uio_out[1] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 59340 108300 ) N ;
+        + PLACED ( 59340 111020 ) N ;
     - uio_out[2] + NET uio_out[2] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 55660 108300 ) N ;
+        + PLACED ( 55660 111020 ) N ;
     - uio_out[3] + NET uio_out[3] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 51980 108300 ) N ;
+        + PLACED ( 51980 111020 ) N ;
     - uio_out[4] + NET uio_out[4] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 48300 108300 ) N ;
+        + PLACED ( 48300 111020 ) N ;
     - uio_out[5] + NET uio_out[5] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 44620 108300 ) N ;
+        + PLACED ( 44620 111020 ) N ;
     - uio_out[6] + NET uio_out[6] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 40940 108300 ) N ;
+        + PLACED ( 40940 111020 ) N ;
     - uio_out[7] + NET uio_out[7] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 37260 108300 ) N ;
+        + PLACED ( 37260 111020 ) N ;
     - uo_out[0] + NET uo_out[0] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 92460 108300 ) N ;
+        + PLACED ( 92460 111020 ) N ;
     - uo_out[1] + NET uo_out[1] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 88780 108300 ) N ;
+        + PLACED ( 88780 111020 ) N ;
     - uo_out[2] + NET uo_out[2] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 85100 108300 ) N ;
+        + PLACED ( 85100 111020 ) N ;
     - uo_out[3] + NET uo_out[3] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 81420 108300 ) N ;
+        + PLACED ( 81420 111020 ) N ;
     - uo_out[4] + NET uo_out[4] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 77740 108300 ) N ;
+        + PLACED ( 77740 111020 ) N ;
     - uo_out[5] + NET uo_out[5] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 74060 108300 ) N ;
+        + PLACED ( 74060 111020 ) N ;
     - uo_out[6] + NET uo_out[6] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 70380 108300 ) N ;
+        + PLACED ( 70380 111020 ) N ;
     - uo_out[7] + NET uo_out[7] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 66700 108300 ) N ;
+        + PLACED ( 66700 111020 ) N ;
 END PINS
 SPECIALNETS 2 ;
     - VGND ( TIE_ZERO_zero_ VNB ) ( _23_ VNB ) ( _22_ VNB ) ( _21_ VNB ) ( _20_ VNB ) ( _19_ VNB ) ( _18_ VNB )
