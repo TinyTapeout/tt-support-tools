@@ -2,6 +2,17 @@ import logging
 import os
 import yaml
 import json
+import glob
+import shutil
+
+def copy_print(src: str, dest: str):
+    logging.info(f"  -> {dest}")
+    shutil.copy2(src, dest)
+
+
+def copy_print_glob(pattern: str, dest_dir: str):
+    for file in glob.glob(pattern):
+        copy_print(file, os.path.join(dest_dir, os.path.basename(file)))
 
 class CaravelConfig():
 
@@ -58,3 +69,46 @@ class CaravelConfig():
     def list(self):
         for project in self.projects:
             logging.info(project)
+
+
+    def find_last_run(self, macro: str):
+        runs = f"tt-multiplexer/ol2/{macro}/runs/"
+        runlist = sorted(
+            [r for r in os.listdir(runs) if r.startswith("RUN_") and os.path.isdir(os.path.join(runs, r))]
+        )
+        if len(runlist) == 0:
+            print(f"Error: no runs found for {macro}")
+            exit(1)
+
+        return os.path.join(runs, runlist[-1])
+
+
+    def copy_macros(self):
+        logging.info('copying macros to tt_top:')
+        copy_print_glob("projects/*/*.gds", "tt-multiplexer/ol2/tt_top/gds")
+        copy_print_glob("projects/*/*.lef", "tt-multiplexer/ol2/tt_top/lef")
+        copy_print_glob("projects/*/*.v", "tt-multiplexer/ol2/tt_top/verilog")
+        macros = ["tt_ctrl", "tt_mux"]
+        for macro in macros:
+            lastrun = self.find_last_run(macro)
+            copy_print(f"{lastrun}/final/gds/{macro}.magic.gds", f"tt-multiplexer/ol2/tt_top/gds/{macro}.gds")
+            copy_print(f"{lastrun}/final/lef/{macro}.lef", f"tt-multiplexer/ol2/tt_top/lef/{macro}.lef")
+
+
+    def copy_final_results(self):
+        macros = ["tt_ctrl", "tt_mux", "tt_top"]
+
+        logging.info('copying final results:')
+        for macro in macros:
+            lastrun = self.find_last_run(macro)
+            macro_name = macro if macro != "tt_top" else "user_project_wrapper"
+            logging.info(f"** {macro_name} **")
+            logging.info(f"  FROM {lastrun}")
+            copy_print(f"{lastrun}/final/gds/{macro_name}.magic.gds", f"gds/{macro_name}.gds")
+            copy_print(f"{lastrun}/final/lef/{macro_name}.lef", f"lef/{macro_name}.lef")
+            copy_print(f"{lastrun}/final/pnl/{macro_name}.pnl.v", f"verilog/gl/{macro_name}.v")
+            copy_print(f"{lastrun}/final/nl/{macro_name}.nl.v", f"verilog/gl/{macro_name}.nl.v")
+            shutil.copytree(
+                f"{lastrun}/final/spef", f"spef/", copy_function=copy_print, dirs_exist_ok=True
+            )
+            copy_print(f"{lastrun}/final/spef/nom_/{macro_name}.nom.spef", f"spef/{macro_name}.spef")

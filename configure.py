@@ -162,6 +162,8 @@ if __name__ == '__main__':
     parser.add_argument('--list', help="list projects", action='store_const', const=True)
     parser.add_argument('--single', help="do action on single project", type=int, default=-1)
     parser.add_argument('--update-caravel', help='configure caravel for build', action='store_const', const=True)
+    parser.add_argument('--copy-macros', help='copy macros for building the tt_top project', action='store_const', const=True)
+    parser.add_argument('--copy-final-results', help='copy final project files to gds/lef directories', action='store_const', const=True)
     parser.add_argument('--harden', help="harden project", action="store_const", const=True)
     parser.add_argument('--test', help='use test projects', action='store_const', const=True)
     parser.add_argument('--sta-projects', help='use sta projects', action='store_const', const=True)
@@ -215,6 +217,12 @@ if __name__ == '__main__':
         rom.write_rom()
         if not args.test:
             docs.build_index()
+
+    if args.copy_macros:
+        caravel.copy_macros()
+
+    if args.copy_final_results:
+        caravel.copy_final_results()
 
     if args.update_image:
         docs.update_image()
