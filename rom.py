@@ -43,7 +43,6 @@ class ROMFile:
         rom_text += f"repo={self.get_git_remote()}\n"
         rom_text += f"commit={short_sha}\n"
 
-        print(rom_text)
         assert len(rom_text) < 96, "ROM text too long"
 
         rom[0:4] = map(segment_char, "tt04")
