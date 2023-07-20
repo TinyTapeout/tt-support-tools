@@ -25,7 +25,7 @@ class Projects():
             os.makedirs(self.project_dir)
 
         self.projects = []
-        project_list = [entry for entry in os.listdir(self.project_dir) if os.path.join(self.project_dir, entry)]
+        project_list = [entry for entry in os.listdir(self.project_dir) if os.path.isdir(os.path.join(self.project_dir, entry))]
         if args.test:
             project_list = ['tt_um_factory_test']
         elif args.sta_projects:
@@ -209,7 +209,9 @@ if __name__ == '__main__':
         projects.build_metrics()
 
     if args.update_caravel:
-        caravel.instantiate()
+        caravel.configure_mux()
+        if args.test:
+            caravel.write_gl_config()
         rom.write_rom()
         if not args.test:
             docs.build_index()

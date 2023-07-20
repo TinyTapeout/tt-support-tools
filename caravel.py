@@ -11,21 +11,15 @@ class CaravelConfig():
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
         self.modules_yaml_name = modules_yaml_name
 
-    # instantiate inside user_project_wrapper
-    def instantiate(self):
-        # build the blackbox_project_includes.v file - used for blackboxing when building the GDS
-        with open('verilog/blackbox_project_includes.v', 'w') as fh:
-            for project in self.projects:
-                fh.write(f'`include "gl/{project.get_gl_verilog_filename()}"\n')
-
-        # build GL includes
+    def write_gl_config(self):
         with open('verilog/includes/includes.gl.caravel_user_project', 'w') as fh:
             fh.write('-v $(USER_PROJECT_VERILOG)/gl/user_project_wrapper.v\n')
             fh.write('-v $(USER_PROJECT_VERILOG)/gl/tt_ctrl.v\n')
             fh.write('-v $(USER_PROJECT_VERILOG)/gl/tt_mux.v\n')
             for project in self.projects:
-                fh.write(f'-v $(USER_PROJECT_VERILOG)/gl/{project.get_gl_verilog_filename()}\n')
+                fh.write(f'-v $(USER_PROJECT_VERILOG)/../projects/{project.top_module}/{project.get_gl_verilog_filename()}\n')
 
+    def configure_mux(self):
         with open(self.modules_yaml_name, 'r') as modules_file:
             module_config = yaml.safe_load(modules_file)
             configured_macros = set(map(lambda mod: mod['name'], module_config['modules']))
