@@ -19,18 +19,16 @@ class Projects():
     def __init__(self, config, args):
         self.args = args
         self.config = config
-
-        if args.test:
-            self.project_dir = config['test_project_dir']
-        else:
-            self.project_dir = config['project_dir']
+        self.project_dir = config['project_dir']
 
         if not os.path.exists(self.project_dir):
             os.makedirs(self.project_dir)
 
         self.projects = []
         project_list = [entry for entry in os.listdir(self.project_dir) if os.path.join(self.project_dir, entry)]
-        if args.sta_projects:
+        if args.test:
+            project_list = ['tt_um_factory_test']
+        elif args.sta_projects:
             project_list = ['tt_um_loopback']
 
         for index, project_id in enumerate(project_list):
@@ -193,8 +191,10 @@ if __name__ == '__main__':
 
     projects = Projects(config, args)
 
-    if args.sta_projects:
-        modules_yaml_name = "modules_sta.yaml"
+    if args.test:
+        modules_yaml_name = "modules.test.yaml"
+    elif args.sta_projects:
+        modules_yaml_name = "modules.sta.yaml"
     else:
         modules_yaml_name = "modules.yaml"
 
