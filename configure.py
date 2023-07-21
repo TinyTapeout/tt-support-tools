@@ -165,6 +165,7 @@ if __name__ == '__main__':
     parser.add_argument('--update-caravel', help='configure caravel for build', action='store_const', const=True)
     parser.add_argument('--copy-macros', help='copy macros for building the tt_top project', action='store_const', const=True)
     parser.add_argument('--copy-final-results', help='copy final project files to gds/lef directories', action='store_const', const=True)
+    parser.add_argument('--create-efabless-submission', help='create efabless submission files', action='store_const', const=True)
     parser.add_argument('--harden', help="harden project", action="store_const", const=True)
     parser.add_argument('--test', help='use test projects', action='store_const', const=True)
     parser.add_argument('--sta-projects', help='use sta projects', action='store_const', const=True)
@@ -224,6 +225,9 @@ if __name__ == '__main__':
 
     if args.copy_final_results:
         caravel.copy_final_results()
+
+    if args.create_efabless_submission:
+        caravel.create_efabless_submission()
 
     if args.update_image:
         docs.update_image()

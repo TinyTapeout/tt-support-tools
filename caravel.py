@@ -7,6 +7,7 @@ import shutil
 import git
 
 def copy_print(src: str, dest: str):
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
     logging.info(f"  -> {dest}")
     shutil.copy2(src, dest)
 
@@ -129,3 +130,13 @@ class CaravelConfig():
                 f"{lastrun}/final/spef", f"spef/", copy_function=copy_print, dirs_exist_ok=True
             )
             copy_print(f"{lastrun}/final/spef/nom_/{macro_name}.nom.spef", f"spef/{macro_name}.spef")
+
+    def create_efabless_submission(self):
+        logging.info("creating efabless submission directory:")
+        lastrun = self.find_last_run("tt_top")
+        copy_print("README.md", "efabless/README.md")
+        copy_print("shuttle_index.json", "efabless/shuttle_index.json")
+        copy_print("verilog/rtl/user_defines.v", "efabless/verilog/rtl/user_defines.v")
+        copy_print(f"{lastrun}/final/pnl/user_project_wrapper.pnl.v", f"efabless/verilog/gl/user_project_wrapper.v")
+        copy_print(f"{lastrun}/final/gds/user_project_wrapper.magic.gds", f"efabless/gds/user_project_wrapper.gds")
+        copy_print(f"{lastrun}/final/lef/user_project_wrapper.lef", f"efabless/lef/user_project_wrapper.gds")
