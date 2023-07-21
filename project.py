@@ -21,12 +21,13 @@ with open(os.path.join(os.path.dirname(__file__), 'tile_sizes.yaml'), 'r') as st
 
 class Project():
 
-    def __init__(self, index, git_url, local_dir, args, fill=False):
+    def __init__(self, index, git_url, local_dir, args, is_user_project):
         self.git_url = git_url
         self.args = args
         self.index = index
-        self.fill = fill
         self.local_dir = local_dir
+        self.is_user_project = is_user_project
+        self.src_dir = os.path.join(self.local_dir, 'src') if self.is_user_project else self.local_dir
 
     def post_clone_setup(self):
         self.load_yaml()
@@ -42,7 +43,7 @@ class Project():
 
     def check_ports(self):
         top = self.get_macro_name()
-        sources = [os.path.join(self.local_dir, 'src', src) for src in self.src_files]
+        sources = [os.path.join(self.src_dir, src) for src in self.src_files]
         source_list = " ".join(sources)
 
         json_file = 'ports.json'
@@ -85,9 +86,6 @@ class Project():
             if num_cells < 11:
                 logging.warning(f"{self} only has {num_cells} cells")
 
-    def is_fill(self):
-        return self.fill
-
     def is_wokwi(self):
         if self.wokwi_id != 0:
             return True
@@ -117,18 +115,25 @@ class Project():
 
         if self.is_hdl():
             self.top_module             = self.yaml['project']['top_module']
-            self.src_files              = self.get_hdl_source()
-            self.top_verilog_filename   = self.find_top_verilog()
+            if self.is_user_project:
+                self.src_files              = self.get_hdl_source()
+                self.top_verilog_filename   = self.find_top_verilog()
         else:
             self.top_module             = f"tt_um_wokwi_{self.wokwi_id}"
-            self.src_files              = self.get_wokwi_source()
-            self.top_verilog_filename   = self.src_files[0]
+            if self.is_user_project:
+                self.src_files              = self.get_wokwi_source()
+                self.top_verilog_filename   = self.src_files[0]
+
+        if not self.is_user_project:
+            self.src_files              = [self.get_gl_verilog_filename()]
+        
+        self.unprefixed_name             = re.sub('^tt_um_', '', self.top_module)
         
         if not self.top_module.startswith("tt_um_"):
             logging.error(f'top module name must start with "tt_um_" (current value: "{self.top_module}")')
             exit(1)
 
-        self.macro_instance         = f"{self.top_module}_{self.index :03}"
+        self.macro_instance         = f"{self.top_module}"
 
     def get_wokwi_source(self):
         src_file = "tt_um_wokwi_{}.v".format(self.wokwi_id)
@@ -160,7 +165,7 @@ class Project():
             if '*' in filename:
                 logging.error("* not allowed, please specify each file")
                 exit(1)
-            if not os.path.exists(os.path.join(self.local_dir, 'src', filename)):
+            if not os.path.exists(os.path.join(self.src_dir, filename)):
                 logging.error(f"{filename} doesn't exist in the repo")
                 exit(1)
 
@@ -197,7 +202,7 @@ class Project():
         rgx_mod  = re.compile(r"(?:^|[\s])module[\s]{1,}([\w]+)")
         top_verilog = []
         for src in self.src_files:
-            with open(os.path.join(self.local_dir, 'src', src)) as fh:
+            with open(os.path.join(self.src_dir, src)) as fh:
                 for line in fh.readlines():
                     for match in rgx_mod.finditer(line):
                         if match.group(1) == self.top_module:
@@ -227,26 +232,6 @@ class Project():
         if GITHUB_SERVER_URL and GITHUB_REPOSITORY and GITHUB_RUN_ID:
             return f"{GITHUB_SERVER_URL}/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}"
 
-    def clone(self):
-        if os.path.exists(self.local_dir):
-            git_remote = self.get_git_remote()
-            if self.git_url == git_remote:
-                logging.info("git repo already exists and is correct - skipping")
-            else:
-                logging.error("git repo exists and remote doesn't match - abort")
-                logging.error(f"{self.git_url} != {git_remote}")
-                exit(1)
-        else:
-            logging.debug("clone")
-            git.Repo.clone_from(self.git_url, self.local_dir, recursive=True)
-
-    def pull(self):
-        repo = git.Repo(self.local_dir)
-        # reset
-        repo.git.reset('--hard')
-        o = repo.remotes.origin
-        o.pull()
-
     def __str__(self):
         """
         if self.args.log_email:
@@ -254,9 +239,6 @@ class Project():
         else:
         """
         return f"[{self.index:03} : {self.git_url}]"
-
-    def fetch_gds(self):
-        git_utils.install_artifacts(self.git_url, self.local_dir)
 
     def get_latest_action_url(self):
         return git_utils.get_latest_action_url(self.git_url, self.local_dir)
@@ -274,7 +256,10 @@ class Project():
 
     # metrics
     def get_metrics_path(self):
-        return os.path.join(self.local_dir, 'runs/wokwi/reports/metrics.csv')
+        if self.is_user_project:
+            return os.path.join(self.local_dir, 'runs/wokwi/reports/metrics.csv')
+        else:
+            return os.path.join(self.local_dir, 'metrics.csv')
 
     # name of the gds file
     def get_macro_gds_filename(self):
@@ -307,25 +292,6 @@ class Project():
     def get_git_url(self):
         return self.git_url
 
-    def copy_files_to_caravel(self):
-        files = [
-            (f"runs/wokwi/results/final/gds/{self.get_macro_gds_filename()}", f"gds/{self.get_macro_gds_filename()}"),
-            (f"runs/wokwi/results/final/commit_id.json", f"gds/{self.get_macro_info_filename()}"),
-            (f"runs/wokwi/results/final/spef/{self.get_macro_spef_filename()}", f"spef/{self.get_macro_spef_filename()}"),
-            (f"runs/wokwi/results/final/lef/{self.get_macro_lef_filename()}", f"lef/{self.get_macro_lef_filename()}"),
-            (f"runs/wokwi/results/final/verilog/gl/{self.get_gl_verilog_filename()}", f"verilog/gl/{self.get_gl_verilog_filename()}"),
-            (f"src/{self.top_verilog_filename}", f"verilog/rtl/{self.get_top_verilog_filename()}"),
-            ]
-        # copy RTL verilog to openlane2 mux directory:
-        if os.path.isdir("tt-multiplexer/ol2/tt_top/verilog"):
-            files.append((f"runs/wokwi/results/final/verilog/gl/{self.get_gl_verilog_filename()}", f"tt-multiplexer/ol2/tt_top/verilog/{self.get_gl_verilog_filename()}"))
-
-        logging.debug("copying files into position")
-        for from_path, to_path in files:
-            from_path = os.path.join(self.local_dir, from_path)
-            logging.debug(f"copy {from_path} to {to_path}")
-            shutil.copyfile(from_path, to_path)
-
     def print_wokwi_id(self):
         print(self.wokwi_id)
 
@@ -333,18 +299,18 @@ class Project():
         logging.info("fetching wokwi files")
         src_file = self.src_files[0]
         url = f"https://wokwi.com/api/projects/{self.wokwi_id}/verilog"
-        git_utils.fetch_file(url, os.path.join(self.local_dir, "src", src_file))
+        git_utils.fetch_file(url, os.path.join(self.src_dir, src_file))
 
         # also fetch the wokwi diagram
         url = f"https://wokwi.com/api/projects/{self.wokwi_id}/diagram.json"
         diagram_file = "wokwi_diagram.json"
-        git_utils.fetch_file(url, os.path.join(self.local_dir, "src", diagram_file))
+        git_utils.fetch_file(url, os.path.join(self.src_dir, diagram_file))
 
         # attempt to download the *optional* truthtable for the project
         truthtable_file = "truthtable.md"
         url = f"https://wokwi.com/api/projects/{self.wokwi_id}/{truthtable_file}"
         try:
-            git_utils.fetch_file(url, os.path.join(self.local_dir, "src", truthtable_file))
+            git_utils.fetch_file(url, os.path.join(self.src_dir, truthtable_file))
             logging.info(f'Wokwi project {self.wokwi_id} has a truthtable included, will test!')
             self.install_wokwi_testing()
         except FileNotFoundError:
@@ -383,7 +349,7 @@ class Project():
         self.check_ports()
         logging.info("creating include file")
         filename = 'user_config.tcl'
-        with open(os.path.join(self.local_dir, 'src', filename), 'w') as fh:
+        with open(os.path.join(self.src_dir, filename), 'w') as fh:
             fh.write("set ::env(DESIGN_NAME) {}\n".format(self.top_module))
             fh.write('set ::env(VERILOG_FILES) "\\\n')
             for line, source in enumerate(self.src_files):
@@ -400,7 +366,7 @@ class Project():
     def golden_harden(self):
         logging.info(f"hardening {self}")
         # copy golden config
-        shutil.copyfile('golden_config.tcl', os.path.join(self.local_dir, 'src', 'config.tcl'))
+        shutil.copyfile('golden_config.tcl', os.path.join(self.src_dir, 'config.tcl'))
         self.harden()
 
     def harden(self):
@@ -568,7 +534,7 @@ class Project():
     def get_cell_count_from_synth(self):
         num_cells = 0
         try:
-            yosys_report = glob.glob(f'{self.local_dir}/runs/wokwi/reports/synthesis/1-synthesis.*0.stat.rpt')[0]  # can't open a file with \ in the path
+            yosys_report = f'{self.local_dir}/synthesis-stats.txt'
             with open(yosys_report) as fh:
                 for line in fh.readlines():
                     m = re.search(r'Number of cells:\s+(\d+)', line)

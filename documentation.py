@@ -22,8 +22,7 @@ class Docs():
             fh.write("| Index | Author | Title | Type | Git Repo |\n")
             fh.write("| ----- | ------ | ------| -----| ---------|\n")
             for project in self.projects:
-                if not project.is_fill():
-                    fh.write(project.get_index_row())
+                fh.write(project.get_index_row())
 
     def update_image(self):
         ruby = os.path.join(self.script_dir, 'caravel_template', 'dump_pic.rb')
@@ -67,8 +66,6 @@ class Docs():
             fh.write(doc_header)
 
             for project in self.projects:
-                if project.is_fill():
-                    continue
                 yaml_data = project.get_project_doc_yaml()
 
                 yaml_data['index'] = project.index
@@ -134,27 +131,26 @@ class Docs():
             fh.write("| ----- | ----- | -------|\n")
             for project in self.projects:
                 logging.info(project)
-                if not project.is_fill():
-                    fh.write(project.get_hugo_row())
+                fh.write(project.get_hugo_row())
 
-                    project_dir = os.path.join(hugo_root, f'{project.get_index() :03}')
-                    project_image_dir = os.path.join(project_dir, 'images')
-                    os.makedirs(project_dir)
-                    os.makedirs(project_image_dir)
-                    yaml_data = project.get_project_doc_yaml()
-                    yaml_data['index'] = project.index
-                    yaml_data['weight'] = project.index + 1
-                    yaml_data['git_action'] = project.get_latest_action_url()
-                    yaml_data['picture_link'] = ''
-                    if yaml_data['picture']:
-                        picture_name = yaml_data['picture']
-                        picture_filename = os.path.join(project.local_dir, picture_name)
-                        picture_basename = os.path.basename(picture_filename)
-                        try:
-                            shutil.copyfile(picture_filename, os.path.join(project_image_dir, picture_basename))
-                            yaml_data['picture_link'] = f'![picture](images/{picture_basename})'
-                        except FileNotFoundError:
-                            yaml_data['picture_link'] = 'Image path is broken'
-                    doc = doc_template.format(**yaml_data)
-                    with open(os.path.join(project_dir, '_index.md'), 'w') as pfh:
-                        pfh.write(doc)
+                project_dir = os.path.join(hugo_root, f'{project.get_index() :03}')
+                project_image_dir = os.path.join(project_dir, 'images')
+                os.makedirs(project_dir)
+                os.makedirs(project_image_dir)
+                yaml_data = project.get_project_doc_yaml()
+                yaml_data['index'] = project.index
+                yaml_data['weight'] = project.index + 1
+                yaml_data['git_action'] = project.get_latest_action_url()
+                yaml_data['picture_link'] = ''
+                if yaml_data['picture']:
+                    picture_name = yaml_data['picture']
+                    picture_filename = os.path.join(project.local_dir, picture_name)
+                    picture_basename = os.path.basename(picture_filename)
+                    try:
+                        shutil.copyfile(picture_filename, os.path.join(project_image_dir, picture_basename))
+                        yaml_data['picture_link'] = f'![picture](images/{picture_basename})'
+                    except FileNotFoundError:
+                        yaml_data['picture_link'] = 'Image path is broken'
+                doc = doc_template.format(**yaml_data)
+                with open(os.path.join(project_dir, '_index.md'), 'w') as pfh:
+                    pfh.write(doc)
