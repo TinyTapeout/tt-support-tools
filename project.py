@@ -21,11 +21,13 @@ with open(os.path.join(os.path.dirname(__file__), 'tile_sizes.yaml'), 'r') as st
 
 class Project():
 
-    def __init__(self, index, git_url, local_dir, args):
+    def __init__(self, index, git_url, local_dir, args, is_user_project):
         self.git_url = git_url
         self.args = args
         self.index = index
         self.local_dir = local_dir
+        self.is_user_project = is_user_project
+        self.src_dir = os.path.join(self.local_dir, 'src') if self.is_user_project else self.local_dir
 
     def post_clone_setup(self):
         self.load_yaml()
@@ -41,7 +43,7 @@ class Project():
 
     def check_ports(self):
         top = self.get_macro_name()
-        sources = [os.path.join(self.local_dir, src) for src in self.src_files]
+        sources = [os.path.join(self.src_dir, src) for src in self.src_files]
         source_list = " ".join(sources)
 
         json_file = 'ports.json'
@@ -113,13 +115,17 @@ class Project():
 
         if self.is_hdl():
             self.top_module             = self.yaml['project']['top_module']
-            self.src_files              = [self.get_gl_verilog_filename()]
-            #self.src_files              = self.get_hdl_source()
-            #self.top_verilog_filename   = self.find_top_verilog()
+            if self.is_user_project:
+                self.src_files              = self.get_hdl_source()
+                self.top_verilog_filename   = self.find_top_verilog()
         else:
             self.top_module             = f"tt_um_wokwi_{self.wokwi_id}"
-            #self.src_files              = self.get_wokwi_source()
-            #self.top_verilog_filename   = self.src_files[0]
+            if self.is_user_project:
+                self.src_files              = self.get_wokwi_source()
+                self.top_verilog_filename   = self.src_files[0]
+
+        if not self.is_user_project:
+            self.src_files              = [self.get_gl_verilog_filename()]
         
         self.unprefixed_name             = re.sub('^tt_um_', '', self.top_module)
         
@@ -159,7 +165,7 @@ class Project():
             if '*' in filename:
                 logging.error("* not allowed, please specify each file")
                 exit(1)
-            if not os.path.exists(os.path.join(self.local_dir, 'src', filename)):
+            if not os.path.exists(os.path.join(self.src_dir, filename)):
                 logging.error(f"{filename} doesn't exist in the repo")
                 exit(1)
 
@@ -196,7 +202,7 @@ class Project():
         rgx_mod  = re.compile(r"(?:^|[\s])module[\s]{1,}([\w]+)")
         top_verilog = []
         for src in self.src_files:
-            with open(os.path.join(self.local_dir, src)) as fh:
+            with open(os.path.join(self.src_dir, src)) as fh:
                 for line in fh.readlines():
                     for match in rgx_mod.finditer(line):
                         if match.group(1) == self.top_module:
@@ -250,7 +256,10 @@ class Project():
 
     # metrics
     def get_metrics_path(self):
-        return os.path.join(self.local_dir, 'metrics.csv')
+        if self.is_user_project:
+            return os.path.join(self.local_dir, 'runs/wokwi/reports/metrics.csv')
+        else:
+            return os.path.join(self.local_dir, 'metrics.csv')
 
     # name of the gds file
     def get_macro_gds_filename(self):
@@ -290,18 +299,18 @@ class Project():
         logging.info("fetching wokwi files")
         src_file = self.src_files[0]
         url = f"https://wokwi.com/api/projects/{self.wokwi_id}/verilog"
-        git_utils.fetch_file(url, os.path.join(self.local_dir, "src", src_file))
+        git_utils.fetch_file(url, os.path.join(self.src_dir, src_file))
 
         # also fetch the wokwi diagram
         url = f"https://wokwi.com/api/projects/{self.wokwi_id}/diagram.json"
         diagram_file = "wokwi_diagram.json"
-        git_utils.fetch_file(url, os.path.join(self.local_dir, "src", diagram_file))
+        git_utils.fetch_file(url, os.path.join(self.src_dir, diagram_file))
 
         # attempt to download the *optional* truthtable for the project
         truthtable_file = "truthtable.md"
         url = f"https://wokwi.com/api/projects/{self.wokwi_id}/{truthtable_file}"
         try:
-            git_utils.fetch_file(url, os.path.join(self.local_dir, "src", truthtable_file))
+            git_utils.fetch_file(url, os.path.join(self.src_dir, truthtable_file))
             logging.info(f'Wokwi project {self.wokwi_id} has a truthtable included, will test!')
             self.install_wokwi_testing()
         except FileNotFoundError:
@@ -340,7 +349,7 @@ class Project():
         self.check_ports()
         logging.info("creating include file")
         filename = 'user_config.tcl'
-        with open(os.path.join(self.local_dir, 'src', filename), 'w') as fh:
+        with open(os.path.join(self.src_dir, filename), 'w') as fh:
             fh.write("set ::env(DESIGN_NAME) {}\n".format(self.top_module))
             fh.write('set ::env(VERILOG_FILES) "\\\n')
             for line, source in enumerate(self.src_files):
@@ -357,7 +366,7 @@ class Project():
     def golden_harden(self):
         logging.info(f"hardening {self}")
         # copy golden config
-        shutil.copyfile('golden_config.tcl', os.path.join(self.local_dir, 'src', 'config.tcl'))
+        shutil.copyfile('golden_config.tcl', os.path.join(self.src_dir, 'config.tcl'))
         self.harden()
 
     def harden(self):

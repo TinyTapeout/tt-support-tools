@@ -41,7 +41,7 @@ class Projects():
 
             commit_id_data = json.load(open(commit_id_file))
 
-            project = Project(index, commit_id_data['repo'], project_dir, args)
+            project = Project(index, commit_id_data['repo'], project_dir, args, is_user_project=False)
             project.commit_id = commit_id_data['commit']
 
             # projects should now be installed, so load all the data from the yaml files

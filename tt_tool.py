@@ -42,7 +42,7 @@ if __name__ == '__main__':
     ch.setFormatter(log_format)
     log.addHandler(ch)
 
-    project = Project(0, 'unknown', args.project_dir, args)
+    project = Project(0, 'unknown', args.project_dir, args, is_user_project=True)
     project.post_clone_setup()
 
     # handle the options
