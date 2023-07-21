@@ -4,6 +4,7 @@ import yaml
 import json
 import glob
 import shutil
+import git
 
 def copy_print(src: str, dest: str):
     logging.info(f"  -> {dest}")
@@ -13,6 +14,7 @@ def copy_print(src: str, dest: str):
 def copy_print_glob(pattern: str, dest_dir: str):
     for file in glob.glob(pattern):
         copy_print(file, os.path.join(dest_dir, os.path.basename(file)))
+
 
 class CaravelConfig():
 
@@ -54,7 +56,13 @@ class CaravelConfig():
             for module in placed_modules['modules']:
                 mux_address = (module['y'] << 5) + module['x']
                 module_name = 'tt_um_' + module['name']
-                mux_index[mux_address] = module_name
+                mux_index[mux_address] = {
+                    "macro": "module_name",
+                    "x": module['x'],
+                    "y": module['y'],
+                    "repo": project.git_url,
+                    "commit": project.commit_id,
+                },
                 mux_index_reverse[module_name] = mux_address
             
         for project in self.projects:
@@ -63,8 +71,17 @@ class CaravelConfig():
                 exit(1)
             project.mux_address = mux_index_reverse[project.top_module]
         
-        with open('mux_index.json', 'w') as mux_index_file:
-            json.dump(mux_index, mux_index_file)
+        repo = git.Repo(".")
+
+        shuttle_index_data = {
+            "shuttle": self.config["name"],
+            "repo": list(repo.remotes[0].urls)[0],
+            "commit": repo.commit().hexsha,
+            "mux": mux_index,
+        }
+
+        with open('shuttle_index.json', 'w') as shuttle_index_file:
+            json.dump(shuttle_index_data, shuttle_index_file, indent=2)
 
     def list(self):
         for project in self.projects:
