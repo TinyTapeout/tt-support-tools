@@ -58,7 +58,7 @@ class CaravelConfig():
                 mux_address = (module['y'] << 5) + module['x']
                 module_name = 'tt_um_' + module['name']
                 mux_index[mux_address] = {
-                    "macro": "module_name",
+                    "macro": module_name,
                     "x": module['x'],
                     "y": module['y'],
                     "repo": project.git_url,
