@@ -62,9 +62,10 @@ class CaravelConfig():
                     "macro": module_name,
                     "x": module['x'],
                     "y": module['y'],
+                    "tiles": f"{module['width']}x{module['height']}",
                     "repo": project.git_url,
                     "commit": project.commit_id,
-                },
+                }
                 mux_index_reverse[module_name] = mux_address
             
         for project in self.projects:
