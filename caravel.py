@@ -39,8 +39,14 @@ class CaravelConfig():
             configured_macros = set(map(lambda mod: mod['name'], module_config['modules']))
             logging.info(f"found {len(configured_macros)} preconfigured macros: {configured_macros}")
             for project in self.projects:
+                tiles = project.yaml['project']['tiles']
+                width, height = map(int, tiles.split('x'))
                 if project.unprefixed_name not in configured_macros:
-                    module_config['modules'].append({'name': project.unprefixed_name})
+                    module_config['modules'].append({
+                        'name': project.unprefixed_name,
+                        'width': width,
+                        'height': height,
+                    })
 
         with open('tt-multiplexer/cfg/modules.yaml', 'w') as mux_modules_file:
             yaml.dump(module_config, mux_modules_file)
