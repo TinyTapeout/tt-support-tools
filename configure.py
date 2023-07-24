@@ -43,6 +43,7 @@ class Projects():
 
             project = Project(index, commit_id_data['repo'], project_dir, args, is_user_project=False)
             project.commit_id = commit_id_data['commit']
+            project.sort_id = commit_id_data['sort_id']
 
             # projects should now be installed, so load all the data from the yaml files
             # fill projects will load from the fill project's directory
@@ -59,6 +60,8 @@ class Projects():
                 project.check_num_cells()
 
             self.projects.append(project)
+
+        self.projects.sort(key=lambda x: x.sort_id)
 
         all_macro_instances = [project.get_macro_instance() for project in self.projects]
         self.assert_unique(all_macro_instances)
