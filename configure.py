@@ -239,6 +239,7 @@ if __name__ == '__main__':
         docs.dump_json()
 
     if args.dump_markdown:
+        caravel.configure_mux()
         docs.dump_markdown()
 
     if args.build_hugo_content:

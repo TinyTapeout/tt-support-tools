@@ -19,8 +19,9 @@ class Docs():
             readme = fh.read()
         with open("README.md", 'w') as fh:
             fh.write(readme)
-            fh.write("| Index | Author | Title | Type | Git Repo |\n")
-            fh.write("| ----- | ------ | ------| -----| ---------|\n")
+            fh.write("| Address | Author | Title | Type | Git Repo |\n")
+            fh.write("| ------- | ------ | ------| -----| ---------|\n")
+            self.projects.sort(key=lambda x: x.mux_address)
             for project in self.projects:
                 fh.write(project.get_index_row())
 
@@ -65,10 +66,12 @@ class Docs():
         with open(self.args.dump_markdown, 'w') as fh:
             fh.write(doc_header)
 
+            self.projects.sort(key=lambda x: x.mux_address)
+
             for project in self.projects:
                 yaml_data = project.get_project_doc_yaml()
 
-                yaml_data['index'] = project.index
+                yaml_data['mux_address'] = project.mux_address
 
                 logging.info(f"building datasheet for {project}")
                 # handle pictures

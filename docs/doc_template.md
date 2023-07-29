@@ -1,4 +1,4 @@
-## {index} : {title}
+## {title} [{mux_address}]
 
 {picture_link}
 

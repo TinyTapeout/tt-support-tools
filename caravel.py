@@ -64,6 +64,7 @@ class CaravelConfig():
                 mux_address = (module['y'] << 5) + module['x']
                 module_name = 'tt_um_' + module['name']
                 project = next(p for p in self.projects if p.top_module == module_name)
+                project.mux_address = mux_address
                 mux_index[mux_address] = {
                     "macro": module_name,
                     "x": module['x'],

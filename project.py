@@ -179,7 +179,7 @@ class Project():
 
     # docs stuff for index on README.md
     def get_index_row(self):
-        return f'| {self.index} | {self.yaml["documentation"]["author"]} | {self.yaml["documentation"]["title"]} | {self.get_project_type_string()} | {self.git_url} |\n'
+        return f'| {self.mux_address} | {self.yaml["documentation"]["author"]} | {self.yaml["documentation"]["title"]} | {self.get_project_type_string()} | {self.git_url} |\n'
 
     def get_project_type_string(self):
         if self.is_wokwi():
