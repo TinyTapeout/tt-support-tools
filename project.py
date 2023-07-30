@@ -11,6 +11,7 @@ import json
 import git_utils
 import git
 import shutil
+from markdown_utils import limit_markdown_headings
 
 CELL_URL = 'https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/'
 
@@ -192,6 +193,9 @@ class Project():
         docs = self.yaml['documentation']
         docs['project_type'] = self.get_project_type_string()
         docs['git_url'] = self.git_url
+        # "How it works" and "How to test" may include markdown headings - make sure they don't break the ToC
+        docs['how_it_works'] = limit_markdown_headings(docs['how_it_works'], min_level=4)
+        docs['how_to_test'] = limit_markdown_headings(docs['how_to_test'], min_level=4)
         return docs
 
     def get_wokwi_url(self):
