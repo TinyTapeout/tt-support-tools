@@ -3,8 +3,10 @@ import logging
 import subprocess
 import shutil
 import json
-from git_utils import get_first_remote
 import git
+import frontmatter
+from git_utils import get_first_remote
+from markdown_utils import rewrite_image_paths
 
 
 class Docs():
@@ -47,24 +49,26 @@ class Docs():
             fh.write(json.dumps(designs, indent=4))
         logging.info(f'wrote json to {self.args.dump_json}')
 
+    def load_doc_template(self, name):
+        root = os.path.join(self.script_dir, 'docs')
+        doc_path = os.path.join(root, name)
+        image_root = os.path.relpath(os.path.dirname(doc_path), ".")
+        doc = frontmatter.load(doc_path)
+        doc.content = rewrite_image_paths(doc.content, image_root)
+        if 'title' in doc:
+            doc['title'] = rewrite_image_paths(doc['title'], image_root)
+        if len(doc.keys()) > 0:
+            return frontmatter.dumps(doc) + "\n"
+        else:
+            return doc.content + "\n"
+
     def dump_markdown(self):
-        with open(os.path.join(self.script_dir, 'docs', 'doc_header.md')) as fh:
-            doc_header = fh.read()
-
-        with open(os.path.join(self.script_dir, 'docs', 'doc_template.md')) as fh:
-            doc_template = fh.read()
-
-        with open(os.path.join(self.script_dir, 'docs', 'INFO.md')) as fh:
-            doc_info = fh.read()
-
-        with open(os.path.join(self.script_dir, 'docs', 'VERIFICATION.md')) as fh:
-            doc_verification = fh.read()
-
-        with open(os.path.join(self.script_dir, 'docs', 'STA.md')) as fh:
-            doc_sta = fh.read()
-
-        with open(os.path.join(self.script_dir, 'docs', 'CREDITS.md')) as fh:
-            doc_credits = fh.read()
+        doc_header = self.load_doc_template('doc_header.md')
+        doc_template = self.load_doc_template('doc_template.md')
+        doc_info = self.load_doc_template("../../tt-multiplexer/docs/INFO.md")
+        doc_verification = self.load_doc_template('VERIFICATION.md')
+        doc_sta = self.load_doc_template('STA.md')
+        doc_credits = self.load_doc_template('CREDITS.md')
 
         with open(self.args.dump_markdown, 'w') as fh:
             repo = git.Repo(".")

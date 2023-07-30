@@ -1,6 +1,6 @@
 ---
 title: |
-  ![](pics/ttlogo.png){{width=15cm}}  
+  ![Tiny Tapeout Logo](pics/ttlogo.png){{width=15cm}}  
     {name} Datasheet
 subtitle: Project Repository [{repo}]({repo})
 documentclass: scrartcl

@@ -6,6 +6,7 @@
 * Description: {description}
 * [GitHub repository]({git_url})
 * {project_type} project
+* Mux address: {mux_address}
 * [Extra docs]({doc_link})
 * Clock: {clock_hz} Hz
 * External hardware: {external_hw}
@@ -18,7 +19,7 @@
 
 {how_to_test}
 
-### IO
+### Pinout
 
 | # | Input        | Output       | Bidirectional      |
 |---|--------------|--------------| -------------------|

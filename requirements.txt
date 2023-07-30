@@ -16,6 +16,7 @@ mistune==3.0.1
 numpy==1.24.3
 Pillow==9.5.0
 pycparser==2.21
+python-frontmatter==1.0.0
 pytz==2023.3
 PyYAML==6.0
 requests==2.31.0
