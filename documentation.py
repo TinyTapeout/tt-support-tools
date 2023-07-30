@@ -3,11 +3,14 @@ import logging
 import subprocess
 import shutil
 import json
+from git_utils import get_first_remote
+import git
 
 
 class Docs():
 
-    def __init__(self, projects, args):
+    def __init__(self, config, projects, args):
+        self.config = config
         self.projects = projects
         self.args = args
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -64,7 +67,8 @@ class Docs():
             doc_credits = fh.read()
 
         with open(self.args.dump_markdown, 'w') as fh:
-            fh.write(doc_header)
+            repo = git.Repo(".")
+            fh.write(doc_header.format(name=self.config['name'], repo=get_first_remote(repo)))
 
             self.projects.sort(key=lambda x: x.mux_address)
 

@@ -205,7 +205,7 @@ if __name__ == '__main__':
     else:
         modules_yaml_name = "modules.yaml"
 
-    docs = Docs(projects.projects, args=args)
+    docs = Docs(config, projects.projects, args=args)
     caravel = CaravelConfig(config, projects.projects, modules_yaml_name)
     rom = ROMFile(config, projects.projects)
 

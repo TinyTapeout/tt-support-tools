@@ -2,6 +2,7 @@ import base64
 from urllib.parse import urlparse
 import logging
 import requests
+import git
 import os
 import errno
 
@@ -70,7 +71,7 @@ def split_git_url(url):
 
 
 
-def get_latest_action_url(url, directory):
+def get_latest_action_url(url):
     logging.debug(url)
     user_name, repo = split_git_url(url)
 
@@ -99,3 +100,7 @@ def get_latest_action_url(url, directory):
     page_url = get_most_recent_action_page(commits, runs['workflow_runs'])
 
     return page_url
+
+
+def get_first_remote(repo: git.Repo) -> str:
+    return list(repo.remotes[0].urls)[0]

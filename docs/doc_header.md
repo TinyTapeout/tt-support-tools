@@ -1,17 +1,17 @@
 ---
 title: |
-  ![](pics/ttlogo.png){width=15cm}  
-    Tiny Tapeout 03 Datasheet
-subtitle: Project Repository [https://github.com/TinyTapeout/tinytapeout-03](https://github.com/TinyTapeout/tinytapeout-03)
+  ![](pics/ttlogo.png){{width=15cm}}  
+    {name} Datasheet
+subtitle: Project Repository [{repo}]({repo})
 documentclass: scrartcl
-date: \today{}
+date: \today{{}}
 geometry: "left=2cm,right=2cm,top=2cm,bottom=2.5cm"
 fontsize: 14pt
 mainfont: Latin Modern Sans
 header-includes:
-- \hypersetup{colorlinks=false,
-          allbordercolors={0 0 0},
-          pdfborderstyle={/S/U/W 1}}
+- \hypersetup{{colorlinks=false,
+          allbordercolors={{0 0 0}},
+          pdfborderstyle={{/S/U/W 1}}}}
 ---
 
 \pagebreak
