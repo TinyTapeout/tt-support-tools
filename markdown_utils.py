@@ -33,3 +33,9 @@ class ImagePathRewriterRenderer(MarkdownRenderer):
 def rewrite_image_paths(source: str, prefix: str) -> str:
     markdown = mistune.create_markdown(renderer=ImagePathRewriterRenderer(prefix))
     return markdown(source)
+
+
+def latex_centered_image(src: str):
+    return "\n".join(
+        [r"\begin{center}", rf"\includegraphics[]{{{src}}}", r"\end{center}"]
+    )

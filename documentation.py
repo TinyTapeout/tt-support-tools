@@ -6,7 +6,7 @@ import json
 import git
 import frontmatter
 from git_utils import get_first_remote
-from markdown_utils import rewrite_image_paths
+from markdown_utils import latex_centered_image, rewrite_image_paths
 
 
 class Docs():
@@ -85,11 +85,15 @@ class Docs():
                 # handle pictures
                 yaml_data['picture_link'] = ''
                 if yaml_data['picture']:
-                    # skip SVG for now, not supported by pandoc
-                    picture_name = yaml_data['picture']
-                    if 'svg' not in picture_name:
-                        picture_filename = os.path.join(project.local_dir, picture_name)
-                        yaml_data['picture_link'] = '![picture]({})'.format(picture_filename)
+                    extension = os.path.splitext(yaml_data['picture'])[1]
+                    picture_path = os.path.join(project.local_dir, f"picture{extension}")
+                    if extension == '.svg':
+                        # SVGs are not supported by pandoc
+                        logging.warning(f"Skipping unsupported SVG picture {picture_path}")
+                    elif os.path.exists(picture_path):
+                        yaml_data['picture_link'] = latex_centered_image(picture_path)
+                    else:
+                        logging.warning(f"picture {picture_path} not found, skipping")
 
                 # now build the doc & print it
                 try:

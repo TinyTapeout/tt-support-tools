@@ -373,6 +373,21 @@ class Project():
         shutil.copyfile('golden_config.tcl', os.path.join(self.src_dir, 'config.tcl'))
         self.harden()
 
+    def copy_picture_for_docs(self):
+        picture = self.yaml['documentation']['picture']
+        if not picture:
+            return
+        extension = os.path.splitext(picture)[1]
+        supported_extensions = ['.png', '.jpg', '.jpeg', '.svg']
+        if not os.path.exists(picture):
+            logging.warning(f"Picture file '{picture}' not found in repo, skipping")
+        elif extension not in supported_extensions:
+            logging.warning(f"Picture file '{picture}' has unsupported extension '{extension}' (we support {', '.join(supported_extensions)}), skipping")
+        else:
+            picture_dir = os.path.join(self.local_dir, 'src/__tinytapeout')
+            os.makedirs(picture_dir, exist_ok=True)
+            shutil.copyfile(picture, os.path.join(picture_dir, f'picture{extension}'))
+
     def harden(self):
         cwd = os.getcwd()
         os.chdir(self.local_dir)
@@ -401,6 +416,9 @@ class Project():
             }, f, indent=2)
             f.write("\n")
         
+        # Copy user provided picture (if exists) to project directory
+        self.copy_picture_for_docs()
+
         os.chdir(cwd)
 
     # doc check
