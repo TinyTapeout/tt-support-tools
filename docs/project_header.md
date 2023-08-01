@@ -1,6 +1,6 @@
 ---
 documentclass: scrartcl
-geometry: margin=2cm
+geometry: "left=2cm,right=2cm,top=2cm,bottom=3cm"
 fontsize: 14pt
 mainfont: Latin Modern Sans
 header-includes:
