@@ -219,7 +219,7 @@ if __name__ == '__main__':
         caravel.configure_mux()
         if args.test:
             caravel.write_gl_config()
-        rom.write_rom()
+        #rom.write_rom()
         if not args.test:
             docs.build_index()
 
