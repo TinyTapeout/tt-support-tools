@@ -258,8 +258,8 @@ class TruthTable:
 		
 	async def testAll(self, clk, reset_n, i_bus, o_bus , logger=None):	
 		for i in range(len(self)):
-			reset_n.value = self[i].ctrl[0]
-			clk.value = self[i].ctrl[1]
+			reset_n.value = self[i].ctrl[1]
+			clk.value = self[i].ctrl[0]
 			i_bus.value = self[i].state
 			await Timer(self.stepDelayTime, units=self.stepDelayUnits)  # wait a tad
 			
