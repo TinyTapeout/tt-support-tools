@@ -269,7 +269,9 @@ class TruthTable:
 				
 			expectedResult = self[i].result
 			if logger is not None:
-				logger.info(f'State {i}, setting input to {self[i].state}, expecting {expectedResult} (got {o_bus.value})')
+				if len(self[i].comment):
+					logger.info(self[i].comment)
+				logger.info(f'State {i}, setting input to {self[i].ctrl} {self[i].state}, expecting {expectedResult} (got {o_bus.value})')
 				
 			# this is so stupid that it's probably wrong... there _must_ be
 			# a good way to do this, otherwise _what_ is the point of having
@@ -281,6 +283,7 @@ class TruthTable:
 				if expectedResult.hardBit[bit]:
 					# ok, safe to compare, duh
 					# logger.info(f'Doing bit {bit}: {o_bus[bit]} == {expectedResult[bit]}')
+					
 					assert o_bus[bit] == expectedResult[bit]
 		
 		
