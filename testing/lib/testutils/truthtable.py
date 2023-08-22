@@ -43,32 +43,175 @@
 from string import Template as StringTemplate
 from cocotb.triggers import Timer
 from cocotb.binary import BinaryValue
+from enum import Enum
 import re
 import logging 
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+class BitValue(Enum):
+	DigitalLow = 0 
+	DigitalHigh = 1
+	Toggle = 2
+	Clock = 3
+	NoAction = 4
+	
+	@classmethod 
+	def fromString(cls, v:str):
+		mapping = {
+				'x': BitValue.NoAction,
+				'-': BitValue.NoAction,
+				'0': BitValue.DigitalLow,
+				'1': BitValue.DigitalHigh,
+				't': BitValue.Toggle,
+				'c': BitValue.Clock
+			}
+		if v.lower() in mapping:
+			return mapping[v.lower()]
+		
+		return BitValue.NoAction
 
+	
+	@classmethod 
+	def isDigitalValue(cls, val):
+		if val == BitValue.DigitalLow or val == BitValue.DigitalHigh:
+			return True 
+		return False
+	
+	@classmethod 
+	def toString(cls, v):
+		mapping = {
+			BitValue.NoAction: '-',
+			BitValue.DigitalLow: '0',
+			BitValue.DigitalHigh: '1',
+			BitValue.Clock: 'c',
+			BitValue.Toggle: 't'
+			}
+		if v in mapping:
+			return mapping[v]
+		return str(v)
 class SaneBinaryValue(BinaryValue):
 	def __init__(self, vstr:str):
+		
+		
+		if type(vstr) == list:
+			elements = []
+			for v in vstr:
+				elements.append(BitValue.toString(v))
+			
+			vstr = ''.join(elements)
+			
 		super().__init__(vstr, n_bits=len(vstr), bigEndian=False)
 		numbits = len(vstr)
 		self.hardBit = [True]*numbits
 		for i in range(numbits):
 			c = vstr[i]
-			if c != '1' and c != '0':
+			if c != '1' and c != '0' \
+				and c!= BitValue.DigitalLow and c != BitValue.DigitalHigh:
 				self.hardBit[(numbits - 1) - i] = False
 
+
+
+class TestStep:
+	def __init__(self, nReset:str, clock:str, inputs:str, outputs:str='', comment:str=''):
+		self.nReset = BitValue.fromString(nReset)
+		self.clock = BitValue.fromString(clock)
+		self.inputs = list(map(BitValue.fromString, inputs))
+		if len(outputs):
+			self.outputs = list(map(BitValue.fromString, outputs))
+		else:
+			self.outputs = []
+		
+		self.numClockingActions = 0
+		self.comment = comment
+		self._countClockingActions()
+		
+	def _countClockingActions(self):
+		allIns = [self.nReset, self.clock, *self.inputs]
+		
+		self.numClockingActions = allIns.count(BitValue.Clock)
+		return self.numClockingActions
+		
+		
+	def deepCopy(self):
+		newV = TestStep('0', '0', '0')
+		newV.nReset = self.nReset
+		newV.clock = self.clock
+		newV.inputs = [None] * len(self.inputs)
+		for i in range(len(self.inputs)):
+			newV.inputs[i] = self.inputs[i]
+			
+		if len(self.outputs):
+			newV.outputs = [None] * len(self.outputs)
+			for i in range(len(self.outputs)):
+				newV.outputs[i] = self.outputs[i]
+		
+		newV.comment = self.comment
+		newV._countClockingActions()
+		return newV 
+				
+	def replaceAll(self, replaceBV:BitValue, withBV:BitValue):
+		
+		if self.nReset == replaceBV:
+			self.nReset = withBV 
+		if self.clock == replaceBV:
+			self.clock = withBV 
+			
+		for i in range(len(self.inputs)):
+			if self.inputs[i] == replaceBV:
+				self.inputs[i] = withBV 
+		for i in range(len(self.outputs)):
+			if self.outputs[i] == replaceBV:
+				self.outputs[i] = withBV 
+		
+		self._countClockingActions()
+		return self 
+	
+	def copyWithReplace(self, replaceBV:BitValue, withBV:BitValue):
+		newV = self.deepCopy()
+		newV.replaceAll(replaceBV, withBV)
+		return newV
+		
+	
+	def ignoreOutputs(self):
+		self.outputs = []
+		
+	def __str__(self):
+		return f'{self.nReset} {self.clock} {self.inputs} {self.outputs} ({self.numClockingActions})'
+			
+		
+		
+	
 class TruthMapping:
-	def __init__(self, resultingValue:str):
+	def __init__(self, resultingValue:str, comment:str=''):
 		self.result = SaneBinaryValue(resultingValue)
+		self.comment = comment
 		
 		
 	def __str__(self):
 		return f'Expecting {self.result.binstr}'
 		
+
+class OneToOneTruthMapping(TruthMapping):
+	def __init__(self, state:str, output:str, comment:str=''):
+		super().__init__(output, comment)
+		self.state = SaneBinaryValue(state)
+
+
+	def __str__(self):
+		if len(self.comment):
+			return f'Set {self.ctrl.binstr} {self.state.binstr}, expect {self.result.binstr}\t#{self.comment}'
 		
+		return f'Set {self.ctrl.binstr} {self.state.binstr}, expect {self.result.binstr}'
+		
+		
+class OneToOneTruthMappingWithControls(OneToOneTruthMapping):
+	def __init__(self, ctrlBits:str, state:str, output:str, comment:str=''):
+		super().__init__(state, output, comment)
+		self.ctrl = SaneBinaryValue(ctrlBits)
+
+
 		
 		
 class TruthTable:
@@ -113,9 +256,10 @@ class TruthTable:
 		print(str(self))
 		
 		
-	async def testAll(self, i_bus, o_bus, logger=None):	
+	async def testAll(self, clk, reset_n, i_bus, o_bus , logger=None):	
 		for i in range(len(self)):
-			
+			reset_n.value = self[i].ctrl[0]
+			clk.value = self[i].ctrl[1]
 			i_bus.value = self[i].state
 			await Timer(self.stepDelayTime, units=self.stepDelayUnits)  # wait a tad
 			
@@ -138,16 +282,6 @@ class TruthTable:
 					# ok, safe to compare, duh
 					# logger.info(f'Doing bit {bit}: {o_bus[bit]} == {expectedResult[bit]}')
 					assert o_bus[bit] == expectedResult[bit]
-		
-		
-class OneToOneTruthMapping(TruthMapping):
-	def __init__(self, state:str, output:str):
-		super().__init__(output)
-		self.state = SaneBinaryValue(state)
-
-
-	def __str__(self):
-		return f'Set {self.state.binstr}, expect {self.result.binstr}'
 		
 		
 
@@ -233,6 +367,7 @@ class TestTableParser:
 		self._truthTable = None 
 		self._textTable = []
 		
+		self._ctrlBits = SaneBinaryValue('10')
 		self._currentInput = SaneBinaryValue('0'*numIOBits)
 		self._ignoreOutput = SaneBinaryValue('-'*numIOBits)
 		
@@ -249,9 +384,36 @@ class TestTableParser:
 			
 		return self._truthTable
 	
+	def _stateFromBits(self, inputBits:list, cache:dict):
+		
+		numBits = len(inputBits)
+		newBits = ['0'] * numBits
+		
+		for i in range(numBits):
+			bv = inputBits[i]
+			if BitValue.isDigitalValue(bv):
+				cache[i] = bv.value
+				newBits[i] = str(bv.value)
+			elif bv == BitValue.Toggle:
+				cache[i] = ~cache[i]
+				newBits[i] = str(cache[i])
+			else:
+				# unchanged 
+				newBits[i] = str(cache[i])
+				
+		
+		return newBits
+				
 	
 	
+	def _ctrlStateFromBits(self, nReset:BitValue, clock:BitValue):
+		return self._stateFromBits([nReset, clock], self._ctrlBits)
+			
 	def _inputStateFromBits(self, inputBits):
+		return self._stateFromBits(inputBits, self._currentInput)
+				
+	
+	def _inputStateFromBits2(self, inputBits):
 		
 		newBits = ['0'] * self.numIOBits
 		
@@ -270,15 +432,70 @@ class TestTableParser:
 				
 		
 		return ''.join(newBits)
-				
 	
-	def addStep(self, inputValue:str, outputValue:str=''):
+	
+	def addTruthTableMapping(self, step:TestStep):
+		if step.numClockingActions:
+			raise ValueError(f'Cannot add step with clocking actions: {str(step)}')
+		
+		ctrlBinVal = SaneBinaryValue(self._ctrlStateFromBits(step.nReset, step.clock))
+		
+		inputBinVal = SaneBinaryValue(self._inputStateFromBits(step.inputs))
+		
+		outputBinVal = self._ignoreOutput
+		
+		if len(step.outputs):
+			# self.log.info(f'outval is "{step.outputs}"')
+			outputBinVal = SaneBinaryValue(step.outputs)
+		 
+		self.truthTable.addMapping(OneToOneTruthMappingWithControls(ctrlBinVal.binstr, inputBinVal.binstr, outputBinVal.binstr, step.comment))
+		self._textTable.append(step)
+		return True
+				
+	def addStep(self, step:TestStep):
+		# step = TestStep(nReset, clock, inputs, outputs)
+		
+		if not step.numClockingActions:
+			self.addTruthTableMapping(step)
+			return 
+		
+		# have clocking... need to append multiple 
+		# events to mapping 
+		
+		# do setup
+		# replace clocking by 'no action'
+		setupStep = step.copyWithReplace(BitValue.Clock, BitValue.NoAction)
+		setupStep.ignoreOutputs()
+		setupStep.comment = ''
+		
+		# next: leave clocking on, but replace any toggles with no action
+		# so we don't double toggle,
+		# copy from original
+		clockStep1 = step.copyWithReplace(BitValue.Toggle, BitValue.NoAction)
+		
+		clockStep1.replaceAll(BitValue.Clock, BitValue.Toggle)
+		# get a second clocking step, no toggle
+		clockStep2 = clockStep1.deepCopy()
+		
+		# and ignore the outputs on that first clock substep
+		clockStep1.ignoreOutputs()
+		clockStep1.comment = ''
+		
+		# now add these steps as well, so each clocking step 
+		# becomes a sequence of 3 in mapping
+		
+		self.addTruthTableMapping(setupStep) # this steps sets bits and toggles toggled
+		
+		self.addTruthTableMapping(clockStep1) # this clocks the clocks, leaves toggles alone, ignores outputs
+		self.addTruthTableMapping(clockStep2) # same as previous, but preserves outputs oof
+	
+		
+	def addStep2(self, nReset:str, clock:str, inputValue:str, outputValue:str=''):
 		inputBits = self.valueParser.inputFrom(inputValue)
 		
 		if inputBits is None or not len(inputBits):
 			self.log.info(f'Unable to parse input bits: {inputValue}')
 			return False 
-		
 		
 		if inputBits.find('c') >= 0:
 			# clocking...
@@ -333,10 +550,10 @@ class TestTableParser:
 		retStrs = [f'Truth table parser with {len(self._textTable)} steps added.']
 		for i in range(len(self._textTable)):
 			step = self._textTable[i]
-			if step[1] is not None and len(step[1]):
-				retStrs.append(f'{i+1}\t{step[0]} -> {step[1]}')
+			if step.outputs is not None and len(step.outputs):
+				retStrs.append(f'{i+1}\t{step.nReset}, {step.clock}, {step.inputs} -> {step.outputs} {step.comment}')
 			else:
-				retStrs.append(f'{i+1}\t{step[0]}')
+				retStrs.append(f'{i+1}\t{step.nReset}, {step.clock}, {step.inputs} {step.comment}')
 		
 		return '\n'.join(retStrs)
 	
@@ -379,7 +596,7 @@ class MarkdownTestTableParser(TestTableParser):
 		
 		'''
 		super().__init__(logger)
-		
+		self.bitSettingsRe = re.compile(r'^([01xXtTcC\s-])+$')
 		self.columnSeperatorRe = columnSeparatorRegex
 		eol = r'(\r\n|\r|\n)' 
 		
@@ -398,6 +615,57 @@ class MarkdownTestTableParser(TestTableParser):
 		self.rowItemSplitterRe = re.compile(self.columnSeperatorRe)
 		
 	def parseMarkdownTable(self, contents:str):
+		contentRowMatches = self.contentRowRe.findall(contents)
+		ttableRows = []
+		pastHeader = False
+		for aMatch in contentRowMatches:
+			fullLine = aMatch[0]
+			cols = re.split(self.columnSeperatorRe, fullLine)
+			if not pastHeader:
+				if len(cols) < 2:
+					continue 
+				if len(cols[1]) and (len(cols[1].replace('-', '')) == 0):
+					pastHeader = True 
+				
+				continue
+			
+			# we have made it past header
+			row = []
+			numComments = 0
+			numBitfields = 0
+			for acolumn in cols[1:]:
+				bitMatch = self.bitSettingsRe.match(acolumn)
+				if bitMatch is not None and len(bitMatch.group(0)):
+					row.append(re.sub(r'\s+', '', bitMatch.group(0)))
+					numBitfields += 1
+				else:
+					row.append(acolumn.strip())
+					if numComments:
+						raise ValueError(f'Have multiple non-bit columns in table? "{acolumn}"')
+					numComments += 1
+			
+			if numBitfields < 3:
+				raise ValueError(f'Not enough bitfields in table row\n{fullLine}')
+			
+			ttableRows.append(row)
+			
+		# we now have all the active rows in a single array of arrays
+		# RC,  INPUTS, OUTPUT, [comment]
+		for aRow in ttableRows:
+			comment = ''
+			if len(aRow) > 3:
+				comment = aRow[3]
+			# print(f"COMMENT IS {comment}")
+			self.addStep(TestStep(aRow[0][0], aRow[0][1], aRow[1], aRow[2], comment))
+			
+		return len(ttableRows)
+				
+				
+				
+			
+			
+		
+	def parseMarkdownTable2(self, contents:str):
 		
 		headerSepSearch = self.headerSepRe.search(contents)
 		if headerSepSearch is not None:
@@ -512,22 +780,34 @@ TruthTableExample = '''
 
 # with comments and spacing
 TruthTableMarkdownExample  = '''
-|IN:  CBA  RC  |    output    | comment   |
-|--------------|--------------|-----------|
-| 000 000  00  | -- ----- -   | init      |
-| --- ---  1c  | -- ----- -   | reset     |
-| --- ---  0c  | -- ----- -   |           |
-| --- 111  -c  | -- 11100 -   |           |
-| --- 110  -c  | -- 11111 -   | success   |
-| --- 000  tc  | -- ----- -   | reset     |
-| --- ---  tc  | -- 11100 -   | locked    |
-| --- 111  -c  | -- 11100 -   | bad combo |
-| --- 100  -c  | -- 11100 -   | bad combo |
-| --- 101  -c  | -- 11100 -   | bad combo |
-| --- 100  -c  | -- 11100 -   | bad combo |
-| --- 110  -c  | -- 11111 -   | success   |
-| --- 000  -c  | -- 11111 -   | still open|
-| --- ---  1c  | -- 11100 -   | reset     |
+This is some random comments text...
+
+and more 
+
+|RC| D  C  B  A  CDIS xxx |    segments     |        comment         |
+|--|----------------------|-----------------|------------------------|
+|10| 0  0  0  0    1  000 |   -111 1000     |    disable clocking    |
+|xx| 0  0  0  1    x  xxx |   -111 1011     |    0b0001 (AB'C'D')    |
+|xx| 0  0  1  0    x  xxx |   -000 0000     |    0b0010 (A'BC'D')    |
+|xx| 0  1  0  0    x  xxx |   -101 0100     |    0b0100 (A'B'CD')    |
+|xx| 1  0  0  0    x  xxx |   -001 0000     |    0b1000 (A'B'C'D)    |
+|xx| 1  0  0  1    x  xxx |   -101 1100     |    AB'C'D: "o"         |
+|1c| 0  0  0  0    0  xxx |   ---- ----     |  enable clocking+reset |
+|0c| x  x  x  x    x  xxx |   -111 1000     |    T                   |
+|xc| x  x  x  x    x  xxx |   -001 0000     |    i                   |
+|xc| x  x  x  x    x  xxx |   -101 0100     |    n                   |
+|xc| x  x  x  x    x  xxx |   -110 1110     |    y                   |
+|xc| x  x  x  x    x  xxx |   -000 0000     |    "space"             |
+|xc| x  x  x  x    x  xxx |   -111 1000     |    t                   |
+|xc| x  x  x  x    x  xxx |   -111 0111     |    a                   |
+|xc| x  x  x  x    x  xxx |   -111 0011     |    p                   |
+|xc| x  x  x  x    x  xxx |   -111 1011     |    e                   |
+|xc| x  x  x  x    x  xxx |   -101 1100     |    o                   |
+|xc| x  x  x  x    x  xxx |   -001 1100     |    u                   |
+|xc| x  x  x  x    x  xxx |   -111 1000     |    t                   |
+|xc| x  x  x  x    x  xxx |   -111 1000     |    T                   |
+
+booya
 '''
 if __name__ == "__main__":
 	m = MarkdownTestTableParser()
