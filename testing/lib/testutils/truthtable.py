@@ -256,7 +256,7 @@ class TruthTable:
 		print(str(self))
 		
 		
-	async def testAll(self, clk, reset_n, i_bus, o_bus , logger=None):	
+	async def testAll(self, reset_n, clk, i_bus, o_bus , logger=None):	
 		for i in range(len(self)):
 			reset_n.value = self[i].ctrl[0]
 			clk.value = self[i].ctrl[1]
