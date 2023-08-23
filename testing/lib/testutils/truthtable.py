@@ -219,7 +219,7 @@ class TruthTable:
 		Holds the sequence/expected mapping of inputs -> outputs
 		and provides an async testAll() to perform the testing.
 	'''
-	def __init__(self, interStepDelay:int=10, interStepTimeUnits:str='ns'):
+	def __init__(self, interStepDelay:int=20, interStepTimeUnits:str='ns'):
 		self.mappings = []
 		self.stepDelayTime = interStepDelay
 		self.stepDelayUnits = interStepTimeUnits
@@ -370,7 +370,7 @@ class TestTableParser:
 		self._truthTable = None 
 		self._textTable = []
 		
-		self._ctrlBits = SaneBinaryValue('10')
+		self._ctrlBits = SaneBinaryValue('00')
 		self._currentInput = SaneBinaryValue('0'*numIOBits)
 		self._ignoreOutput = SaneBinaryValue('-'*numIOBits)
 		
@@ -398,11 +398,17 @@ class TestTableParser:
 				cache[i] = bv.value
 				newBits[i] = str(bv.value)
 			elif bv == BitValue.Toggle:
-				cache[i] = ~cache[i]
+				#print(f"TOGGLING {cache[i]}")
+				if cache[i]:
+					cache[i] = 0
+				else:
+					cache[i] = 1
 				newBits[i] = str(cache[i])
+				#print(f"BIT NOW {newBits[i]} {cache[i]}")
 			else:
 				# unchanged 
 				newBits[i] = str(cache[i])
+			
 				
 		
 		return newBits
@@ -414,27 +420,6 @@ class TestTableParser:
 			
 	def _inputStateFromBits(self, inputBits):
 		return self._stateFromBits(inputBits, self._currentInput)
-				
-	
-	def _inputStateFromBits2(self, inputBits):
-		
-		newBits = ['0'] * self.numIOBits
-		
-		for i in range(self.numIOBits):
-			
-			if inputBits[i] == '0' or inputBits[i] == '1':
-				newBits[i] = inputBits[i]
-				self._currentInput[i] = int(inputBits[i])
-			elif inputBits[i] == 't':
-				# toggled
-				self._currentInput[i] = ~self._currentInput[i]
-				newBits[i] = str(self._currentInput[i])
-			else:
-				# unchanged
-				newBits[i] = str(self._currentInput[i])
-				
-		
-		return ''.join(newBits)
 	
 	
 	def addTruthTableMapping(self, step:TestStep):
@@ -469,7 +454,7 @@ class TestTableParser:
 		# replace clocking by 'no action'
 		setupStep = step.copyWithReplace(BitValue.Clock, BitValue.NoAction)
 		setupStep.ignoreOutputs()
-		setupStep.comment = ''
+		setupStep.comment = '(setup + clocking)'
 		
 		# next: leave clocking on, but replace any toggles with no action
 		# so we don't double toggle,
@@ -491,57 +476,6 @@ class TestTableParser:
 		
 		self.addTruthTableMapping(clockStep1) # this clocks the clocks, leaves toggles alone, ignores outputs
 		self.addTruthTableMapping(clockStep2) # same as previous, but preserves outputs oof
-	
-		
-	def addStep2(self, nReset:str, clock:str, inputValue:str, outputValue:str=''):
-		inputBits = self.valueParser.inputFrom(inputValue)
-		
-		if inputBits is None or not len(inputBits):
-			self.log.info(f'Unable to parse input bits: {inputValue}')
-			return False 
-		
-		if inputBits.find('c') >= 0:
-			# clocking...
-			setupInputs = inputBits.replace('c', 'x')
-			self.log.debug(f'Have clocking in inputs {inputBits}, adding setup step {setupInputs}')
-			self.addStep(setupInputs) # setup
-			
-			# clock edge 1
-			
-			clockEdges = inputBits.replace('t', 'x') # don't toggle twice!
-			
-			clockInAndHold = clockEdges.replace('c', 't')
-			
-			self.log.debug(f'Now clock {clockEdges} x2')
-			
-			self.addStep(clockInAndHold) # clock in
-			
-			# clock edge 2
-			self.addStep(clockInAndHold) # clock out
-		
-		
-		inputBinVal = SaneBinaryValue(self._inputStateFromBits(inputBits))
-		
-		outputBinVal = self._ignoreOutput
-		
-		outputBits = ''
-		if outputValue is not None and len(outputValue):
-			self.log.info(f'outval is "{outputValue}"')
-			outputBits = self.valueParser.outputFrom(outputValue)
-			if outputBits is None or not len(outputBits):
-				self.log.info(f'Unable to parse output bits: {outputBits}')
-				return False 
-			
-			outputBinVal = SaneBinaryValue(outputBits)
-			
-			
-			
-			
-		self.log.info(f'Mapped {inputBits} -> {outputBits} ({inputBinVal} -> {outputBinVal})')
-		
-		self.truthTable.addMapping(OneToOneTruthMapping(inputBinVal.binstr, outputBinVal.binstr))
-		self._textTable.append((inputBits, outputBits))
-		return True
 	
 	def generateFrom(self, contents:str):
 		self.reset() # reset the table
@@ -662,59 +596,6 @@ class MarkdownTestTableParser(TestTableParser):
 			self.addStep(TestStep(aRow[0][0], aRow[0][1], aRow[1], aRow[2], comment))
 			
 		return len(ttableRows)
-				
-				
-				
-			
-			
-		
-	def parseMarkdownTable2(self, contents:str):
-		
-		headerSepSearch = self.headerSepRe.search(contents)
-		if headerSepSearch is not None:
-			# did have a header
-			# dump it, and everything before it
-			headerSpan = headerSepSearch.span()
-			headerEndPos = headerSpan[1] 
-			self.log.debug(f"Dumping header to {headerEndPos}\n{contents[:headerEndPos]}")
-			contents = contents[headerEndPos:]
-			
-		# extract valid rows in first pass 
-		self.log.debug(f"Content row RE is {self.contentRowRe}")
-		contentRowMatches = self.contentRowRe.findall(contents)
-		if contentRowMatches is None or not len(contentRowMatches):
-			self.log.error('No valid rows found in markdown table')
-			return False
-		
-		
-		numSteps = 0
-		for aRow in contentRowMatches:
-			self.log.debug(f'Matched row {aRow}')
-			entries = self.rowItemSplitterRe.split(aRow[0])
-			
-			# note, we have entries like
-			# SEP AAA SEP BBB SEP
-			# so splitting on SEP gives us an empty entry at front of list
-			# hence the requirement for len == 2 for at least 1 entry, len == 3 
-			# for input and output.
-			
-			if len(entries) < 2:
-				self.log.info(f'Row has insufficient entries ? ("{aRow[0]}")')
-				continue
-			
-			inVal = entries[1]
-			outVal = None 
-			
-			if len(entries) > 2 and len(entries[2]):
-				outVal = entries[2].strip()
-				
-			if self.addStep(inVal, outVal):
-				numSteps += 1
-				
-		
-		return numSteps
-				
-			
 			
 
 	def generateFrom(self, contents:str):
