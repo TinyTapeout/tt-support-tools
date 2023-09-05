@@ -95,6 +95,11 @@ class Docs():
                     else:
                         logging.warning(f"picture {picture_path} not found, skipping")
 
+                # ensure there are no LaTeX escape sequences in various fields
+                for key in ['author', 'description', 'how_it_works', 'how_to_test']:
+                    if key in yaml_data:
+                        yaml_data[key] = yaml_data[key].replace("\\", "\\\\")
+
                 # now build the doc & print it
                 try:
                     doc = doc_template.format(**yaml_data)
