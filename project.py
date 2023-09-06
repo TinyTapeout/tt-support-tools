@@ -261,7 +261,10 @@ class Project():
     # metrics
     def get_metrics_path(self):
         if self.is_user_project:
-            return os.path.join(self.local_dir, 'runs/wokwi/reports/metrics.csv')
+            if self.args.openlane2:
+                return os.path.join(self.local_dir, 'runs/wokwi/final/metrics.csv')
+            else:
+                return os.path.join(self.local_dir, 'runs/wokwi/reports/metrics.csv')
         else:
             return os.path.join(self.local_dir, 'metrics.csv')
 
@@ -474,6 +477,8 @@ class Project():
     # SVG and PNG renders of the GDS
     def create_svg(self):
         gds = glob.glob(os.path.join(self.local_dir, 'runs/wokwi/results/final/gds/*gds'))
+        if self.args.openlane2:
+            gds = glob.glob(os.path.join(self.local_dir, 'runs/wokwi/final/gds/*gds'))
         library = gdstk.read_gds(gds[0])
         top_cells = library.top_level()
         top_cells[0].write_svg('gds_render.svg')
@@ -483,7 +488,10 @@ class Project():
 
     def print_warnings(self):
         warnings = []
-        with open(os.path.join(self.local_dir, 'runs/wokwi/logs/synthesis/1-synthesis.log')) as f:
+        synth_log = 'runs/wokwi/logs/synthesis/1-synthesis.log'
+        if self.args.openlane2:
+            synth_log = 'runs/wokwi/02-yosys-synthesis/yosys-synthesis.log'
+        with open(os.path.join(self.local_dir, synth_log)) as f:
             for line in f.readlines():
                 if line.startswith('Warning:'):
                     # bogus warning https://github.com/YosysHQ/yosys/commit/bfacaddca8a2e113e4bc3d6177612ccdba1555c8
@@ -573,6 +581,8 @@ class Project():
         cell_count = {}
         total = 0
         gl_files = glob.glob(os.path.join(self.local_dir, 'runs/wokwi/results/final/verilog/gl/*.nl.v'))
+        if self.args.openlane2:
+            gl_files = glob.glob(os.path.join(self.local_dir, 'runs/wokwi/final/nl/*.nl.v'))
         with open(gl_files[0]) as fh:
             for line in fh.readlines():
                 m = re.search(r'sky130_(\S+)__(\S+)_(\d+)', line)

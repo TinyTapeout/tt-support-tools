@@ -9,6 +9,7 @@ if __name__ == '__main__':
     parser.add_argument('--project-dir', help="location of the project", default='.')
     parser.add_argument('--yaml', help="the project's yaml configuration file", default='info.yaml')
     parser.add_argument('--debug', help="debug logging", action="store_const", dest="loglevel", const=logging.DEBUG, default=logging.INFO)
+    parser.add_argument('--openlane2', help="use openlane 2", action="store_const", const=True, default=False)
 
     # reports & summaries
     parser.add_argument('--print-cell-summary', help="print summary", action="store_const", const=True, default=False)
