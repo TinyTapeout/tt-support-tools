@@ -400,17 +400,26 @@ class Project():
         tt_version = self.get_tt_tools_version()
         workflow_url = self.get_workflow_url()
       
-        # requires PDK, PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
-        harden_cmd = 'docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME /bin/bash -c "./flow.tcl -overwrite -design /work/src -run_path /work/runs -tag wokwi"'
-        logging.debug(harden_cmd)
-        env = os.environ.copy()
-        p = subprocess.run(harden_cmd, shell=True, env=env)
-        if p.returncode != 0:
-            logging.error("harden failed")
-            exit(1)
+        if self.args.openlane2:
+            if not os.path.exists('runs/wokwi'):
+                print("OpenLane 2 harden not supported yet, please run OpenLane 2 manually")
+                exit(1)
+            print("Writing commit information on top of the existing OpenLane 2 run (runs/wokwi)")
+        else:
+            # requires PDK, PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
+            harden_cmd = 'docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME /bin/bash -c "./flow.tcl -overwrite -design /work/src -run_path /work/runs -tag wokwi"'
+            logging.debug(harden_cmd)
+            env = os.environ.copy()
+            p = subprocess.run(harden_cmd, shell=True, env=env)
+            if p.returncode != 0:
+                logging.error("harden failed")
+                exit(1)
         
         # Write commit information
-        with open(os.path.join(self.local_dir, 'runs/wokwi/results/final/commit_id.json'), 'w') as f:
+        commit_id_json_path = 'runs/wokwi/results/final/commit_id.json'
+        if self.args.openlane2:
+            commit_id_json_path = 'runs/wokwi/final/commit_id.json'
+        with open(os.path.join(self.local_dir, commit_id_json_path), 'w') as f:
             json.dump({
                 "app": f"Tiny Tapeout {tt_version}",
                 "repo": repo,
