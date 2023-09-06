@@ -4,10 +4,10 @@
 
 * Author: {author}
 * Description: {description}
-* [GitHub repository]({git_url})
+* [GitHub repository](__git_url__)
 * {project_type} project
 * Mux address: {mux_address}
-* [Extra docs]({doc_link})
+* [Extra docs](__doc_link__)
 * Clock: {clock_hz} Hz
 * External hardware: {external_hw}
 

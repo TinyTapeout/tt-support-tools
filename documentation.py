@@ -104,7 +104,11 @@ class Docs():
 
                 # now build the doc & print it
                 try:
-                    doc = doc_template.format(**yaml_data)
+                    doc = (doc_template
+                        .replace('__git_url__', '{git_url}')
+                        .replace('__doc_link__', '{doc_link}')
+                        .format(**yaml_data)
+                    )
                     fh.write(doc)
                     fh.write("\n\clearpage\n")
                 except IndexError:
