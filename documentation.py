@@ -66,8 +66,6 @@ class Docs():
         doc_header = self.load_doc_template('doc_header.md')
         doc_template = self.load_doc_template('doc_template.md')
         doc_info = self.load_doc_template("../../tt-multiplexer/docs/INFO.md")
-        doc_verification = self.load_doc_template('VERIFICATION.md')
-        doc_sta = self.load_doc_template('STA.md')
         doc_credits = self.load_doc_template('CREDITS.md')
 
         with open(self.args.dump_markdown, 'w') as fh:
@@ -116,10 +114,6 @@ class Docs():
 
             # ending
             fh.write(doc_info)
-            fh.write("\n\clearpage\n")
-            fh.write(doc_verification)
-            fh.write("\n\clearpage\n")
-            fh.write(doc_sta)
             fh.write("\n\clearpage\n")
             fh.write(doc_credits)
 
