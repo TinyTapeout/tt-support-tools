@@ -381,7 +381,7 @@ class Project():
         if not picture:
             return
         extension = os.path.splitext(picture)[1]
-        supported_extensions = ['.png', '.jpg', '.jpeg', '.svg']
+        supported_extensions = ['.png', '.jpg', '.jpeg', '.svg', '.pdf']
         if not os.path.exists(picture):
             logging.warning(f"Picture file '{picture}' not found in repo, skipping")
         elif extension not in supported_extensions:
