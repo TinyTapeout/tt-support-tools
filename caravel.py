@@ -150,4 +150,4 @@ class CaravelConfig():
         copy_print("verilog/rtl/user_defines.v", "efabless/verilog/rtl/user_defines.v")
         copy_print(f"{lastrun}/final/pnl/user_project_wrapper.pnl.v", f"efabless/verilog/gl/user_project_wrapper.v")
         copy_print(f"{lastrun}/final/gds/user_project_wrapper.magic.gds", f"efabless/gds/user_project_wrapper.gds")
-        copy_print(f"{lastrun}/final/lef/user_project_wrapper.lef", f"efabless/lef/user_project_wrapper.gds")
+        copy_print(f"{lastrun}/final/lef/user_project_wrapper.lef", f"efabless/lef/user_project_wrapper.lef")
