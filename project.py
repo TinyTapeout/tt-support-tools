@@ -462,12 +462,8 @@ class Project():
             # handle pictures
             yaml['picture_link'] = ''
             if yaml['picture']:
-                # skip SVG for now, not supported by pandoc
                 picture_name = yaml['picture']
-                if 'svg' not in picture_name:
-                    yaml['picture_link'] = '![picture]({})'.format(picture_name)
-                else:
-                    logging.warning("svg not supported")
+                yaml['picture_link'] = '![picture]({})'.format(picture_name)
 
             # now build the doc & print it
             try:
