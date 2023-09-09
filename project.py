@@ -267,6 +267,15 @@ class Project():
                 return os.path.join(self.local_dir, 'runs/wokwi/reports/metrics.csv')
         else:
             return os.path.join(self.local_dir, 'metrics.csv')
+        
+    def get_gl_path(self):
+        if self.is_user_project:
+            if self.args.openlane2:
+                return glob.glob(os.path.join(self.local_dir, 'runs/wokwi/final/nl/*.nl.v'))[0]
+            else:
+                return glob.glob(os.path.join(self.local_dir, 'runs/wokwi/results/final/verilog/gl/*.nl.v'))[0]
+        else:
+            return os.path.join(self.local_dir, f'{self.top_module}.v')
 
     # name of the gds file
     def get_macro_gds_filename(self):
@@ -585,10 +594,7 @@ class Project():
     def get_cell_counts_from_gl(self):
         cell_count = {}
         total = 0
-        gl_files = glob.glob(os.path.join(self.local_dir, 'runs/wokwi/results/final/verilog/gl/*.nl.v'))
-        if self.args.openlane2:
-            gl_files = glob.glob(os.path.join(self.local_dir, 'runs/wokwi/final/nl/*.nl.v'))
-        with open(gl_files[0]) as fh:
+        with open(self.get_gl_path()) as fh:
             for line in fh.readlines():
                 m = re.search(r'sky130_(\S+)__(\S+)_(\d+)', line)
                 if m is not None:
