@@ -17,7 +17,7 @@ def copy_print_glob(pattern: str, dest_dir: str):
         copy_print(file, os.path.join(dest_dir, os.path.basename(file)))
 
 
-class CaravelConfig():
+class ShuttleConfig():
 
     def __init__(self, config, projects, modules_yaml_name: str):
         self.config = config

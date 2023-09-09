@@ -5,7 +5,7 @@ import json
 import argparse, logging, sys, os, collections
 from project import Project
 from documentation import Docs
-from caravel import CaravelConfig
+from shuttle import ShuttleConfig
 from rom import ROMFile
 
 
@@ -55,7 +55,7 @@ class Projects():
                 project.create_user_config()
                 project.golden_harden()
 
-            if args.update_caravel:
+            if args.update_shuttle:
                 project.check_ports()
                 project.check_num_cells()
 
@@ -99,6 +99,31 @@ class Projects():
 
             delt = datetime.timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second)
             total_seconds += delt.total_seconds()
+
+            cell_count = project.get_cell_counts_from_gl()
+            script_dir = os.path.dirname(os.path.realpath(__file__))
+            with open(os.path.join(script_dir, 'categories.json')) as fh:
+                categories = json.load(fh)
+            by_category = {}
+            total = 0
+            for cell_name in cell_count:
+                cat_index = categories['map'][cell_name]
+                cat_name = categories['categories'][cat_index]
+                if cat_name in by_category:
+                    by_category[cat_name]['count'] += cell_count[cell_name]
+                    by_category[cat_name]['examples'].append(cell_name)
+                else:
+                    by_category[cat_name] = {'count' : cell_count[cell_name], 'examples' : [cell_name]}
+
+                if cat_name not in ['Fill', 'Tap', 'Buffer', 'Misc']:
+                    total += cell_count[cell_name]
+
+            if total < 10:
+                del by_category['Fill']
+                del by_category['Tap']
+                if 'Buffer' in by_category:
+                    del by_category['Buffer']
+                print(project.get_macro_name(), total, by_category)
 
             total_wire_length += int(project.metrics['wire_length'])
             total_wires_count += int(project.metrics['wires_count'])
@@ -165,7 +190,7 @@ if __name__ == '__main__':
     
     parser.add_argument('--list', help="list projects", action='store_const', const=True)
     parser.add_argument('--single', help="do action on single project", type=int, default=-1)
-    parser.add_argument('--update-caravel', help='configure caravel for build', action='store_const', const=True)
+    parser.add_argument('--update-shuttle', help='configure shuttle for build', action='store_const', const=True)
     parser.add_argument('--copy-macros', help='copy macros for building the tt_top project', action='store_const', const=True)
     parser.add_argument('--copy-final-results', help='copy final project files to gds/lef directories', action='store_const', const=True)
     parser.add_argument('--create-efabless-submission', help='create efabless submission files', action='store_const', const=True)
@@ -206,31 +231,31 @@ if __name__ == '__main__':
         modules_yaml_name = "modules.yaml"
 
     docs = Docs(config, projects.projects, args=args)
-    caravel = CaravelConfig(config, projects.projects, modules_yaml_name)
+    shuttle = ShuttleConfig(config, projects.projects, modules_yaml_name)
     rom = ROMFile(config, projects.projects)
 
     if args.list:
-        caravel.list()
+        shuttle.list()
 
     if args.metrics:
         projects.build_metrics()
 
-    if args.update_caravel:
-        caravel.configure_mux()
+    if args.update_shuttle:
+        shuttle.configure_mux()
         if args.test:
-            caravel.write_gl_config()
+            shuttle.write_gl_config()
         #rom.write_rom()
         if not args.test:
             docs.build_index()
 
     if args.copy_macros:
-        caravel.copy_macros()
+        shuttle.copy_macros()
 
     if args.copy_final_results:
-        caravel.copy_final_results()
+        shuttle.copy_final_results()
 
     if args.create_efabless_submission:
-        caravel.create_efabless_submission()
+        shuttle.create_efabless_submission()
 
     if args.update_image:
         docs.update_image()
@@ -239,7 +264,7 @@ if __name__ == '__main__':
         docs.dump_json()
 
     if args.dump_markdown:
-        caravel.configure_mux()
+        shuttle.configure_mux()
         docs.dump_markdown()
 
     if args.build_hugo_content:
