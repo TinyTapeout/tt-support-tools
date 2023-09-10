@@ -44,6 +44,8 @@ class Project():
 
     def check_ports(self):
         top = self.get_macro_name()
+        if not self.is_user_project and top == "tt_um_chip_rom":
+            return # Chip ROM is auto generated, so we don't have the verilog yet
         sources = [os.path.join(self.src_dir, src) for src in self.src_files]
         source_list = " ".join(sources)
 
