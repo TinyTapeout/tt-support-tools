@@ -1,4 +1,8 @@
 import git
+import os
+from urllib.parse import urlparse
+
+MAX_ROM_TEXT_SIZE = 92
 
 segment_font = {
     " ": 0b00000000,
@@ -30,7 +34,8 @@ class ROMFile:
         self.config = config
 
     def get_git_remote(self):
-        return list(git.Repo(".").remotes[0].urls)[0]
+        repo_url = list(git.Repo(".").remotes[0].urls)[0]
+        return urlparse(repo_url).path[1:]
 
     def get_git_commit_hash(self):
         return git.Repo(".").commit().hexsha
@@ -39,18 +44,25 @@ class ROMFile:
         rom = bytearray(256)
         short_sha = self.get_git_commit_hash()[:8]
 
-        rom_text = f"shuttle={self.config['name']}\n"
+        rom_text = f"shuttle={self.config['id']}\n"
         rom_text += f"repo={self.get_git_remote()}\n"
         rom_text += f"commit={short_sha}\n"
 
-        assert len(rom_text) < 96, "ROM text too long"
+        print(f"\nROM text: {len(rom_text)} bytes (max={MAX_ROM_TEXT_SIZE})\n")
+        print("  " + "\n  ".join(rom_text.split("\n")))
 
-        rom[0:4] = map(segment_char, "tt04")
+        assert len(rom_text) < MAX_ROM_TEXT_SIZE, "ROM text too long"
+
+        rom[0:4] = map(segment_char, self.config['id'])
         rom[8:16] = map(segment_char, short_sha.upper())
         rom[32 : 32 + len(rom_text)] = rom_text.encode("ascii")
 
-        # build complete list of filenames for sim
-        with open("verilog/includes/rom_tile.vmem", "w") as fh:
+        with open(os.path.join(os.path.dirname(__file__), "rom/rom.vmem"), "w") as fh:
+            for line in rom_text.split("\n"):
+                if len(line) == 0:
+                    continue
+                fh.write(f"// {line}\n")
+            fh.write("\n")
             for line in range(0, len(rom), 16):
                 for byte in range(0, 16):
                     fh.write("{:02x} ".format(rom[line + byte]))

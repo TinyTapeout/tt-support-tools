@@ -100,6 +100,8 @@ class ShuttleConfig():
 
     def find_last_run(self, macro: str):
         runs = f"tt-multiplexer/ol2/{macro}/runs/"
+        if macro == "tt_um_chip_rom":
+            runs = "tt/rom/runs/"
         runlist = sorted(
             [r for r in os.listdir(runs) if r.startswith("RUN_") and os.path.isdir(os.path.join(runs, r))]
         )
@@ -115,7 +117,7 @@ class ShuttleConfig():
         copy_print_glob("projects/*/*.gds", "tt-multiplexer/ol2/tt_top/gds")
         copy_print_glob("projects/*/*.lef", "tt-multiplexer/ol2/tt_top/lef")
         copy_print_glob("projects/*/*.v", "tt-multiplexer/ol2/tt_top/verilog")
-        macros = ["tt_ctrl", "tt_mux"]
+        macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux"]
         for macro in macros:
             lastrun = self.find_last_run(macro)
             copy_print(f"{lastrun}/final/gds/{macro}.gds", f"tt-multiplexer/ol2/tt_top/gds/{macro}.gds")

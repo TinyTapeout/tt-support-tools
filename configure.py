@@ -244,7 +244,7 @@ if __name__ == '__main__':
         shuttle.configure_mux()
         if args.test:
             shuttle.write_gl_config()
-        #rom.write_rom()
+        rom.write_rom()
         if not args.test:
             docs.build_index()
 
