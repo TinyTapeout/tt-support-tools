@@ -118,7 +118,7 @@ class ShuttleConfig():
         macros = ["tt_ctrl", "tt_mux"]
         for macro in macros:
             lastrun = self.find_last_run(macro)
-            copy_print(f"{lastrun}/final/gds/{macro}.magic.gds", f"tt-multiplexer/ol2/tt_top/gds/{macro}.gds")
+            copy_print(f"{lastrun}/final/gds/{macro}.gds", f"tt-multiplexer/ol2/tt_top/gds/{macro}.gds")
             copy_print(f"{lastrun}/final/lef/{macro}.lef", f"tt-multiplexer/ol2/tt_top/lef/{macro}.lef")
             copy_print(f"{lastrun}/final/nl/{macro}.nl.v", f"tt-multiplexer/ol2/tt_top/verilog/{macro}.v")
             copy_print_glob(f"{lastrun}/final/spef/*/*.spef", "tt-multiplexer/ol2/tt_top/spef")
@@ -133,14 +133,14 @@ class ShuttleConfig():
             macro_name = macro if macro != "tt_top" else "user_project_wrapper"
             logging.info(f"** {macro_name} **")
             logging.info(f"  FROM {lastrun}")
-            copy_print(f"{lastrun}/final/gds/{macro_name}.magic.gds", f"gds/{macro_name}.gds")
+            copy_print(f"{lastrun}/final/gds/{macro_name}.gds", f"gds/{macro_name}.gds")
             copy_print(f"{lastrun}/final/lef/{macro_name}.lef", f"lef/{macro_name}.lef")
             copy_print(f"{lastrun}/final/pnl/{macro_name}.pnl.v", f"verilog/gl/{macro_name}.v")
             copy_print(f"{lastrun}/final/nl/{macro_name}.nl.v", f"verilog/gl/{macro_name}.nl.v")
             shutil.copytree(
                 f"{lastrun}/final/spef", f"spef/", copy_function=copy_print, dirs_exist_ok=True
             )
-            copy_print(f"{lastrun}/final/spef/nom_/{macro_name}.nom.spef", f"spef/{macro_name}.spef")
+            copy_print(f"{lastrun}/final/spef/nom_/{macro_name}.nom_.spef", f"spef/{macro_name}.spef")
 
     def create_efabless_submission(self):
         logging.info("creating efabless submission directory:")
@@ -149,5 +149,5 @@ class ShuttleConfig():
         copy_print("shuttle_index.json", "efabless/shuttle_index.json")
         copy_print("verilog/rtl/user_defines.v", "efabless/verilog/rtl/user_defines.v")
         copy_print(f"{lastrun}/final/pnl/user_project_wrapper.pnl.v", f"efabless/verilog/gl/user_project_wrapper.v")
-        copy_print(f"{lastrun}/final/gds/user_project_wrapper.magic.gds", f"efabless/gds/user_project_wrapper.gds")
+        copy_print(f"{lastrun}/final/gds/user_project_wrapper.gds", f"efabless/gds/user_project_wrapper.gds")
         copy_print(f"{lastrun}/final/lef/user_project_wrapper.lef", f"efabless/lef/user_project_wrapper.lef")
