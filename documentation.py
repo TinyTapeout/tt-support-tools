@@ -97,6 +97,10 @@ class Docs():
                     else:
                         yaml_data[key] = ""
 
+                # many people remove unused pins in input / output / bidirectional
+                for key in ['inputs', 'outputs', 'bidirectional']:
+                    yaml_data[key].extend((8 - len(yaml_data[key])) * ['n/a'])
+
                 # now build the doc & print it
                 try:
                     doc = (doc_template
