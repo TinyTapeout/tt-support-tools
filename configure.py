@@ -27,7 +27,7 @@ class Projects():
         self.projects = []
         project_list = [entry for entry in os.listdir(self.project_dir) if os.path.isdir(os.path.join(self.project_dir, entry))]
         if args.test:
-            project_list = ['tt_um_factory_test']
+            project_list = ['tt_um_chip_rom', 'tt_um_factory_test']
         elif args.sta_projects:
             project_list = ['tt_um_loopback']
 
@@ -242,8 +242,6 @@ if __name__ == '__main__':
 
     if args.update_shuttle:
         shuttle.configure_mux()
-        if args.test:
-            shuttle.write_gl_config()
         rom.write_rom()
         if not args.test:
             docs.build_index()
