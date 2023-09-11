@@ -25,14 +25,6 @@ class ShuttleConfig():
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
         self.modules_yaml_name = modules_yaml_name
 
-    def write_gl_config(self):
-        with open('verilog/includes/includes.gl.caravel_user_project', 'w') as fh:
-            fh.write('-v $(USER_PROJECT_VERILOG)/gl/user_project_wrapper.v\n')
-            fh.write('-v $(USER_PROJECT_VERILOG)/gl/tt_ctrl.v\n')
-            fh.write('-v $(USER_PROJECT_VERILOG)/gl/tt_mux.v\n')
-            for project in self.projects:
-                fh.write(f'-v $(USER_PROJECT_VERILOG)/../projects/{project.top_module}/{project.get_gl_verilog_filename()}\n')
-
     def configure_mux(self):
         with open(self.modules_yaml_name, 'r') as modules_file:
             module_config = yaml.safe_load(modules_file)
@@ -127,7 +119,7 @@ class ShuttleConfig():
 
 
     def copy_final_results(self):
-        macros = ["tt_ctrl", "tt_mux", "tt_top"]
+        macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux", "tt_top"]
 
         logging.info('copying final results:')
         for macro in macros:

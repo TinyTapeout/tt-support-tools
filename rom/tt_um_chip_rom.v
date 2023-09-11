@@ -8,6 +8,10 @@
 
 `default_nettype none
 
+`ifndef ROM_VMEM_PATH
+    `define ROM_VMEM_PATH "rom.vmem"
+`endif
+
 module tt_um_chip_rom (
 	input  wire [7:0] ui_in,	// Dedicated inputs
 	output wire [7:0] uo_out,	// Dedicated outputs
@@ -22,7 +26,7 @@ module tt_um_chip_rom (
 	reg [7:0] rom_data [0:255];
 
   initial begin
-		$readmemh("rom.vmem", rom_data);
+		$readmemh(`ROM_VMEM_PATH, rom_data);
 	end
 	
 	assign uo_out  = rom_data[ui_in];
