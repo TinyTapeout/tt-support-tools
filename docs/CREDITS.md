@@ -8,7 +8,7 @@ Tiny Tapeout would not be possible without a lot of people helping. We would esp
 
 * Uri Shaked for [wokwi](https://wokwi.com/) development and lots more
 * [Sylvain Munaut](https://twitter.com/tnt) for help with scan chain improvements
-* [Mike Thompson](https://www.linkedin.com/in/michael-thompson-0a581a/) for verification expertise
+* [Mike Thompson](https://www.linkedin.com/in/michael-thompson-0a581a/) and [Mitch Bailey](https://www.linkedin.com/in/mitch-bailey-8ba0b45/) for verification expertise
 * [Jix](https://twitter.com/jix_) for formal verification support
 * [Proppy](https://twitter.com/proppy) for help with GitHub actions
 * [Maximo Balestrini](https://twitter.com/maxiborga) for all the amazing renders and the interactive GDS viewer
