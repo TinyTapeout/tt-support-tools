@@ -70,37 +70,5 @@ def split_git_url(url):
     return user_name, repo
 
 
-
-def get_latest_action_url(url):
-    logging.debug(url)
-    user_name, repo = split_git_url(url)
-
-    headers = {
-        "Accept"        : "application/vnd.github+json",
-        }
-    # authenticate for rate limiting
-    headers_try_to_add_authorization_from_environment(headers)
-
-    # first fetch the git commit history
-    api_url = f'https://api.github.com/repos/{user_name}/{repo}/commits'
-    r = requests.get(api_url, headers=headers)
-    check_status(r)
-    requests_remaining = int(r.headers['X-RateLimit-Remaining'])
-    if requests_remaining == 0:
-        logging.error("no API requests remaining")
-        exit(1)
-
-    commits = r.json()
-
-    # get runs
-    api_url = f'https://api.github.com/repos/{user_name}/{repo}/actions/runs'
-    r = requests.get(api_url, headers=headers, params={'per_page': 100})
-    check_status(r)
-    runs = r.json()
-    page_url = get_most_recent_action_page(commits, runs['workflow_runs'])
-
-    return page_url
-
-
 def get_first_remote(repo: git.Repo) -> str:
     return list(repo.remotes[0].urls)[0]

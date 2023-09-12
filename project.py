@@ -176,7 +176,7 @@ class Project():
         return self.yaml
 
     def get_hugo_row(self):
-        return f'| {self.index} | [{self.yaml["documentation"]["title"]}]({self.index :03}) | {self.yaml["documentation"]["author"]}|\n'
+        return f'| {self.mux_address} | [{self.yaml["documentation"]["title"]}]({self.mux_address :03}) | {self.yaml["documentation"]["author"]}|\n'
 
     # docs stuff for index on README.md
     def get_index_row(self):
@@ -229,6 +229,12 @@ class Project():
         repo = git.Repo(os.path.join(self.local_dir, "tt"))
         return f"{repo.active_branch.name} {repo.commit().hexsha[:8]}"
     
+    def get_workflow_url_when_submitted(self):
+        json_file = os.path.join(self.local_dir, 'commit_id.json')
+        with open(json_file) as fh:
+            commit_info = json.load(fh)
+        return commit_info['workflow_url']
+
     def get_workflow_url(self):
         GITHUB_SERVER_URL = os.getenv('GITHUB_SERVER_URL')
         GITHUB_REPOSITORY = os.getenv('GITHUB_REPOSITORY')
@@ -243,9 +249,6 @@ class Project():
         else:
         """
         return f"[{self.index:03} : {self.git_url}]"
-
-    def get_latest_action_url(self):
-        return git_utils.get_latest_action_url(self.git_url, self.local_dir)
 
     def get_macro_name(self):
         return self.top_module

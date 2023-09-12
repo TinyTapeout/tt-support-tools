@@ -243,4 +243,5 @@ if __name__ == '__main__':
         docs.dump_markdown()
 
     if args.build_hugo_content:
+        caravel.configure_mux()
         docs.build_hugo_content()
