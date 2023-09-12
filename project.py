@@ -248,7 +248,7 @@ class Project():
             return f"[{self.index:03} : {self.email} : {self.git_url}]"
         else:
         """
-        return f"[{self.index:03} : {self.git_url}]"
+        return f"[{self.mux_address:03} : {self.git_url}]"
 
     def get_macro_name(self):
         return self.top_module

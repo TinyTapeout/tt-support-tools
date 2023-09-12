@@ -213,6 +213,7 @@ if __name__ == '__main__':
         caravel.list()
 
     if args.metrics:
+        caravel.configure_mux()
         projects.build_metrics()
 
     if args.update_caravel:

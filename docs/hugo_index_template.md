@@ -23,10 +23,9 @@ description: 143 designs, closed 8th September 2023
 * 143 projects
 * build time for all projects 8.6 hours
 * total cells 82126
-* max cells 6813 for [project 089](./089)
-* max utilisation 87.18% for [project 053](./053)
+* max cells 6813 for [project 033](./033)
+* max utilisation 87.18% for [project 016](./016)
 * total wire length 2607 mm
-* 94 used Wokwi, 135 Verilog, 1 myhdl, 7 Amaranth, spade 1, xls 2, migen 1, systemverilog 3, mixed radix circuit synthesis (mrcs) 1, chisel 1.
 * 92 used Verilog, 46 Wokwi, 1 SystemVerilog, 1 SpinalHDL, 1 mrcs, 1 spade, 1 RustHDL
 * top 10 tags:
     - test      : 18
