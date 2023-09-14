@@ -66,6 +66,9 @@ class Docs():
         doc_header = self.load_doc_template('doc_header.md')
         doc_template = self.load_doc_template('doc_template.md')
         doc_info = self.load_doc_template("../../tt-multiplexer/docs/INFO.md")
+        doc_errata = self.load_doc_template('ERRATA.md')
+        doc_errata = self.load_doc_template("../../tt-multiplexer/docs/INFO.md")
+        doc_errata = self.load_doc_template('ERRATA.md')
         doc_credits = self.load_doc_template('CREDITS.md')
 
         with open(self.args.dump_markdown, 'w') as fh:
@@ -115,6 +118,8 @@ class Docs():
 
             # ending
             fh.write(doc_info)
+            fh.write("\n\clearpage\n")
+            fh.write(doc_errata)
             fh.write("\n\clearpage\n")
             fh.write(doc_credits)
 
