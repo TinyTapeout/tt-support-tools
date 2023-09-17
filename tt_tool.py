@@ -23,6 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('--create-pdf', help="create a single page PDF", action="store_const", const=True)
     parser.add_argument('--create-svg', help="create a svg of the GDS layout", action="store_const", const=True)
     parser.add_argument('--create-png', help="create a png of the GDS layout", action="store_const", const=True)
+    parser.add_argument('--create-png-preview', help="create compressed png of GDS faster; fall back to --create-png if too complex", action="store_const", const=True)
 
     # configure
     parser.add_argument('--create-user-config', help="create the user_config.tcl file with top module and source files", action="store_const", const=True)
@@ -70,6 +71,9 @@ if __name__ == '__main__':
 
     if args.create_pdf:
         project.create_pdf()
+
+    if args.create_png_preview:
+        project.create_png_preview()
 
     if args.create_svg or args.create_png:
         project.create_svg()

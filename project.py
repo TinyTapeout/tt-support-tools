@@ -489,18 +489,120 @@ class Project():
         p = subprocess.run(pdf_cmd, shell=True)
         if p.returncode != 0:
             logging.error("pdf command failed")
-
-    # SVG and PNG renders of the GDS
-    def create_svg(self):
+    
+    # Read and return top-level GDS data from the final GDS file, using gdstk:
+    def get_final_gds_top_cells(self):
         gds = glob.glob(os.path.join(self.local_dir, 'runs/wokwi/results/final/gds/*gds'))
         if self.args.openlane2:
             gds = glob.glob(os.path.join(self.local_dir, 'runs/wokwi/final/gds/*gds'))
         library = gdstk.read_gds(gds[0])
         top_cells = library.top_level()
-        top_cells[0].write_svg('gds_render.svg')
+        return top_cells[0]
+
+    # SVG and PNG renders of the GDS
+    def create_svg(self):
+        top_cells = self.get_final_gds_top_cells()
+        top_cells.write_svg('gds_render.svg')
 
         if self.args.create_png:
             cairosvg.svg2png(url='gds_render.svg', write_to='gds_render.png')
+
+    # Try various QUICK methods to create a more-compressed PNG render of the GDS,
+    # and fall back to create_svg if it doesn't work. This is designed to try methods that
+    # run fast and work for the vast majority of designs, or which otherwise fail fast
+    # so we can pick the next best option without wasting much time.
+    # Process goes like this:
+    # 1. Load GDS data
+    # 2. Remove known label (text) layers
+    # 3. Export to SVG called: gds_render_preview.svg
+    # 4. Try converting SVG to PNG via 'rsvg-convert' util
+    #    - If rsvg-convert is not found, fall back to cairosvg (the slower --create-png method).
+    #    - If rsvg-convert rejects the SVG as too complex (i.e. too many elements), remove layers usually not seen anyway and try rsvg-convert again.
+    #    - If it STILL fails, or rsvg-convert fails for any other reason, fall back to cairosvg, using the preferred SVG from step 3.
+    # 5. Resulting lightly-compressed PNG file should be: gds_render_preview.png
+    # 6. Try 'pngquant' to heavily compress that PNG to the final PNG: gds_render.png
+    #    - If pngquant is not found or fails, just rename gds_render_png24.png to gds_render.png (even if it is too big for GitHub Pages)
+    # Artifacts produced by this:
+    #    - gds_render_preview.svg -- SVG made from GDS with labels removed.
+    #    - gds_render_preview.png -- PNG (lightly-compressed; bigger intermediate file) made from SVG.
+    #    - gds_render_preview_alt.svg -- (Optional) SVG made from GDS with labels AND some inconsequential other layers removed.
+    #    - gds_render.png -- Final PNG, hopefully heavily compressed to be under 5MB even for complex 8x2 designs.
+    def create_png_preview(self):
+        logging.info('Loading GDS data...')
+        top_cells = self.get_final_gds_top_cells()
+
+        # Remove label layers (i.e. delete text), then generate SVG:
+        sky130_label_layers = [
+            (64,59),    # 64/59 - pwell.label
+            (64,5),     # 64/5  - nwell.label
+            (67,5),     # 67/5  - li1.label
+            (68,5),     # 68/5  - met1.label
+            (69,5),     # 69/5  - met2.label
+            (70,5),     # 70/5  - met3.label
+            (71,5),     # 71/5  - met4.label
+        ]
+        top_cells.filter(sky130_label_layers)
+        svg = 'gds_render_preview.svg'
+        logging.info('Rendering SVG without text label layers: {}'.format(svg))
+        top_cells.write_svg(svg, pad=0)
+        # We should now have gds_render_preview.svg
+
+        # Try converting using 'rsvg-convert' command-line utility.
+        # This should create gds_render_preview.png
+        svg_alt = None
+        png = 'gds_render_preview.png'
+        logging.info('Converting to PNG using rsvg-convert: {}'.format(png))
+
+        p = subprocess.run('rsvg-convert --unlimited {} -o {} --no-keep-image-data'.format(svg, png), shell=True, capture_output=True)
+
+        if p.returncode == 127:
+            logging.warning('rsvg-convert not found; is librsvg2-bin installed? Falling back to cairosvg. This might take a while...')
+            # Fall back to cairosvg:
+            cairosvg.svg2png(url=svg, write_to=png)
+
+        elif p.returncode != 0 and b'cannot load more than' in p.stderr:
+            logging.warning('Too many SVG elements ("{}"). Reducing complexity...'.format(p.stderr.decode().strip()))
+            # Try to remove more layers that are probably not visible anyway:
+            sky130_buried_layers = [
+                (69,20), # 69/20 - met2.drawing
+                (68,44), # 68/44 - via.drawing
+                (81,4 ), # 81/4  - areaid.standardc
+                (68,16), # 68/16 - met1.pin
+                (70,20), # 70/20 - met3.drawing
+                (68,20), # 68/20 - met1.drawing
+                (65,44), # 65/44 - tap.drawing??
+            ]
+            top_cells.filter(sky130_buried_layers)
+            svg_alt = 'gds_render_preview_alt.svg'
+            logging.info('Rendering SVG with other layers hidden: {}'.format(svg_alt))
+            top_cells.write_svg(svg_alt, pad=0)
+            logging.info('Converting to PNG using rsvg-convert: {}'.format(png))
+
+            p = subprocess.run('rsvg-convert --unlimited {} -o {} --no-keep-image-data'.format(svg_alt, png), shell=True, capture_output=True)
+
+            if p.returncode != 0:
+                logging.warning('Still cannot convert to SVG ("{}"). Falling back to cairosvg. This might take a while...'.format(p.stderr.decode().strip()))
+                # Fall back to cairosvg, and since we're doing that, might as well use the original full-detail SVG anyway:
+                cairosvg.svg2png(url=svg, write_to=png)
+
+        # By now we should have gds_render_preview.png
+
+        # Compress with pngquant:
+        final_png = 'gds_render.png'
+        if self.yaml['project']['tiles'] == '8x2':
+            quality = '0-10' # Compress more for 8x2 tiles.
+        else:
+            quality = '0-30'
+        logging.info('Compressing PNG further with pngquant to: {}'.format(final_png))
+        p = subprocess.run('pngquant --quality {} --speed 1 --nofs --strip --force --output {} {}'.format(quality, final_png, png), shell=True, capture_output=True)
+        if p.returncode == 127:
+            logging.warning('pngquant not found; is the package installed? Using intermediate (uncompressed) PNG file')
+            os.rename(png, final_png)
+        elif p.returncode !=0:
+            logging.warning('pngquant error {} ("{}"). Using intermediate (uncompressed) PNG file'.format(p.returncode, p.stderr.decode().strip()))
+            os.rename(png, final_png)
+        logging.info('Final PNG is {} ({:,} bytes)'.format(final_png, os.path.getsize(final_png)))
+
 
     def print_warnings(self):
         warnings = []
