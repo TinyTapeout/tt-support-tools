@@ -65,6 +65,7 @@ class Docs():
     def dump_markdown(self):
         doc_header = self.load_doc_template('doc_header.md')
         doc_template = self.load_doc_template('doc_template.md')
+        doc_pinout = self.load_doc_template('PINOUT.md')
         doc_info = self.load_doc_template("../../tt-multiplexer/docs/INFO.md")
         doc_credits = self.load_doc_template('CREDITS.md')
 
@@ -114,6 +115,8 @@ class Docs():
                     logging.warning("missing pins in info.yaml, skipping")
 
             # ending
+            fh.write(doc_pinout)
+            fh.write("\n\clearpage\n")
             fh.write(doc_info)
             fh.write("\n\clearpage\n")
             fh.write(doc_credits)

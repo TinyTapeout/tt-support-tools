@@ -79,6 +79,7 @@ class ShuttleConfig():
             "shuttle": self.config["name"],
             "repo": list(repo.remotes[0].urls)[0],
             "commit": repo.commit().hexsha,
+            "commit_date": repo.commit().committed_date,
             "mux": mux_index,
         }
 
