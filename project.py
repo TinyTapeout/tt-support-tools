@@ -508,26 +508,12 @@ class Project():
             cairosvg.svg2png(url='gds_render.svg', write_to='gds_render.png')
 
     # Try various QUICK methods to create a more-compressed PNG render of the GDS,
-    # and fall back to create_svg if it doesn't work. This is designed to try methods that
-    # run fast and work for the vast majority of designs, or which otherwise fail fast
-    # so we can pick the next best option without wasting much time.
-    # Process goes like this:
-    # 1. Load GDS data
-    # 2. Remove known label (text) layers
-    # 3. Export to SVG called: gds_render_preview.svg
-    # 4. Try converting SVG to PNG via 'rsvg-convert' util
-    #    - If rsvg-convert is not found, fall back to cairosvg (the slower --create-png method).
-    #    - If rsvg-convert rejects the SVG as too complex (i.e. too many elements), remove layers usually not seen anyway and try rsvg-convert again.
-    #    - If it STILL fails, or rsvg-convert fails for any other reason, fall back to cairosvg, using the preferred SVG from step 3.
-    # 5. Resulting lightly-compressed PNG file should be: gds_render_preview.png
-    # 6. Try 'pngquant' to heavily compress that PNG to the final PNG: gds_render.png
-    #    - If pngquant is not found or fails, just rename gds_render_png24.png to gds_render.png (even if it is too big for GitHub Pages)
-    # Artifacts produced by this:
-    #    - gds_render_preview.svg -- SVG made from GDS with labels removed.
-    #    - gds_render_preview.png -- PNG (lightly-compressed; bigger intermediate file) made from SVG.
-    #    - gds_render_preview_alt.svg -- (Optional) SVG made from GDS with labels AND some inconsequential other layers removed.
-    #    - gds_render.png -- Final PNG, hopefully heavily compressed to be under 5MB even for complex 8x2 designs.
+    # and fall back to create_svg if it doesn't work. This is designed for speed,
+    # and in particular for use by the GitHub Actions.
+    # For more info, see:
+    # https://github.com/TinyTapeout/tt-gds-action/issues/8
     def create_png_preview(self):
+
         logging.info('Loading GDS data...')
         top_cells = self.get_final_gds_top_cells()
 
@@ -549,9 +535,9 @@ class Project():
 
         # Try converting using 'rsvg-convert' command-line utility.
         # This should create gds_render_preview.png
-        svg_alt = None
         png = 'gds_render_preview.png'
         logging.info('Converting to PNG using rsvg-convert: {}'.format(png))
+
 
         p = subprocess.run('rsvg-convert --unlimited {} -o {} --no-keep-image-data'.format(svg, png), shell=True, capture_output=True)
 
@@ -562,19 +548,22 @@ class Project():
 
         elif p.returncode != 0 and b'cannot load more than' in p.stderr:
             logging.warning('Too many SVG elements ("{}"). Reducing complexity...'.format(p.stderr.decode().strip()))
-            # Try to remove more layers that are probably not visible anyway:
+            # Remove more layers that are hardly visible anyway:
             sky130_buried_layers = [
-                (69,20), # 69/20 - met2.drawing
+                (64,16), # 64/16 - nwell.pin
+                (65,44), # 65/44 - tap.drawing
+                (68,16), # 68/16 - met1.pin
                 (68,44), # 68/44 - via.drawing
                 (81,4 ), # 81/4  - areaid.standardc
-                (68,16), # 68/16 - met1.pin
                 (70,20), # 70/20 - met3.drawing
-                (68,20), # 68/20 - met1.drawing
-                (65,44), # 65/44 - tap.drawing??
+                # Important:
+                # (68,20), # 68/20 - met1.drawing
+                # Less important, but keep for now:
+                # (69,20), # 69/20 - met2.drawing
             ]
             top_cells.filter(sky130_buried_layers)
             svg_alt = 'gds_render_preview_alt.svg'
-            logging.info('Rendering SVG with other layers hidden: {}'.format(svg_alt))
+            logging.info('Rendering SVG with more layers removed: {}'.format(svg_alt))
             top_cells.write_svg(svg_alt, pad=0)
             logging.info('Converting to PNG using rsvg-convert: {}'.format(png))
 
