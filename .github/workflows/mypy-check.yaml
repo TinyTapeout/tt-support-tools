@@ -27,6 +27,11 @@ jobs:
       run: |
         pip install mypy
 
+    - name: Install type packages
+      run: |
+        yes | mypy . --install-types
+      continue-on-error: true
+
     - name: Run mypy
       run: |
-        mypy project.py git_utils.py --check-untyped-defs
+        mypy cells.py config.py configure.py documentation.py git_utils.py markdown_utils.py project.py rom.py shuttle.py --check-untyped-defs
