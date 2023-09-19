@@ -499,20 +499,18 @@ class Project():
         top_cells = library.top_level()
         return top_cells[0]
 
-    # SVG and PNG renders of the GDS
+    # SVG render of the GDS.
+    # NOTE: This includes all standard GDS layers inc. text labels.
     def create_svg(self):
         top_cells = self.get_final_gds_top_cells()
         top_cells.write_svg('gds_render.svg')
 
-        if self.args.create_png:
-            cairosvg.svg2png(url='gds_render.svg', write_to='gds_render.png')
-
     # Try various QUICK methods to create a more-compressed PNG render of the GDS,
-    # and fall back to create_svg if it doesn't work. This is designed for speed,
+    # and fall back to cairosvg if it doesn't work. This is designed for speed,
     # and in particular for use by the GitHub Actions.
     # For more info, see:
     # https://github.com/TinyTapeout/tt-gds-action/issues/8
-    def create_png_preview(self):
+    def create_png(self):
 
         logging.info('Loading GDS data...')
         top_cells = self.get_final_gds_top_cells()
@@ -537,7 +535,6 @@ class Project():
         # This should create gds_render_preview.png
         png = 'gds_render_preview.png'
         logging.info('Converting to PNG using rsvg-convert: {}'.format(png))
-
 
         p = subprocess.run('rsvg-convert --unlimited {} -o {} --no-keep-image-data'.format(svg, png), shell=True, capture_output=True)
 
