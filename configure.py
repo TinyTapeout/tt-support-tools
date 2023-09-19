@@ -3,6 +3,8 @@ import datetime
 import yaml
 import json
 import argparse, logging, sys, os, collections
+from typing import Dict, List, TypedDict
+from config import Config
 from project import Project
 from documentation import Docs
 from shuttle import ShuttleConfig
@@ -16,7 +18,7 @@ signal(SIGPIPE, SIG_DFL)
 
 class Projects():
 
-    def __init__(self, config, args):
+    def __init__(self, config: Config, args):
         self.args = args
         self.config = config
         self.project_dir = config['project_dir']
@@ -24,7 +26,7 @@ class Projects():
         if not os.path.exists(self.project_dir):
             os.makedirs(self.project_dir)
 
-        self.projects = []
+        self.projects: List[Project] = []
         project_list = [entry for entry in os.listdir(self.project_dir) if os.path.isdir(os.path.join(self.project_dir, entry))]
         if args.test:
             project_list = ['tt_um_chip_rom', 'tt_um_factory_test']
@@ -78,18 +80,18 @@ class Projects():
             exit(1)
 
     def build_metrics(self):
-        total_seconds = 0
+        total_seconds = 0.0
         total_wire_length = 0
         total_wires_count = 0
         total_physical_cells = 0
         max_cells = 0
         min_cells = 1000
         max_cell_project = None
-        max_util = 0
-        min_util = 100
+        max_util = 0.0
+        min_util = 100.0
         max_util_project = None
-        languages = {}
-        tags = []
+        languages: Dict[str, int] = {}
+        tags: List[str] = []
 
         for project in self.projects:
             try:
@@ -104,7 +106,8 @@ class Projects():
             script_dir = os.path.dirname(os.path.realpath(__file__))
             with open(os.path.join(script_dir, 'categories.json')) as fh:
                 categories = json.load(fh)
-            by_category = {}
+            CategoryInfo = TypedDict("CategoryInfo", {'count': int, 'examples': List[str]})
+            by_category: Dict[str, CategoryInfo] = {}
             total = 0
             for cell_name in cell_count:
                 cat_index = categories['map'][cell_name]
@@ -166,8 +169,8 @@ class Projects():
         tags = [x.strip().lower() for x in tags]
         tags = list(filter(lambda a: a != "", tags))
 
-        def count_items(lst):
-            freq = {}
+        def count_items(lst: List[str]):
+            freq: Dict[str, int] = {}
             for item in lst:
                 if item not in freq:
                     freq[item] = 1
@@ -232,7 +235,7 @@ if __name__ == '__main__':
 
     docs = Docs(config, projects.projects, args=args)
     shuttle = ShuttleConfig(config, projects.projects, modules_yaml_name)
-    rom = ROMFile(config, projects.projects)
+    rom = ROMFile(config)
 
     if args.list:
         shuttle.list()

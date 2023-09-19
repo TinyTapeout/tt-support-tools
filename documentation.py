@@ -4,14 +4,15 @@ import subprocess
 import shutil
 import json
 import git
-import frontmatter
+import frontmatter # type: ignore
+from config import Config
 from git_utils import get_first_remote
 from markdown_utils import latex_centered_image, rewrite_image_paths
 
 
 class Docs():
 
-    def __init__(self, config, projects, args):
+    def __init__(self, config: Config, projects, args):
         self.config = config
         self.projects = projects
         self.args = args
@@ -110,15 +111,15 @@ class Docs():
                         .format(**yaml_data)
                     )
                     fh.write(doc)
-                    fh.write("\n\clearpage\n")
+                    fh.write("\n\\clearpage\n")
                 except IndexError:
                     logging.warning("missing pins in info.yaml, skipping")
 
             # ending
             fh.write(doc_pinout)
-            fh.write("\n\clearpage\n")
+            fh.write("\n\\clearpage\n")
             fh.write(doc_info)
-            fh.write("\n\clearpage\n")
+            fh.write("\n\\clearpage\n")
             fh.write(doc_credits)
 
         logging.info(f'wrote markdown to {self.args.dump_markdown}')

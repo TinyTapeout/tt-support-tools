@@ -1,6 +1,7 @@
-import git
+from git.repo import Repo
 import os
 from urllib.parse import urlparse
+from config import Config
 
 MAX_ROM_TEXT_SIZE = 92
 
@@ -25,20 +26,19 @@ segment_font = {
     "t": 0b01111000,
 }
 
-def segment_char(c):
+def segment_char(c: str):
     return segment_font[c]
 
 class ROMFile:
-    def __init__(self, config, projects):
-        self.projects = projects
+    def __init__(self, config: Config):
         self.config = config
 
     def get_git_remote(self):
-        repo_url = list(git.Repo(".").remotes[0].urls)[0]
+        repo_url = list(Repo(".").remotes[0].urls)[0]
         return urlparse(repo_url).path[1:]
 
     def get_git_commit_hash(self):
-        return git.Repo(".").commit().hexsha
+        return Repo(".").commit().hexsha
 
     def write_rom(self):
         rom = bytearray(256)
@@ -63,7 +63,7 @@ class ROMFile:
                     continue
                 fh.write(f"// {line}\n")
             fh.write("\n")
-            for line in range(0, len(rom), 16):
+            for line_offset in range(0, len(rom), 16):
                 for byte in range(0, 16):
-                    fh.write("{:02x} ".format(rom[line + byte]))
+                    fh.write("{:02x} ".format(rom[line_offset + byte]))
                 fh.write("\n")
