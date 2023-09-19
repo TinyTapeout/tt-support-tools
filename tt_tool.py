@@ -71,5 +71,8 @@ if __name__ == '__main__':
     if args.create_pdf:
         project.create_pdf()
 
-    if args.create_svg or args.create_png:
+    if args.create_png:
+        project.create_png()
+
+    if args.create_svg:
         project.create_svg()
