@@ -4,13 +4,15 @@ import os
 import logging
 import re
 import subprocess
-import gdstk
-import cairosvg
+import gdstk # type: ignore
+import cairosvg # type: ignore
 import csv
 import json
 import git_utils
-import git
+from git.repo import Repo
 import shutil
+import typing
+from cells import load_cells, Cell
 from markdown_utils import limit_markdown_headings
 
 CELL_URL = 'https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/'
@@ -19,10 +21,19 @@ CELL_URL = 'https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky13
 with open(os.path.join(os.path.dirname(__file__), 'tile_sizes.yaml'), 'r') as stream:
     tile_sizes = (yaml.safe_load(stream))
 
+class Args:
+    openlane2: bool
+    print_cell_summary: bool
+    print_cell_category: bool
+
 
 class Project():
+    top_verilog_filename: str
+    mux_address: int
+    commit_id: str
+    sort_id: int
 
-    def __init__(self, index, git_url, local_dir, args, is_user_project):
+    def __init__(self, index: int, git_url: str, local_dir: str, args: Args, is_user_project: bool):
         self.git_url = git_url
         self.args = args
         self.index = index
@@ -206,7 +217,7 @@ class Project():
     # top module name is defined in one of the source files, which one?
     def find_top_verilog(self):
         rgx_mod  = re.compile(r"(?:^|[\s])module[\s]{1,}([\w]+)")
-        top_verilog = []
+        top_verilog: typing.List[str] = []
         for src in self.src_files:
             with open(os.path.join(self.src_dir, src)) as fh:
                 for line in fh.readlines():
@@ -222,13 +233,13 @@ class Project():
         return top_verilog[0]
 
     def get_git_remote(self):
-        return list(git.Repo(self.local_dir).remotes[0].urls)[0]
+        return list(Repo(self.local_dir).remotes[0].urls)[0]
     
     def get_git_commit_hash(self):
-        return git.Repo(self.local_dir).commit().hexsha
+        return Repo(self.local_dir).commit().hexsha
     
     def get_tt_tools_version(self):
-        repo = git.Repo(os.path.join(self.local_dir, "tt"))
+        repo = Repo(os.path.join(self.local_dir, "tt"))
         return f"{repo.active_branch.name} {repo.commit().hexsha[:8]}"
     
     def get_workflow_url(self):
@@ -247,7 +258,7 @@ class Project():
         return f"[{self.index:03} : {self.git_url}]"
 
     def get_latest_action_url(self):
-        return git_utils.get_latest_action_url(self.git_url, self.local_dir)
+        return git_utils.get_latest_action_url(self.git_url)
 
     def get_macro_name(self):
         return self.top_module
@@ -334,7 +345,7 @@ class Project():
         except FileNotFoundError:
             pass
 
-    def install_wokwi_testing(self, destination_dir='src', resource_dir=None):
+    def install_wokwi_testing(self, destination_dir: str = 'src', resource_dir: typing.Optional[str] = None):
         if resource_dir is None or not len(resource_dir):
             resource_dir = os.path.join(os.path.dirname(__file__), 'testing')
 
@@ -480,7 +491,7 @@ class Project():
             try:
                 doc = doc_template.format(**yaml)
                 fh.write(doc)
-                fh.write("\n\pagebreak\n")
+                fh.write("\n\\pagebreak\n")
             except IndexError:
                 logging.warning("missing pins in info.yaml, skipping")
 
@@ -599,7 +610,7 @@ class Project():
 
 
     def print_warnings(self):
-        warnings = []
+        warnings: typing.List[str] = []
         synth_log = 'runs/wokwi/logs/synthesis/1-synthesis.log'
         if self.args.openlane2:
             synth_log = 'runs/wokwi/02-yosys-synthesis/yosys-synthesis.log'
@@ -627,10 +638,11 @@ class Project():
         cell_count = self.get_cell_counts_from_gl()
         script_dir = os.path.dirname(os.path.realpath(__file__))
 
+        Categories = typing.TypedDict("Categories", {'categories': typing.List[str], 'map': typing.Dict[str, int]})
         with open(os.path.join(script_dir, 'categories.json')) as fh:
-            categories = json.load(fh)
-        with open(os.path.join(script_dir, 'defs.json')) as fh:
-            defs = json.load(fh)
+            categories: Categories = json.load(fh)
+        
+        defs = load_cells()
 
         # print all used cells, sorted by frequency
         total = 0
@@ -648,7 +660,8 @@ class Project():
             print(f'| | Total | {total} |')
 
         if self.args.print_cell_category:
-            by_category = {}
+            CategoryInfo = typing.TypedDict("CategoryInfo", {'count': int, 'examples': typing.List[str]})
+            by_category: typing.Dict[str, CategoryInfo] = {}
             total = 0
             for cell_name in cell_count:
                 cat_index = categories['map'][cell_name]
@@ -690,7 +703,7 @@ class Project():
 
     # Parse the lib, cell and drive strength an OpenLane gate-level Verilog file
     def get_cell_counts_from_gl(self):
-        cell_count = {}
+        cell_count: typing.Dict[str, int] = {}
         total = 0
         with open(self.get_gl_path()) as fh:
             for line in fh.readlines():
@@ -713,11 +726,11 @@ class Project():
     def create_defs(self):
         # replace this with a find
         json_files = glob.glob('sky130_fd_sc_hd/latest/cells/*/definition.json')
-        definitions = {}
+        definitions: typing.Dict[str, Cell] = {}
         for json_file in json_files:
             with open(json_file) as fh:
-                definition = json.load(fh)
+                definition: Cell = json.load(fh)
                 definitions[definition['name']] = definition
 
-        with open('defs.json', 'w') as fh:
+        with open('cells.json', 'w') as fh:
             json.dump(definitions, fh)
