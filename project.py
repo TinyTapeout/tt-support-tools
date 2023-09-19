@@ -536,10 +536,12 @@ class Project():
         png = 'gds_render_preview.png'
         logging.info('Converting to PNG using rsvg-convert: {}'.format(png))
 
-        p = subprocess.run('rsvg-convert --unlimited {} -o {} --no-keep-image-data'.format(svg, png), shell=True, capture_output=True)
+        cmd = 'rsvg-convert --unlimited {} -o {} --no-keep-image-data'.format(svg, png)
+        logging.debug(cmd)
+        p = subprocess.run(cmd, shell=True, capture_output=True)
 
         if p.returncode == 127:
-            logging.warning('rsvg-convert not found; is librsvg2-bin installed? Falling back to cairosvg. This might take a while...')
+            logging.warning('rsvg-convert not found; is package "librsvg2-bin" installed? Falling back to cairosvg. This might take a while...')
             # Fall back to cairosvg:
             cairosvg.svg2png(url=svg, write_to=png)
 
@@ -564,7 +566,9 @@ class Project():
             top_cells.write_svg(svg_alt, pad=0)
             logging.info('Converting to PNG using rsvg-convert: {}'.format(png))
 
-            p = subprocess.run('rsvg-convert --unlimited {} -o {} --no-keep-image-data'.format(svg_alt, png), shell=True, capture_output=True)
+            cmd = 'rsvg-convert --unlimited {} -o {} --no-keep-image-data'.format(svg_alt, png)
+            logging.debug(cmd)
+            p = subprocess.run(cmd, shell=True, capture_output=True)
 
             if p.returncode != 0:
                 logging.warning('Still cannot convert to SVG ("{}"). Falling back to cairosvg. This might take a while...'.format(p.stderr.decode().strip()))
@@ -580,9 +584,13 @@ class Project():
         else:
             quality = '0-30'
         logging.info('Compressing PNG further with pngquant to: {}'.format(final_png))
-        p = subprocess.run('pngquant --quality {} --speed 1 --nofs --strip --force --output {} {}'.format(quality, final_png, png), shell=True, capture_output=True)
+
+        cmd = 'pngquant --quality {} --speed 1 --nofs --strip --force --output {} {}'.format(quality, final_png, png)
+        logging.debug(cmd)
+        p = subprocess.run(cmd, shell=True, capture_output=True)
+        
         if p.returncode == 127:
-            logging.warning('pngquant not found; is the package installed? Using intermediate (uncompressed) PNG file')
+            logging.warning('pngquant not found; is package "pngquant" installed? Using intermediate (uncompressed) PNG file')
             os.rename(png, final_png)
         elif p.returncode !=0:
             logging.warning('pngquant error {} ("{}"). Using intermediate (uncompressed) PNG file'.format(p.returncode, p.stderr.decode().strip()))
