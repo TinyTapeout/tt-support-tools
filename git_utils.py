@@ -2,11 +2,13 @@ import base64
 from urllib.parse import urlparse
 import logging
 import requests
-import git
+from git.repo import Repo
+import sys
+import typing
 import os
 import errno
 
-def fetch_file(url, filename):
+def fetch_file(url: str, filename: str):
     logging.info("trying to download {}".format(url))
     r = requests.get(url)
     if r.status_code != 200:
@@ -18,12 +20,12 @@ def fetch_file(url, filename):
         fh.write(r.content)
 
 
-def check_status(r):
+def check_status(r: requests.Response):
     if r.status_code == 401:
         logging.error("unauthorised, check INFO.md for information about GitHub API keys")
         exit(1)
 
-def headers_try_to_add_authorization_from_environment(headers: dict) -> bool:
+def headers_try_to_add_authorization_from_environment(headers: typing.Dict[str, str]) -> bool:
     gh_token = os.getenv('GH_TOKEN', '')                 # override like gh CLI
     if not gh_token:
         gh_token = os.getenv('GITHUB_TOKEN', '')         # GHA inherited
@@ -52,14 +54,17 @@ def headers_try_to_add_authorization_from_environment(headers: dict) -> bool:
     return False
 
 
-def get_most_recent_action_page(commits, runs):
+def get_most_recent_action_page(
+        commits: typing.List[typing.Dict[str, str]], 
+        runs: typing.List[typing.Dict[str, str]]) -> typing.Optional[str]:
     release_sha_to_page_url = {run['head_sha']: run['html_url'] for run in runs if run['name'] == 'gds'}
     for commit in commits:
         if commit['sha'] in release_sha_to_page_url:
             return release_sha_to_page_url[commit['sha']]
+    return None
 
 
-def split_git_url(url):
+def split_git_url(url: str):
     res = urlparse(url)
     try:
         _, user_name, repo = res.path.split('/')
@@ -71,7 +76,7 @@ def split_git_url(url):
 
 
 
-def get_latest_action_url(url):
+def get_latest_action_url(url: str):
     logging.debug(url)
     user_name, repo = split_git_url(url)
 
@@ -102,5 +107,5 @@ def get_latest_action_url(url):
     return page_url
 
 
-def get_first_remote(repo: git.Repo) -> str:
+def get_first_remote(repo: Repo) -> str:
     return list(repo.remotes[0].urls)[0]
