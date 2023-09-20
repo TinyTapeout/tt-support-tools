@@ -1,6 +1,6 @@
 ---
 title: "Tiny Tapeout 04"
-weight: 20
+weight: 40
 description: 143 designs, closed 8th September 2023
 ---
 
@@ -46,6 +46,10 @@ description: 143 designs, closed 8th September 2023
 ![whole die](images/tinytapeout-tt04.png)
 
 # Testimonials
+
+Tiny Tapeout is a game changer for undergrad students. It provided my classmate and I with the unique opportunity to create and implement our very own design on an ASIC, something that is often out of reach for undergraduates. I can't stress enough how much I learned throughout the entire process, and that knowledge is truly priceless to me. I couldn't be more grateful for the experience!
+
+----
 
 Thanks to the hard work of the Tiny Tapeout team, making your own ASIC has gone from an impossible dream to a weekend project!
 
