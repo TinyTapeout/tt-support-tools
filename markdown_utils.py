@@ -1,4 +1,5 @@
 import os
+
 import mistune
 from mistune.renderers.markdown import MarkdownRenderer
 
@@ -25,7 +26,7 @@ class ImagePathRewriterRenderer(MarkdownRenderer):
 
     def image(self, token, state):
         url = token["attrs"]["url"]
-        if not "://" in url and not url.startswith("/"):
+        if "://" not in url and not url.startswith("/"):
             token["attrs"]["url"] = os.path.join(self.prefix, url)
         return super().image(token, state)
 

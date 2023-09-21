@@ -1,6 +1,8 @@
-from git.repo import Repo
 import os
 from urllib.parse import urlparse
+
+from git.repo import Repo
+
 from config import Config
 
 MAX_ROM_TEXT_SIZE = 92
@@ -26,8 +28,10 @@ segment_font = {
     "t": 0b01111000,
 }
 
+
 def segment_char(c: str):
     return segment_font[c]
+
 
 class ROMFile:
     def __init__(self, config: Config):
@@ -53,7 +57,7 @@ class ROMFile:
 
         assert len(rom_text) < MAX_ROM_TEXT_SIZE, "ROM text too long"
 
-        rom[0:4] = map(segment_char, self.config['id'])
+        rom[0:4] = map(segment_char, self.config["id"])
         rom[8:16] = map(segment_char, short_sha.upper())
         rom[32 : 32 + len(rom_text)] = rom_text.encode("ascii")
 

@@ -1,5 +1,6 @@
 from typing import TypedDict
 
+
 class Config(TypedDict):
     """TypedDict for Tiny Tapeout's config.yaml file."""
 

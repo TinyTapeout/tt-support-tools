@@ -1,51 +1,62 @@
 #!/usr/bin/env python3
+import argparse
+import collections
 import datetime
-import yaml
 import json
-import argparse, logging, sys, os, collections
-from typing import Dict, List, TypedDict
-from config import Config
-from project import Project
-from documentation import Docs
-from shuttle import ShuttleConfig
-from rom import ROMFile
-
+import logging
+import os
+import sys
 
 # pipe handling
-from signal import signal, SIGPIPE, SIG_DFL
+from signal import SIG_DFL, SIGPIPE, signal
+from typing import Dict, List, TypedDict
+
+import yaml
+
+from config import Config
+from documentation import Docs
+from project import Project
+from rom import ROMFile
+from shuttle import ShuttleConfig
+
 signal(SIGPIPE, SIG_DFL)
 
 
-class Projects():
-
+class Projects:
     def __init__(self, config: Config, args):
         self.args = args
         self.config = config
-        self.project_dir = config['project_dir']
+        self.project_dir = config["project_dir"]
 
         if not os.path.exists(self.project_dir):
             os.makedirs(self.project_dir)
 
         self.projects: List[Project] = []
-        project_list = [entry for entry in os.listdir(self.project_dir) if os.path.isdir(os.path.join(self.project_dir, entry))]
+        project_list = [
+            entry
+            for entry in os.listdir(self.project_dir)
+            if os.path.isdir(os.path.join(self.project_dir, entry))
+        ]
         if args.test:
-            project_list = ['tt_um_chip_rom', 'tt_um_factory_test']
+            project_list = ["tt_um_chip_rom", "tt_um_factory_test"]
         elif args.sta_projects:
-            project_list = ['tt_um_loopback']
+            project_list = ["tt_um_loopback"]
 
         for index, project_id in enumerate(project_list):
             project_dir = os.path.join(self.project_dir, project_id)
 
-            commit_id_file = os.path.join(project_dir, 'commit_id.json')
+            commit_id_file = os.path.join(project_dir, "commit_id.json")
             if not os.path.exists(commit_id_file):
                 logging.warning(f"no commit_id.json in {project_dir}, skipping")
                 continue
 
             commit_id_data = json.load(open(commit_id_file))
 
-            project = Project(index, commit_id_data['repo'], project_dir, args, is_user_project=False)
-            project.commit_id = commit_id_data['commit']
-            project.sort_id = commit_id_data['sort_id']
+            project = Project(
+                index, commit_id_data["repo"], project_dir, args, is_user_project=False
+            )
+            project.commit_id = commit_id_data["commit"]
+            project.sort_id = commit_id_data["sort_id"]
 
             # projects should now be installed, so load all the data from the yaml files
             # fill projects will load from the fill project's directory
@@ -65,7 +76,9 @@ class Projects():
 
         self.projects.sort(key=lambda x: x.sort_id)
 
-        all_macro_instances = [project.get_macro_instance() for project in self.projects]
+        all_macro_instances = [
+            project.get_macro_instance() for project in self.projects
+        ]
         self.assert_unique(all_macro_instances)
 
         all_gds_files = [project.get_macro_gds_filename() for project in self.projects]
@@ -74,7 +87,9 @@ class Projects():
         logging.info(f"loaded {len(self.projects)} projects")
 
     def assert_unique(self, check):
-        duplicates = [item for item, count in collections.Counter(check).items() if count > 1]
+        duplicates = [
+            item for item, count in collections.Counter(check).items() if count > 1
+        ]
         if duplicates:
             logging.error("duplicate projects: {}".format(duplicates))
             exit(1)
@@ -95,47 +110,56 @@ class Projects():
 
         for project in self.projects:
             try:
-                dt = datetime.datetime.strptime(project.metrics['total_runtime'][:-3], '%Hh%Mm%Ss')
+                dt = datetime.datetime.strptime(
+                    project.metrics["total_runtime"][:-3], "%Hh%Mm%Ss"
+                )
             except KeyError:
                 continue
 
-            delt = datetime.timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second)
+            delt = datetime.timedelta(
+                hours=dt.hour, minutes=dt.minute, seconds=dt.second
+            )
             total_seconds += delt.total_seconds()
 
             cell_count = project.get_cell_counts_from_gl()
             script_dir = os.path.dirname(os.path.realpath(__file__))
-            with open(os.path.join(script_dir, 'categories.json')) as fh:
+            with open(os.path.join(script_dir, "categories.json")) as fh:
                 categories = json.load(fh)
-            CategoryInfo = TypedDict("CategoryInfo", {'count': int, 'examples': List[str]})
+            CategoryInfo = TypedDict(
+                "CategoryInfo", {"count": int, "examples": List[str]}
+            )
             by_category: Dict[str, CategoryInfo] = {}
             total = 0
             for cell_name in cell_count:
-                cat_index = categories['map'][cell_name]
-                cat_name = categories['categories'][cat_index]
+                cat_index = categories["map"][cell_name]
+                cat_name = categories["categories"][cat_index]
                 if cat_name in by_category:
-                    by_category[cat_name]['count'] += cell_count[cell_name]
-                    by_category[cat_name]['examples'].append(cell_name)
+                    by_category[cat_name]["count"] += cell_count[cell_name]
+                    by_category[cat_name]["examples"].append(cell_name)
                 else:
-                    by_category[cat_name] = {'count' : cell_count[cell_name], 'examples' : [cell_name]}
+                    by_category[cat_name] = {
+                        "count": cell_count[cell_name],
+                        "examples": [cell_name],
+                    }
 
-                if cat_name not in ['Fill', 'Tap', 'Buffer', 'Misc']:
+                if cat_name not in ["Fill", "Tap", "Buffer", "Misc"]:
                     total += cell_count[cell_name]
 
             if total < 10:
-                del by_category['Fill']
-                del by_category['Tap']
-                if 'Buffer' in by_category:
-                    del by_category['Buffer']
+                del by_category["Fill"]
+                del by_category["Tap"]
+                if "Buffer" in by_category:
+                    del by_category["Buffer"]
                 print(project.get_macro_name(), total, by_category)
 
-            total_wire_length += int(project.metrics['wire_length'])
-            total_wires_count += int(project.metrics['wires_count'])
-            util = float(project.metrics['OpenDP_Util'])
+            total_wire_length += int(project.metrics["wire_length"])
+            total_wires_count += int(project.metrics["wires_count"])
+            util = float(project.metrics["OpenDP_Util"])
             num_cells = project.get_cell_count_from_synth()
             total_physical_cells += num_cells
 
             yaml_data = project.get_project_doc_yaml()
-            lang = yaml_data['language'].lower()
+            lang = yaml_data["language"].lower()
             if lang in languages:
                 languages[lang] += 1
             else:
@@ -154,7 +178,7 @@ class Projects():
                 min_util = util
 
             try:
-                tags += yaml_data['tag'].split(',')
+                tags += yaml_data["tag"].split(",")
             except KeyError:
                 pass
 
@@ -185,36 +209,88 @@ class Projects():
         count_items(tags)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="TinyTapeout configuration and docs")
 
-    with open('config.yaml') as fh:
+    with open("config.yaml") as fh:
         config = yaml.safe_load(fh)
-    
-    parser.add_argument('--list', help="list projects", action='store_const', const=True)
-    parser.add_argument('--single', help="do action on single project", type=int, default=-1)
-    parser.add_argument('--update-shuttle', help='configure shuttle for build', action='store_const', const=True)
-    parser.add_argument('--copy-macros', help='copy macros for building the tt_top project', action='store_const', const=True)
-    parser.add_argument('--copy-final-results', help='copy final project files to gds/lef directories', action='store_const', const=True)
-    parser.add_argument('--create-efabless-submission', help='create efabless submission files', action='store_const', const=True)
-    parser.add_argument('--harden', help="harden project", action="store_const", const=True)
-    parser.add_argument('--test', help='use test projects', action='store_const', const=True)
-    parser.add_argument('--sta-projects', help='use sta projects', action='store_const', const=True)
-    parser.add_argument('--debug', help="debug logging", action="store_const", dest="loglevel", const=logging.DEBUG, default=logging.INFO)
-    parser.add_argument('--log-email', help="print persons email in messages", action="store_const", const=True)
-    parser.add_argument('--update-image', help="update the image", action="store_const", const=True)
-    parser.add_argument('--dump-json', help="dump json of all project data to given file")
-    parser.add_argument('--dump-markdown', help="dump markdown of all project data to given file")
-    parser.add_argument('--dump-pdf', help="create pdf from the markdown")
-    parser.add_argument('--build-hugo-content', help="directory to where to build hugo content")
-    parser.add_argument('--metrics', help="print some project metrics", action="store_const", const=True)
+
+    parser.add_argument(
+        "--list", help="list projects", action="store_const", const=True
+    )
+    parser.add_argument(
+        "--single", help="do action on single project", type=int, default=-1
+    )
+    parser.add_argument(
+        "--update-shuttle",
+        help="configure shuttle for build",
+        action="store_const",
+        const=True,
+    )
+    parser.add_argument(
+        "--copy-macros",
+        help="copy macros for building the tt_top project",
+        action="store_const",
+        const=True,
+    )
+    parser.add_argument(
+        "--copy-final-results",
+        help="copy final project files to gds/lef directories",
+        action="store_const",
+        const=True,
+    )
+    parser.add_argument(
+        "--create-efabless-submission",
+        help="create efabless submission files",
+        action="store_const",
+        const=True,
+    )
+    parser.add_argument(
+        "--harden", help="harden project", action="store_const", const=True
+    )
+    parser.add_argument(
+        "--test", help="use test projects", action="store_const", const=True
+    )
+    parser.add_argument(
+        "--sta-projects", help="use sta projects", action="store_const", const=True
+    )
+    parser.add_argument(
+        "--debug",
+        help="debug logging",
+        action="store_const",
+        dest="loglevel",
+        const=logging.DEBUG,
+        default=logging.INFO,
+    )
+    parser.add_argument(
+        "--log-email",
+        help="print persons email in messages",
+        action="store_const",
+        const=True,
+    )
+    parser.add_argument(
+        "--update-image", help="update the image", action="store_const", const=True
+    )
+    parser.add_argument(
+        "--dump-json", help="dump json of all project data to given file"
+    )
+    parser.add_argument(
+        "--dump-markdown", help="dump markdown of all project data to given file"
+    )
+    parser.add_argument("--dump-pdf", help="create pdf from the markdown")
+    parser.add_argument(
+        "--build-hugo-content", help="directory to where to build hugo content"
+    )
+    parser.add_argument(
+        "--metrics", help="print some project metrics", action="store_const", const=True
+    )
 
     args = parser.parse_args()
 
     # setup log
-    log_format = logging.Formatter('%(asctime)s - %(levelname)-8s - %(message)s')
+    log_format = logging.Formatter("%(asctime)s - %(levelname)-8s - %(message)s")
     # configure the client logging
-    log = logging.getLogger('')
+    log = logging.getLogger("")
     # has to be set to debug as is the root logger
     log.setLevel(args.loglevel)
 
