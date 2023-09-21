@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  type-check:
+  lint-check:
     runs-on: ubuntu-latest
 
     steps:
