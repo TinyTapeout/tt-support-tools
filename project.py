@@ -613,7 +613,7 @@ class Project():
         warnings: typing.List[str] = []
         synth_log = 'runs/wokwi/logs/synthesis/1-synthesis.log'
         if self.args.openlane2:
-            synth_log = 'runs/wokwi/02-yosys-synthesis/yosys-synthesis.log'
+            synth_log = 'runs/wokwi/05-yosys-synthesis/yosys-synthesis.log'
         with open(os.path.join(self.local_dir, synth_log)) as f:
             for line in f.readlines():
                 if line.startswith('Warning:'):
