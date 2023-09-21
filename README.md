@@ -1,6 +1,13 @@
 # Tiny Tapeout tools
 
-Tools used mostly by the Tiny Tapeout github actions
+Tools used mostly by the Tiny Tapeout GitHub Actions
+
+## Setup
+
+```
+pip install -r requirements.txt
+pre-commit install
+```
 
 ## Documentation
 

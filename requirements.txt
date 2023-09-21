@@ -29,3 +29,4 @@ webencodings==0.5.1
 yowasp-runtime==1.22
 yowasp-yosys==0.30.0.0.post538
 zipp==3.15.0
+pre-commit==3.4.0
