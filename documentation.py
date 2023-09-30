@@ -117,6 +117,8 @@ class Docs:
 
                 # many people remove unused pins in input / output / bidirectional
                 for key in ["inputs", "outputs", "bidirectional"]:
+                    if not yaml_data[key]:
+                        yaml_data[key] = []
                     yaml_data[key].extend((8 - len(yaml_data[key])) * ["n/a"])
 
                 # now build the doc & print it
