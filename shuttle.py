@@ -93,6 +93,14 @@ class ShuttleConfig:
         with open("shuttle_index.json", "w") as shuttle_index_file:
             json.dump(shuttle_index_data, shuttle_index_file, indent=2)
 
+        with open("verilog/includes/includes.gl.user_projects", "w") as includes_file:
+            for project in self.projects:
+                if project.is_chip_rom():
+                    continue
+                includes_file.write(
+                    f"$(USER_PROJECT_VERILOG)/../projects/{project.top_module}/{project.top_module}.v\n"
+                )
+
     def list(self):
         for project in self.projects:
             logging.info(project)
