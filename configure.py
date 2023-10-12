@@ -51,6 +51,9 @@ class Projects:
                 continue
 
             commit_id_data = json.load(open(commit_id_file))
+            if commit_id_data.get("skip", False):
+                logging.warning(f"skipping {project_dir} (skip flag set)")
+                continue
 
             project = Project(
                 index, commit_id_data["repo"], project_dir, args, is_user_project=False
