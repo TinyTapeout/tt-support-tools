@@ -139,7 +139,7 @@ class ShuttleConfig:
                 f"tt-multiplexer/ol2/tt_top/lef/{macro}.lef",
             )
             copy_print(
-                f"{lastrun}/final/nl/{macro}.nl.v",
+                f"{lastrun}/final/pnl/{macro}.pnl.v",
                 f"tt-multiplexer/ol2/tt_top/verilog/{macro}.v",
             )
             copy_print_glob(
