@@ -803,7 +803,7 @@ class Project:
                     if m is not None:
                         num_cells = int(m.group(1))
 
-        except IndexError:
+        except (IndexError, FileNotFoundError):
             logging.warning(f"couldn't open yosys cell report for cell checking {self}")
 
         return num_cells
