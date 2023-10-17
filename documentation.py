@@ -22,10 +22,16 @@ class Docs:
     # stuff related to docs
     def build_index(self):
         logging.info("building doc index")
-        with open(os.path.join(self.script_dir, "docs", "README_init.md")) as fh:
-            readme = fh.read()
+        repo = git.Repo(".")
+        readme = self.load_doc_template("README_init.md")
         with open("README.md", "w") as fh:
-            fh.write(readme)
+            fh.write(
+                readme.format(
+                    name=self.config["name"],
+                    git_repo=get_first_remote(repo),
+                    git_commit=repo.head.commit.hexsha,
+                )
+            )
             fh.write("| Address | Author | Title | Type | Git Repo |\n")
             fh.write("| ------- | ------ | ------| -----| ---------|\n")
             self.projects.sort(key=lambda x: x.mux_address)
@@ -51,7 +57,7 @@ class Docs:
             fh.write(json.dumps(designs, indent=4))
         logging.info(f"wrote json to {self.args.dump_json}")
 
-    def load_doc_template(self, name):
+    def load_doc_template(self, name: str) -> str:
         root = os.path.join(self.script_dir, "docs")
         doc_path = os.path.join(root, name)
         image_root = os.path.relpath(os.path.dirname(doc_path), ".")
