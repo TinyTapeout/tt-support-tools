@@ -50,7 +50,7 @@ class ShuttleConfig:
         with open("tt-multiplexer/cfg/modules.yaml", "w") as mux_modules_file:
             yaml.dump(module_config, mux_modules_file)
 
-        res = os.system("make -C tt-multiplexer gensrc")
+        res = os.system("make -C tt-multiplexer clean gensrc")
         if res != 0:
             logging.error("Failed to generate multiplexer placement configuration")
             exit(1)
@@ -60,7 +60,7 @@ class ShuttleConfig:
         with open("tt-multiplexer/cfg/modules_placed.yaml") as placed_modules_file:
             placed_modules = yaml.safe_load(placed_modules_file)
             for module in placed_modules["modules"]:
-                mux_address = (module["y"] << 5) + module["x"]
+                mux_address = (module["mux_id"] << 5) | module["blk_id"]
                 module_name = "tt_um_" + module["name"]
                 project = next(p for p in self.projects if p.top_module == module_name)
                 project.mux_address = mux_address
@@ -71,6 +71,10 @@ class ShuttleConfig:
                     "tiles": f"{module['width']}x{module['height']}",
                     "repo": project.git_url,
                     "commit": project.commit_id,
+                    "features": {
+                        "power_switch": module["pg_vdd"],
+                        "analog": module["analog"],
+                    },
                 }
                 mux_index_reverse[module_name] = mux_address
 
@@ -87,6 +91,7 @@ class ShuttleConfig:
             "repo": list(repo.remotes[0].urls)[0],
             "commit": repo.commit().hexsha,
             "commit_date": repo.commit().committed_date,
+            "version": 2,
             "mux": mux_index,
         }
 
@@ -145,6 +150,20 @@ class ShuttleConfig:
             copy_print_glob(
                 f"{lastrun}/final/spef/*/*.spef", "tt-multiplexer/ol2/tt_top/spef"
             )
+        # Copy power gate macros:
+        for macro in ["tt_pg_vdd_1", "tt_pg_vdd_2"]:
+            copy_print(
+                f"tt-multiplexer/pg/{macro}/{macro}.gds",
+                f"tt-multiplexer/ol2/tt_top/gds/{macro}.gds",
+            )
+            copy_print(
+                f"tt-multiplexer/pg/{macro}/{macro}.lef",
+                f"tt-multiplexer/ol2/tt_top/lef/{macro}.lef",
+            )
+            copy_print(
+                f"tt-multiplexer/pg/{macro}/{macro}.v",
+                f"tt-multiplexer/ol2/tt_top/verilog/{macro}.v",
+            )
 
     def copy_final_results(self):
         macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux", "tt_top"]
@@ -169,9 +188,19 @@ class ShuttleConfig:
                 copy_function=copy_print,
                 dirs_exist_ok=True,
             )
+        # Copy power gate macros:
+        for macro in ["tt_pg_vdd_1", "tt_pg_vdd_2"]:
             copy_print(
-                f"{lastrun}/final/spef/nom_/{macro_name}.nom_.spef",
-                f"spef/{macro_name}.spef",
+                f"tt-multiplexer/pg/{macro}/{macro}.gds",
+                f"gds/{macro}.gds",
+            )
+            copy_print(
+                f"tt-multiplexer/pg/{macro}/{macro}.lef",
+                f"lef/{macro}.lef",
+            )
+            copy_print(
+                f"tt-multiplexer/pg/{macro}/{macro}.v",
+                f"verilog/gl/{macro}.v",
             )
 
     def create_efabless_submission(self):
