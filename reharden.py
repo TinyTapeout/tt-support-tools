@@ -189,6 +189,13 @@ if __name__ == "__main__":
                 cloned_repo = git.Repo(repo_dir)
                 cloned_repo.git.submodule("update", "--init")
                 cloned_repo.git.checkout(commit)
+            else:
+                cloned_repo = git.Repo(repo_dir)
+                if commit != cloned_repo.commit().hexsha:
+                    logging.info(f"updating {number :03} {repo} to commit {commit}")
+                    cloned_repo.git.fetch("origin")
+                    cloned_repo.git.checkout(commit)
+                    cloned_repo.git.submodule("update", "--init")
 
             # get tt tools setup.
             # can't run tt from another directory because gitpython fails
