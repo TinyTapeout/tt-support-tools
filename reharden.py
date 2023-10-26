@@ -182,6 +182,14 @@ if __name__ == "__main__":
         macro = shuttle_index["mux"][project]["macro"]
         repo_dir = os.path.join(REHARDEN_DIR, macro)
 
+        if macro == "tt_um_chip_rom":
+            logging.info(f"[{number :03}] skipping chip ROM")
+            continue
+
+        if shuttle_index["mux"][project]["features"]["power_switch"]:
+            logging.info(f"[{number :03}] skipping power gated project {macro}")
+            continue
+
         if args.clone:
             if not os.path.exists(repo_dir):
                 logging.info(f"cloning {number :03} {repo}")
