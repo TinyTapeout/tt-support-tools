@@ -73,7 +73,7 @@ class ShuttleConfig:
                     "repo": project.git_url,
                     "commit": project.commit_id,
                     "features": {
-                        "power_switch": module["pg_vdd"],
+                        "power_switch": bool(module["pg_vdd"]),
                         "analog": module["analog"],
                     },
                 }
