@@ -43,7 +43,7 @@ class Project:
         local_dir: str,
         args: Args,
         is_user_project: bool,
-        power_gated: bool,
+        power_gated: bool = False,
     ):
         self.git_url = git_url
         self.args = args
