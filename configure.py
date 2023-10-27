@@ -56,7 +56,12 @@ class Projects:
                 continue
 
             project = Project(
-                index, commit_id_data["repo"], project_dir, args, is_user_project=False
+                index,
+                commit_id_data["repo"],
+                project_dir,
+                args,
+                is_user_project=False,
+                power_gated=commit_id_data.get("power_gate", False),
             )
             project.commit_id = commit_id_data["commit"]
             project.sort_id = commit_id_data["sort_id"]

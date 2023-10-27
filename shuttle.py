@@ -44,6 +44,7 @@ class ShuttleConfig:
                             "name": project.unprefixed_name,
                             "width": width,
                             "height": height,
+                            "pg_vdd": True if project.power_gated else None,
                         }
                     )
 
