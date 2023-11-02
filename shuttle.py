@@ -25,6 +25,10 @@ class ShuttleConfig:
         self.projects = projects
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
         self.modules_yaml_name = modules_yaml_name
+        if config.get("openframe", False):
+            self.tt_top_macro = "openframe_project_wrapper"
+        else:
+            self.tt_top_macro = "user_project_wrapper"
 
     def configure_mux(self):
         with open(self.modules_yaml_name, "r") as modules_file:
@@ -172,7 +176,7 @@ class ShuttleConfig:
         logging.info("copying final results:")
         for macro in macros:
             lastrun = self.find_last_run(macro)
-            macro_name = macro if macro != "tt_top" else "user_project_wrapper"
+            macro_name = macro if macro != "tt_top" else self.tt_top_macro
             logging.info(f"** {macro_name} **")
             logging.info(f"  FROM {lastrun}")
             copy_print(f"{lastrun}/final/gds/{macro_name}.gds", f"gds/{macro_name}.gds")
@@ -211,14 +215,14 @@ class ShuttleConfig:
         copy_print("shuttle_index.json", "efabless/shuttle_index.json")
         copy_print("verilog/rtl/user_defines.v", "efabless/verilog/rtl/user_defines.v")
         copy_print(
-            f"{lastrun}/final/pnl/user_project_wrapper.pnl.v",
-            f"efabless/verilog/gl/user_project_wrapper.v",
+            f"{lastrun}/final/pnl/{self.tt_top_macro}.pnl.v",
+            f"efabless/verilog/gl/{self.tt_top_macro}.v",
         )
         copy_print(
-            f"{lastrun}/final/gds/user_project_wrapper.gds",
-            f"efabless/gds/user_project_wrapper.gds",
+            f"{lastrun}/final/gds/{self.tt_top_macro}.gds",
+            f"efabless/gds/{self.tt_top_macro}.gds",
         )
         copy_print(
-            f"{lastrun}/final/lef/user_project_wrapper.lef",
-            f"efabless/lef/user_project_wrapper.lef",
+            f"{lastrun}/final/lef/{self.tt_top_macro}.lef",
+            f"efabless/lef/{self.tt_top_macro}.lef",
         )
