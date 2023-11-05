@@ -59,7 +59,8 @@ class ROMFile:
 
         assert len(rom_text) < MAX_ROM_TEXT_SIZE, "ROM text too long"
 
-        rom[0:4] = map(segment_char, self.config["id"])
+        shuttle_id = self.config["id"][:8]
+        rom[0 : len(shuttle_id)] = map(segment_char, shuttle_id)
         rom[8:16] = map(segment_char, short_sha.upper())
         rom[32 : 32 + len(rom_text)] = rom_text.encode("ascii")
 
