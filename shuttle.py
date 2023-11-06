@@ -137,7 +137,7 @@ class ShuttleConfig:
         copy_print_glob("projects/*/*.gds", "tt-multiplexer/ol2/tt_top/gds")
         copy_print_glob("projects/*/*.lef", "tt-multiplexer/ol2/tt_top/lef")
         copy_print_glob("projects/*/*.v", "tt-multiplexer/ol2/tt_top/verilog")
-        macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux"]
+        macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux", "tt_autosel"]
         for macro in macros:
             lastrun = self.find_last_run(macro)
             copy_print(
@@ -171,7 +171,7 @@ class ShuttleConfig:
             )
 
     def copy_final_results(self):
-        macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux", "tt_top"]
+        macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux", "tt_autosel", "tt_top"]
 
         logging.info("copying final results:")
         for macro in macros:
