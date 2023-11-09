@@ -155,7 +155,7 @@ class Docs:
             if p.returncode != 0:
                 logging.error("pdf command failed")
 
-    def build_hugo_content(self):
+    def build_hugo_content(self) -> None:
         hugo_root = self.args.build_hugo_content
         hugo_images = os.path.join(hugo_root, "images")
         shutil.rmtree(hugo_root)
@@ -171,46 +171,62 @@ class Docs:
             index_template = fh.read()
 
         # copy image
-        shutil.copyfile(
-            "pics/tinytapeout_numbered.png",
-            os.path.join(hugo_images, "tinytapeout-03.png"),
-        )  # TODO fix hardcoded run
+        # TODO, need to get image from somewhere
+        # shutil.copyfile(
+        #    "tt/docs/pics/tinytapeout_numbered.png",
+        #    os.path.join(hugo_images, f'tinytapeout-{self.config["id"]}.png'),
+        # )
 
         # index page
-        logging.info(
-            "building pages - can take a minute as fetching latest GDS action URLs for all projects"
-        )
+        logging.info("building pages")
         with open(os.path.join(hugo_root, "_index.md"), "w") as fh:
             fh.write(index_template)
             fh.write("# All projects\n")
             fh.write("| Index | Title | Author |\n")
             fh.write("| ----- | ----- | -------|\n")
+            self.projects.sort(key=lambda x: x.mux_address)
             for project in self.projects:
                 logging.info(project)
                 fh.write(project.get_hugo_row())
 
-                project_dir = os.path.join(hugo_root, f"{project.get_index() :03}")
+                project_dir = os.path.join(hugo_root, f"{project.mux_address :03}")
                 project_image_dir = os.path.join(project_dir, "images")
                 os.makedirs(project_dir)
                 os.makedirs(project_image_dir)
                 yaml_data = project.get_project_doc_yaml()
+                yaml_data["mux_address"] = project.mux_address
+                if '""' in yaml_data["title"]:
+                    yaml_data["title"] = yaml_data["title"].replace('""', "")
+
                 yaml_data["index"] = project.index
                 yaml_data["weight"] = project.index + 1
-                yaml_data["git_action"] = project.get_latest_action_url()
+                yaml_data["git_action"] = project.get_workflow_url_when_submitted()
+                for key in "external_hw", "clock_hz":
+                    if key not in yaml_data:
+                        yaml_data[key] = ""
+
+                # many people remove unused pins in input / output / bidirectional
+                for key in ["inputs", "outputs", "bidirectional"]:
+                    yaml_data[key].extend((8 - len(yaml_data[key])) * ["n/a"])
+
                 yaml_data["picture_link"] = ""
                 if yaml_data["picture"]:
-                    picture_name = yaml_data["picture"]
-                    picture_filename = os.path.join(project.local_dir, picture_name)
-                    picture_basename = os.path.basename(picture_filename)
+                    extension = os.path.splitext(yaml_data["picture"])[1]
+                    picture_path = os.path.join(
+                        project.local_dir, f"picture{extension}"
+                    )
+                    picture_basename = os.path.basename(picture_path)
                     try:
                         shutil.copyfile(
-                            picture_filename,
+                            picture_path,
                             os.path.join(project_image_dir, picture_basename),
                         )
                         yaml_data[
                             "picture_link"
                         ] = f"![picture](images/{picture_basename})"
+                        logging.warning(f"picture found {picture_path}")
                     except FileNotFoundError:
+                        logging.warning(f"picture not found {picture_path}")
                         yaml_data["picture_link"] = "Image path is broken"
                 doc = doc_template.format(**yaml_data)
                 with open(os.path.join(project_dir, "_index.md"), "w") as pfh:
