@@ -9,8 +9,9 @@ description: 143 designs, closed 8th September 2023
 # Design details
 
 * [Github repository](https://github.com/TinyTapeout/tinytapeout-04)
-* [PDF datasheet](https://github.com/TinyTapeout/tinytapeout-04/suites/15974117461/artifacts/912076852)
+* [PDF datasheet](https://tinytapeout.github.io/tinytapeout-04/datasheet.pdf)
 * [Efabless MPW submission](https://repositories.efabless.com/urish/tinytapeout-04)
+* [Shuttle index](https://tinytapeout.github.io/tinytapeout-04/shuttle_index.json)
 
 # Launch stats
 
