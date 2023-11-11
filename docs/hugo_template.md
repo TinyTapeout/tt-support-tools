@@ -37,3 +37,7 @@ weight: {weight}
 | 5 | {inputs[5]}  | {outputs[5]} | {bidirectional[5]} |
 | 6 | {inputs[6]}  | {outputs[6]} | {bidirectional[6]} |
 | 7 | {inputs[7]}  | {outputs[7]} | {bidirectional[7]} |
+
+### Chip location
+
+{{{{< shuttle-map "tt05" "{mux_address}" >}}}}
