@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -33,8 +33,15 @@ jobs:
           pdk_version: ${{ env.PDK_VERSION }}
           pdk_root: ${{ env.PDK_ROOT }}
 
-      - name: Install nix
-        uses: cachix/install-nix-action@v20
+      - name: Install Nix
+        uses: rikhuijzer/cache-install@v1.1.2
+        with:
+          key: nix-${{ hashFiles('precheck/default.nix') }}
+          nix_file: 'precheck/default.nix'
+
+      - name: Build Nix packages
+        working-directory: precheck
+        run: nix-build
 
       - name: Run tests
         working-directory: precheck
