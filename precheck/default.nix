@@ -1,12 +1,11 @@
-{ pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/f2bd8adf7b78d7616b52d0ef08865c7c2fcf189d.tar.gz")
+{ pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/8f7a6554c058bfdae00f4fb36f5cd52838f410e7.tar.gz")
     { }
-, magic ? import ./nix/magic.nix { inherit pkgs; }
 ,
 }:
 
 pkgs.mkShell {
   buildInputs = [
     pkgs.klayout
-    magic
+    pkgs.magic-vlsi
   ];
 }
