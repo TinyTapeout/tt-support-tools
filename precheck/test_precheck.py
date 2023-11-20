@@ -68,40 +68,36 @@ def gds_fail_metal5_poly(tmp_path_factory: pytest.TempPathFactory):
 
 
 def test_magic_drc_pass(gds_empty: str):
-    result = precheck.magic_drc(gds_empty, "TEST_empty")
-    assert result is True
+    precheck.magic_drc(gds_empty, "TEST_empty")
 
 
 def test_magic_drc_fail(gds_fail_met1_poly: str):
-    result = precheck.magic_drc(gds_fail_met1_poly, "TEST_met1_error")
-    assert result is False
+    with pytest.raises(precheck.PrecheckFailure):
+        precheck.magic_drc(gds_fail_met1_poly, "TEST_met1_error")
 
 
 def test_klayout_feol_pass(gds_empty: str):
-    result = precheck.klayout_drc(gds_empty, "feol")
-    assert result is True
+    precheck.klayout_drc(gds_empty, "feol")
 
 
 def test_klayout_feol_fail(gds_fail_nwell_poly: str):
-    result = precheck.klayout_drc(gds_fail_nwell_poly, "feol")
-    assert result is False
+    with pytest.raises(precheck.PrecheckFailure):
+        precheck.klayout_drc(gds_fail_nwell_poly, "feol")
 
 
 def test_klayout_beol_pass(gds_empty: str):
-    result = precheck.klayout_drc(gds_empty, "beol")
-    assert result is True
+    precheck.klayout_drc(gds_empty, "beol")
 
 
 def test_klayout_beol_fail(gds_fail_met1_poly: str):
-    result = precheck.klayout_drc(gds_fail_met1_poly, "beol")
-    assert result is False
+    with pytest.raises(precheck.PrecheckFailure):
+        precheck.klayout_drc(gds_fail_met1_poly, "beol")
 
 
 def test_klayout_checks_pass(gds_empty: str):
-    result = precheck.klayout_checks(gds_empty)
-    assert result is True
+    precheck.klayout_checks(gds_empty)
 
 
 def test_klayout_checks_fail(gds_fail_metal5_poly: str):
-    result = precheck.klayout_checks(gds_fail_metal5_poly)
-    assert result is False
+    with pytest.raises(precheck.PrecheckFailure):
+        precheck.klayout_checks(gds_fail_metal5_poly)
