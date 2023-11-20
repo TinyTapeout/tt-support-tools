@@ -106,12 +106,17 @@ def klayout_checks(gds: str):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--gds", required=True)
-    parser.add_argument("--toplevel", required=True)
+    parser.add_argument("--top-module", required=False)
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     logging.info(f"PDK_ROOT: {PDK_ROOT}")
 
-    assert magic_drc(args.gds, args.toplevel)
+    if args.top_module:
+        top_module = args.top_module
+    else:
+        top_module = os.path.splitext(os.path.basename(args.gds))[0]
+
+    assert magic_drc(args.gds, top_module)
 
     assert klayout_drc(args.gds, "feol")
     assert klayout_drc(args.gds, "beol")
