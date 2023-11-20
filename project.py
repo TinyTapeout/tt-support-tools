@@ -142,20 +142,24 @@ class Project:
     # get name of top module and the verilog module that contains the top
     def setup_source_files(self):
         # wokwi_id must be an int or 0
-        try:
-            self.wokwi_id = int(self.yaml["project"]["wokwi_id"])
-        except ValueError:
-            logging.error("wokwi id must be an integer")
-            exit(1)
+        project_info = self.yaml["project"]
+        project_info["git_url"] = self.git_url
 
-        self.yaml["project"]["git_url"] = self.git_url
-
-        if self.is_hdl():
-            self.top_module = self.yaml["project"]["top_module"]
+        if "wokwi_id" not in project_info:
+            self.wokwi_id = 0
+            self.top_module = project_info["top_module"]
             if self.is_user_project:
                 self.src_files = self.get_hdl_source()
                 self.top_verilog_filename = self.find_top_verilog()
         else:
+            try:
+                self.wokwi_id = int(project_info["wokwi_id"])
+            except ValueError:
+                logging.error("wokwi id must be an integer")
+                exit(1)
+            if self.wokwi_id == 0:
+                logging.error("please set wokwi_id to a valid wokwi project id")
+                exit(1)
             self.top_module = f"tt_um_wokwi_{self.wokwi_id}"
             if self.is_user_project:
                 self.src_files = self.get_wokwi_source()
@@ -452,23 +456,6 @@ class Project:
         shutil.copyfile("golden_config.tcl", os.path.join(self.src_dir, "config.tcl"))
         self.harden()
 
-    def copy_picture_for_docs(self):
-        picture = self.yaml["documentation"]["picture"]
-        if not picture:
-            return
-        extension = os.path.splitext(picture)[1]
-        supported_extensions = [".png", ".jpg", ".jpeg", ".svg", ".pdf"]
-        if not os.path.exists(picture):
-            logging.warning(f"Picture file '{picture}' not found in repo, skipping")
-        elif extension not in supported_extensions:
-            logging.warning(
-                f"Picture file '{picture}' has unsupported extension '{extension}' (we support {', '.join(supported_extensions)}), skipping"
-            )
-        else:
-            picture_dir = os.path.join(self.local_dir, "src/__tinytapeout")
-            os.makedirs(picture_dir, exist_ok=True)
-            shutil.copyfile(picture, os.path.join(picture_dir, f"picture{extension}"))
-
     def harden(self):
         cwd = os.getcwd()
         os.chdir(self.local_dir)
@@ -513,9 +500,6 @@ class Project:
                 indent=2,
             )
             f.write("\n")
-
-        # Copy user provided picture (if exists) to project directory
-        self.copy_picture_for_docs()
 
         os.chdir(cwd)
 
