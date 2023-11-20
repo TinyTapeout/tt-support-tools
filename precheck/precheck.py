@@ -13,6 +13,10 @@ PDK_NAME = os.getenv("PDK_NAME") or "sky130A"
 LYP_FILE = f"{PDK_ROOT}/{PDK_NAME}/libs.tech/klayout/tech/{PDK_NAME}.lyp"
 REPORTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "reports")
 
+if not PDK_ROOT:
+    logging.error("PDK_ROOT environment variable not set")
+    exit(1)
+
 
 def magic_drc(gds: str, toplevel: str):
     logging.info(f"Running magic DRC on {gds} (module={toplevel})")
@@ -61,7 +65,8 @@ def klayout_drc(gds: str, check: str):
         logging.error(f"Klayout {check} failed")
         return False
 
-    report = rdb.ReportDatabase().load(report_file)
+    report = rdb.ReportDatabase("DRC")
+    report.load(report_file)
 
     if report.num_items() > 0:
         logging.error(

@@ -13,7 +13,7 @@ gds_layers = klayout_tools.parse_lyp_layers(LYP_FILE)
 
 
 @pytest.fixture(scope="session")
-def gds_empty(tmp_path_factory):
+def gds_empty(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS with an empty cell that should pass DRC."""
     gds_file = tmp_path_factory.mktemp("gds") / "gds_empty.gds"
     layout = pya.Layout()
@@ -23,7 +23,7 @@ def gds_empty(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
-def gds_fail_met1_poly(tmp_path_factory):
+def gds_fail_met1_poly(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS that fails Magic DRC and BEOL because the met1 rect is too small."""
     gds_file = tmp_path_factory.mktemp("gds") / "gds_met1_fail.gds"
     layout = pya.Layout()
@@ -39,7 +39,7 @@ def gds_fail_met1_poly(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
-def gds_fail_nwell_poly(tmp_path_factory):
+def gds_fail_nwell_poly(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS that fails FEOL because the nwell is too small."""
     gds_file = tmp_path_factory.mktemp("gds") / "gds_nwell_fail.gds"
     layout = pya.Layout()
@@ -54,7 +54,7 @@ def gds_fail_nwell_poly(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
-def gds_fail_metal5_poly(tmp_path_factory):
+def gds_fail_metal5_poly(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS with drawings on layer5, should fail our precheck."""
     gds_file = tmp_path_factory.mktemp("gds") / "gds_metal5_fail.gds"
     layout = pya.Layout()
@@ -67,41 +67,41 @@ def gds_fail_metal5_poly(tmp_path_factory):
     return str(gds_file)
 
 
-def test_magic_drc_pass(gds_empty):
+def test_magic_drc_pass(gds_empty: str):
     result = precheck.magic_drc(gds_empty, "TEST_empty")
     assert result is True
 
 
-def test_magic_drc_fail(gds_fail_met1_poly):
+def test_magic_drc_fail(gds_fail_met1_poly: str):
     result = precheck.magic_drc(gds_fail_met1_poly, "TEST_met1_error")
     assert result is False
 
 
-def test_klayout_feol_pass(gds_empty):
+def test_klayout_feol_pass(gds_empty: str):
     result = precheck.klayout_drc(gds_empty, "feol")
     assert result is True
 
 
-def test_klayout_feol_fail(gds_fail_nwell_poly):
+def test_klayout_feol_fail(gds_fail_nwell_poly: str):
     result = precheck.klayout_drc(gds_fail_nwell_poly, "feol")
     assert result is False
 
 
-def test_klayout_beol_pass(gds_empty):
+def test_klayout_beol_pass(gds_empty: str):
     result = precheck.klayout_drc(gds_empty, "beol")
     assert result is True
 
 
-def test_klayout_beol_fail(gds_fail_met1_poly):
+def test_klayout_beol_fail(gds_fail_met1_poly: str):
     result = precheck.klayout_drc(gds_fail_met1_poly, "beol")
     assert result is False
 
 
-def test_klayout_checks_pass(gds_empty):
+def test_klayout_checks_pass(gds_empty: str):
     result = precheck.klayout_checks(gds_empty)
     assert result is True
 
 
-def test_klayout_checks_fail(gds_fail_metal5_poly):
+def test_klayout_checks_fail(gds_fail_metal5_poly: str):
     result = precheck.klayout_checks(gds_fail_metal5_poly)
     assert result is False

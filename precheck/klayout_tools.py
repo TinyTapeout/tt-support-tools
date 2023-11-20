@@ -28,7 +28,12 @@ def parse_lyp_layers(lyp_file: str):
         if valid is not None and valid.text == "false":
             continue
 
-        if name is not None and source is not None:
+        if (
+            name is not None
+            and name.text is not None
+            and source is not None
+            and source.text is not None
+        ):
             name_key = name.text.split("-")[0].strip()
             layer, data_type = source.text.split("@")[0].split("/")
             # Add the 'source' text as the value in the dictionary
