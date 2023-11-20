@@ -57,6 +57,12 @@ if __name__ == "__main__":
         action="store_const",
         const=True,
     )
+    parser.add_argument(
+        "--print-top-module",
+        help="prints the name of the top module",
+        action="store_const",
+        const=True,
+    )
 
     # documentation
     parser.add_argument(
@@ -133,6 +139,9 @@ if __name__ == "__main__":
 
     if args.print_wokwi_id:
         project.print_wokwi_id()
+
+    if args.print_top_module:
+        project.print_top_module()
 
     if args.create_user_config:
         project.create_user_config()

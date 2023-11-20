@@ -375,6 +375,9 @@ class Project:
     def print_wokwi_id(self):
         print(self.wokwi_id)
 
+    def print_top_module(self):
+        print(self.top_module)
+
     def fetch_wokwi_files(self):
         logging.info("fetching wokwi files")
         src_file = self.src_files[0]
