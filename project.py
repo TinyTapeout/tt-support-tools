@@ -142,20 +142,24 @@ class Project:
     # get name of top module and the verilog module that contains the top
     def setup_source_files(self):
         # wokwi_id must be an int or 0
-        try:
-            self.wokwi_id = int(self.yaml["project"]["wokwi_id"])
-        except ValueError:
-            logging.error("wokwi id must be an integer")
-            exit(1)
+        project_info = self.yaml["project"]
+        project_info["git_url"] = self.git_url
 
-        self.yaml["project"]["git_url"] = self.git_url
-
-        if self.is_hdl():
-            self.top_module = self.yaml["project"]["top_module"]
+        if "wokwi_id" not in project_info:
+            self.wokwi_id = 0
+            self.top_module = project_info["top_module"]
             if self.is_user_project:
                 self.src_files = self.get_hdl_source()
                 self.top_verilog_filename = self.find_top_verilog()
         else:
+            try:
+                self.wokwi_id = int(project_info["wokwi_id"])
+            except ValueError:
+                logging.error("wokwi id must be an integer")
+                exit(1)
+            if self.wokwi_id == 0:
+                logging.error("please set wokwi_id to a valid wokwi project id")
+                exit(1)
             self.top_module = f"tt_um_wokwi_{self.wokwi_id}"
             if self.is_user_project:
                 self.src_files = self.get_wokwi_source()
