@@ -1,0 +1,48 @@
+name: Precheck Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-precheck:
+    runs-on: ubuntu-latest
+    env:
+      PDK_ROOT: /home/runner/pdk
+      PDK_VERSION: dd7771c384ed36b91a25e9f8b314355fc26561be
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: precheck
+        run: pip install -r requirements.txt
+
+      - name: Install Sky130 PDK
+        uses: TinyTapeout/volare-action@v1
+        with:
+          pdk_name: sky130
+          pdk_version: ${{ env.PDK_VERSION }}
+          pdk_root: ${{ env.PDK_ROOT }}
+
+      - name: Install Nix
+        uses: rikhuijzer/cache-install@v1.1.2
+        with:
+          key: nix-${{ hashFiles('precheck/default.nix') }}
+          nix_file: 'precheck/default.nix'
+
+      - name: Build Nix packages
+        working-directory: precheck
+        run: nix-build
+
+      - name: Run tests
+        working-directory: precheck
+        run: nix-shell --run "pytest"
