@@ -1,28 +1,20 @@
-## {title}
-
-{picture_link}
+# {title}
 
 * Author: {author}
 * Description: {description}
 * Language: {language}
 
-### How it works
+{info}
 
-{how_it_works}
-
-### How to test
-
-{how_to_test}
-
-### IO
+## Pinout
 
 | # | Input        | Output       | Bidirectional      |
 |---|--------------|--------------|--------------------|
-| 0 | {inputs[0]}  | {outputs[0]} | {bidirectional[0]} |
-| 1 | {inputs[1]}  | {outputs[1]} | {bidirectional[1]} |
-| 2 | {inputs[2]}  | {outputs[2]} | {bidirectional[2]} |
-| 3 | {inputs[3]}  | {outputs[3]} | {bidirectional[3]} |
-| 4 | {inputs[4]}  | {outputs[4]} | {bidirectional[4]} |
-| 5 | {inputs[5]}  | {outputs[5]} | {bidirectional[5]} |
-| 6 | {inputs[6]}  | {outputs[6]} | {bidirectional[6]} |
-| 7 | {inputs[7]}  | {outputs[7]} | {bidirectional[7]} |
+| 0 | {ui[0]}      | {uo[0]}      | {uio[0]}           |
+| 1 | {ui[1]}      | {uo[1]}      | {uio[1]}           |
+| 2 | {ui[2]}      | {uo[2]}      | {uio[2]}           |
+| 3 | {ui[3]}      | {uo[3]}      | {uio[3]}           |
+| 4 | {ui[4]}      | {uo[4]}      | {uio[4]}           |
+| 5 | {ui[5]}      | {uo[5]}      | {uio[5]}           |
+| 6 | {ui[6]}      | {uo[6]}      | {uio[6]}           |
+| 7 | {ui[7]}      | {uo[7]}      | {uio[7]}           |

@@ -1,3 +1,4 @@
+import copy
 import csv
 import glob
 import json
@@ -18,6 +19,33 @@ from cells import Cell, load_cells
 from markdown_utils import limit_markdown_headings
 
 CELL_URL = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/"
+
+PINOUT_KEYS = [
+    "ui[0]",
+    "ui[1]",
+    "ui[2]",
+    "ui[3]",
+    "ui[4]",
+    "ui[5]",
+    "ui[6]",
+    "ui[7]",
+    "uo[0]",
+    "uo[1]",
+    "uo[2]",
+    "uo[3]",
+    "uo[4]",
+    "uo[5]",
+    "uo[6]",
+    "uo[7]",
+    "uio[0]",
+    "uio[1]",
+    "uio[2]",
+    "uio[3]",
+    "uio[4]",
+    "uio[5]",
+    "uio[6]",
+    "uio[7]",
+]
 
 
 with open(os.path.join(os.path.dirname(__file__), "tile_sizes.yaml"), "r") as stream:
@@ -510,47 +538,73 @@ class Project:
     # makes sure that the basic info is present
     def check_yaml_docs(self):
         yaml = self.yaml
-        logging.info("checking docs")
+        logging.info("Checking docs")
+        had_error = False
+        if yaml.get("yaml_version", "") != 6:
+            logging.error("yaml_version must be 6")
+            had_error = True
+
         for key in [
             "author",
+            "tiles",
             "title",
             "description",
-            "how_it_works",
-            "how_to_test",
             "language",
-            "inputs",
-            "outputs",
-            "bidirectional",
         ]:
-            if key not in yaml["documentation"]:
-                logging.error("missing key {} in documentation".format(key))
-                exit(1)
-            if yaml["documentation"][key] == "":
-                logging.error("missing value for {} in documentation".format(key))
-                exit(1)
+            if key not in yaml["project"]:
+                logging.error("Missing key {} in 'project'".format(key))
+                had_error = True
+            elif yaml["project"][key] == "":
+                logging.error("Missing value for {} in 'project'".format(key))
+                had_error = True
+
+        for key in PINOUT_KEYS:
+            if key not in yaml["pinout"]:
+                logging.error("Missing key {} in 'pinout'".format(key))
+                had_error = True
+
+        info_md = os.path.join(self.local_dir, "docs/info.md")
+        if not os.path.exists(info_md):
+            logging.error("Missing docs/info.md file")
+            had_error = True
+        else:
+            with open(info_md) as fh:
+                info_md_content = fh.read()
+            if "# How it works\n\nExplain how your project works" in info_md_content:
+                logging.error("Missing 'How it works' section in docs/info.md")
+                had_error = True
+            if "# How to test\n\nExplain how to use your project" in info_md_content:
+                logging.error("Missing 'How to use' section in docs/info.md")
+                had_error = True
+
+        if had_error:
+            exit(1)
 
     # use pandoc to create a single page PDF preview
     def create_pdf(self):
         yaml = self.yaml
-        yaml = yaml["documentation"]
-        logging.info("creating pdf")
+        pinout = yaml["pinout"]
+        template_args = copy.deepcopy(yaml["project"])
+        template_args["ui"] = [pinout["ui[{}]".format(i)] for i in range(8)]
+        template_args["uo"] = [pinout["uo[{}]".format(i)] for i in range(8)]
+        template_args["uio"] = [pinout["uio[{}]".format(i)] for i in range(8)]
+
+        logging.info("Creating PDF")
         script_dir = os.path.dirname(os.path.realpath(__file__))
         with open(os.path.join(script_dir, "docs/project_header.md")) as fh:
             doc_header = fh.read()
         with open(os.path.join(script_dir, "docs/project_preview.md")) as fh:
             doc_template = fh.read()
+        info_md = os.path.join(self.local_dir, "docs/info.md")
+        with open(info_md) as fh:
+            template_args["info"] = fh.read()
 
         with open("datasheet.md", "w") as fh:
             fh.write(doc_header)
-            # handle pictures
-            yaml["picture_link"] = ""
-            if yaml["picture"]:
-                picture_name = yaml["picture"]
-                yaml["picture_link"] = "![picture]({})".format(picture_name)
 
             # now build the doc & print it
             try:
-                doc = doc_template.format(**yaml)
+                doc = doc_template.format(**template_args)
                 fh.write(doc)
                 fh.write("\n\\pagebreak\n")
             except IndexError:
