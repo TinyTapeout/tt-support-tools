@@ -120,18 +120,24 @@ class Project:
 
         module_ports = ports["modules"][top]["ports"]
         required_ports = [
-            ["clk", 1],
-            ["ena", 1],
-            ["rst_n", 1],
-            ["ui_in", 8],
-            ["uio_in", 8],
-            ["uio_oe", 8],
-            ["uio_out", 8],
-            ["uo_out", 8],
+            ["input", "clk", 1],
+            ["input", "ena", 1],
+            ["input", "rst_n", 1],
+            ["input", "ui_in", 8],
+            ["input", "uio_in", 8],
+            ["output", "uio_oe", 8],
+            ["output", "uio_out", 8],
+            ["output", "uo_out", 8],
         ]
-        for port, bits in required_ports:
+        for direction, port, bits in required_ports:
             if port not in module_ports:
                 logging.error(f"{self} port '{port}' missing from top module ('{top}')")
+                exit(1)
+            actual_direction = module_ports[port]["direction"]
+            if actual_direction != direction:
+                logging.error(
+                    f"{self} incorrect direction for port '{port}' in module '{top}': {direction} required, {actual_direction} found"
+                )
                 exit(1)
             actual_bits = len(module_ports[port]["bits"])
             if actual_bits != bits:
@@ -139,6 +145,12 @@ class Project:
                     f"{self} incorrect width for port '{port}' in module '{top}': {bits} bits required, {actual_bits} found"
                 )
                 exit(1)
+            del module_ports[port]
+        if len(module_ports):
+            logging.error(
+                f"{self} module '{top}' has unsupported extra ports: {', '.join(module_ports.keys())}"
+            )
+            exit(1)
 
     def check_num_cells(self):
         num_cells = self.get_cell_count_from_synth()
