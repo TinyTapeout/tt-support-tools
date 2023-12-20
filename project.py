@@ -100,7 +100,7 @@ class Project:
     def is_chip_rom(self):
         return self.get_macro_name() == "tt_um_chip_rom"
 
-    def check_ports(self):
+    def check_ports(self, include_power_ports: bool = False):
         top = self.get_macro_name()
         if not self.is_user_project and self.is_chip_rom():
             return  # Chip ROM is auto generated, so we don't have the verilog yet
@@ -129,6 +129,11 @@ class Project:
             ["output", "uio_out", 8],
             ["output", "uo_out", 8],
         ]
+        if include_power_ports:
+            required_ports += [
+                ["input", "VGND", 1],
+                ["input", "VPWR", 1],
+            ]
         for direction, port, bits in required_ports:
             if port not in module_ports:
                 logging.error(f"{self} port '{port}' missing from top module ('{top}')")
@@ -264,7 +269,7 @@ class Project:
 
     # docs stuff for index on README.md
     def get_index_row(self):
-        return f'| {self.mux_address} | {self.yaml["documentation"]["author"]} | {self.yaml["documentation"]["title"]} | {self.get_project_type_string()} | {self.git_url} |\n'
+        return f'| {self.mux_address} | {self.yaml["project"]["author"]} | {self.yaml["project"]["title"]} | {self.get_project_type_string()} | {self.git_url} |\n'
 
     def get_project_type_string(self):
         if self.is_wokwi():
