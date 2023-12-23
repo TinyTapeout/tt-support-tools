@@ -20,11 +20,11 @@ class Docs:
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
 
     # stuff related to docs
-    def build_index(self):
-        logging.info("building doc index")
+    def build_index(self, filename="shuttle_index.md"):
+        logging.info(f"building {filename}")
         repo = git.Repo(".")
-        readme = self.load_doc_template("README_init.md")
-        with open("README.md", "w") as fh:
+        readme = self.load_doc_template("shuttle_index_header.md")
+        with open(filename, "w") as fh:
             fh.write(
                 readme.format(
                     name=self.config["name"],

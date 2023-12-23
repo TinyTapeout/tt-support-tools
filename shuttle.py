@@ -211,7 +211,7 @@ class ShuttleConfig:
     def create_efabless_submission(self):
         logging.info("creating efabless submission directory:")
         lastrun = self.find_last_run("tt_top")
-        copy_print("README.md", "efabless/README.md")
+        copy_print("shuttle_index.md", "efabless/README.md")
         copy_print("shuttle_index.json", "efabless/shuttle_index.json")
         copy_print("verilog/rtl/user_defines.v", "efabless/verilog/rtl/user_defines.v")
         copy_print(
