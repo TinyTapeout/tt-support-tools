@@ -84,9 +84,7 @@ class Projects:
 
         self.projects.sort(key=lambda x: x.sort_id)
 
-        all_macro_instances = [
-            project.get_macro_instance() for project in self.projects
-        ]
+        all_macro_instances = [project.get_macro_name() for project in self.projects]
         self.assert_unique(all_macro_instances)
 
         all_gds_files = [project.get_macro_gds_filename() for project in self.projects]

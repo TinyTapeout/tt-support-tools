@@ -17,6 +17,7 @@ from git.repo import Repo
 import git_utils
 from cells import Cell, load_cells
 from markdown_utils import limit_markdown_headings
+from project_info import ProjectInfo, ProjectYamlError
 
 CELL_URL = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/"
 
@@ -85,9 +86,31 @@ class Project:
             else self.local_dir
         )
 
+        yaml_path = os.path.join(self.src_dir, "info.yaml")
+        try:
+            with open(yaml_path) as fh:
+                self.info = ProjectInfo(yaml.safe_load(fh))
+        except FileNotFoundError:
+            logging.error(
+                f"yaml file not found for {self} - do you need to --clone the project repos?"
+            )
+            exit(1)
+        except ProjectYamlError as e:
+            logging.error(f"Error loading {yaml_path}: {e}")
+            exit(1)
+        self.unprefixed_name = re.sub("^tt_um_", "", self.info.top_module)
+
+        if self.is_user_project:
+            self.sources = self.info.source_files
+            self.check_sources()
+            if self.is_wokwi():
+                self.top_verilog_filename = self.sources[0]
+            else:
+                self.top_verilog_filename = self.find_top_verilog()
+        else:
+            self.sources = [self.get_gl_verilog_filename()]
+
     def post_clone_setup(self):
-        self.load_yaml()
-        self.setup_source_files()
         self.load_metrics()
 
     def load_metrics(self):
@@ -100,11 +123,26 @@ class Project:
     def is_chip_rom(self):
         return self.get_macro_name() == "tt_um_chip_rom"
 
+    def is_wokwi(self) -> bool:
+        return hasattr(self.info, "wokwi_id")
+
+    def is_hdl(self):
+        return not self.is_wokwi()
+
+    def check_sources(self):
+        for filename in self.sources:
+            if "*" in filename:
+                logging.error("* not allowed, please specify each file")
+                exit(1)
+            if not os.path.exists(os.path.join(self.src_dir, filename)):
+                logging.error(f"{filename} doesn't exist in the repo")
+                exit(1)
+
     def check_ports(self, include_power_ports: bool = False):
         top = self.get_macro_name()
         if not self.is_user_project and self.is_chip_rom():
             return  # Chip ROM is auto generated, so we don't have the verilog yet
-        sources = [os.path.join(self.src_dir, src) for src in self.src_files]
+        sources = [os.path.join(self.src_dir, src) for src in self.info.source_files]
         source_list = " ".join(sources)
 
         json_file = "ports.json"
@@ -166,110 +204,12 @@ class Project:
             if num_cells < 11:
                 logging.warning(f"{self} only has {num_cells} cells")
 
-    def is_wokwi(self):
-        if self.wokwi_id != 0:
-            return True
-
-    def is_hdl(self):
-        return not self.is_wokwi()
-
-    def load_yaml(self):
-        try:
-            with open(os.path.join(self.local_dir, "info.yaml")) as fh:
-                self.yaml = yaml.safe_load(fh)
-        except FileNotFoundError:
-            logging.error(
-                f"yaml file not found for {self} - do you need to --clone the project repos?"
-            )
-            exit(1)
-
-    # find and save the location of the source files
-    # get name of top module and the verilog module that contains the top
-    def setup_source_files(self):
-        # wokwi_id must be an int or 0
-        project_info = self.yaml["project"]
-        project_info["git_url"] = self.git_url
-
-        if "wokwi_id" not in project_info:
-            self.wokwi_id = 0
-            self.top_module = project_info["top_module"]
-            if self.is_user_project:
-                self.src_files = self.get_hdl_source()
-                self.top_verilog_filename = self.find_top_verilog()
-        else:
-            try:
-                self.wokwi_id = int(project_info["wokwi_id"])
-            except ValueError:
-                logging.error("wokwi id must be an integer")
-                exit(1)
-            if self.wokwi_id == 0:
-                logging.error("please set wokwi_id to a valid wokwi project id")
-                exit(1)
-            self.top_module = f"tt_um_wokwi_{self.wokwi_id}"
-            if self.is_user_project:
-                self.src_files = self.get_wokwi_source()
-                self.top_verilog_filename = self.src_files[0]
-
-        if not self.is_user_project:
-            self.src_files = [self.get_gl_verilog_filename()]
-
-        self.unprefixed_name = re.sub("^tt_um_", "", self.top_module)
-
-        if not self.top_module.startswith("tt_um_"):
-            logging.error(
-                f'top module name must start with "tt_um_" (current value: "{self.top_module}")'
-            )
-            exit(1)
-
-        self.macro_instance = f"{self.top_module}"
-
-    def get_wokwi_source(self):
-        src_file = "tt_um_wokwi_{}.v".format(self.wokwi_id)
-        return [src_file, "cells.v"]
-
-    def get_hdl_source(self):
-        if "source_files" not in self.yaml["project"]:
-            logging.error("source files must be provided if wokwi_id is set to 0")
-            exit(1)
-
-        source_files = self.yaml["project"]["source_files"]
-        if source_files is None:
-            logging.error("must be more than 1 source file")
-            exit(1)
-
-        if len(source_files) == 0:
-            logging.error("must be more than 1 source file")
-            exit(1)
-
-        if "top_module" not in self.yaml["project"]:
-            logging.error("must provide a top module name")
-            exit(1)
-
-        if self.yaml["project"]["top_module"] == "top":
-            logging.error(
-                "top module cannot be called top - prepend your repo name to make it unique"
-            )
-            exit(1)
-
-        for filename in source_files:
-            if "*" in filename:
-                logging.error("* not allowed, please specify each file")
-                exit(1)
-            if not os.path.exists(os.path.join(self.src_dir, filename)):
-                logging.error(f"{filename} doesn't exist in the repo")
-                exit(1)
-
-        return source_files
-
-    def get_yaml(self):
-        return self.yaml
-
     def get_hugo_row(self) -> str:
-        return f'| {self.mux_address} | [{self.yaml["documentation"]["title"]}]({self.mux_address :03}) | {self.yaml["documentation"]["author"]}|\n'
+        return f"| {self.mux_address} | [{self.info.title}]({self.mux_address :03}) | {self.info.author}|\n"
 
     # docs stuff for index on README.md
     def get_index_row(self):
-        return f'| {self.mux_address} | {self.yaml["project"]["author"]} | {self.yaml["project"]["title"]} | {self.get_project_type_string()} | {self.git_url} |\n'
+        return f"| {self.mux_address} | {self.info.author} | {self.info.title} | {self.get_project_type_string()} | {self.git_url} |\n"
 
     def get_project_type_string(self):
         if self.is_wokwi():
@@ -296,20 +236,21 @@ class Project:
     def find_top_verilog(self):
         rgx_mod = re.compile(r"(?:^|[\s])module[\s]{1,}([\w]+)")
         top_verilog: typing.List[str] = []
-        for src in self.src_files:
+        top_module = self.info.top_module
+        for src in self.info.source_files:
             with open(os.path.join(self.src_dir, src)) as fh:
                 for line in fh.readlines():
                     for match in rgx_mod.finditer(line):
-                        if match.group(1) == self.top_module:
+                        if match.group(1) == top_module:
                             top_verilog.append(src)
         if len(top_verilog) == 0:
             logging.error(
-                f"Couldn't find verilog module '{self.top_module}' in any of the project's source files"
+                f"Couldn't find verilog module '{top_module}' in any of the project's source files"
             )
             exit(1)
         if len(top_verilog) > 1:
             logging.error(
-                f"Top verilog module '{self.top_module}' found in multiple source files: {', '.join(top_verilog)}"
+                f"Top verilog module '{top_module}' found in multiple source files: {', '.join(top_verilog)}"
             )
             exit(1)
         return top_verilog[0]
@@ -324,7 +265,7 @@ class Project:
         repo = Repo(os.path.join(self.local_dir, "tt"))
         return f"{repo.active_branch.name} {repo.commit().hexsha[:8]}"
 
-    def get_workflow_url_when_submitted(self):
+    def get_workflow_url_when_submitted(self) -> str:
         json_file = os.path.join(self.local_dir, "commit_id.json")
         with open(json_file) as fh:
             commit_info = json.load(fh)
@@ -340,22 +281,13 @@ class Project:
             )
 
     def __str__(self):
-        """
-        if self.args.log_email:
-            return f"[{self.index:03} : {self.email} : {self.git_url}]"
-        else:
-        """
         return f"[{self.index:03} : {self.git_url}]"
 
     def get_latest_action_url(self):
         return git_utils.get_latest_action_url(self.git_url)
 
     def get_macro_name(self):
-        return self.top_module
-
-    # instance name of the project, different for each id
-    def get_macro_instance(self):
-        return self.macro_instance
+        return self.info.top_module
 
     # unique id
     def get_index(self):
@@ -384,24 +316,24 @@ class Project:
                     )
                 )[0]
         else:
-            return os.path.join(self.local_dir, f"{self.top_module}.v")
+            return os.path.join(self.local_dir, f"{self.info.top_module}.v")
 
     # name of the gds file
     def get_macro_gds_filename(self):
-        return f"{self.top_module}.gds"
+        return f"{self.info.top_module}.gds"
 
     def get_macro_info_filename(self):
-        return f"{self.top_module}.info.json"
+        return f"{self.info.top_module}.info.json"
 
     def get_macro_lef_filename(self):
-        return f"{self.top_module}.lef"
+        return f"{self.info.top_module}.lef"
 
     def get_macro_spef_filename(self):
-        return f"{self.top_module}.spef"
+        return f"{self.info.top_module}.spef"
 
     # for GL sims & blackboxing
     def get_gl_verilog_filename(self):
-        return f"{self.top_module}.v"
+        return f"{self.info.top_module}.v"
 
     # for simulations
     def get_top_verilog_filename(self):
@@ -418,29 +350,29 @@ class Project:
         return self.git_url
 
     def print_wokwi_id(self):
-        print(self.wokwi_id)
+        print(self.info.wokwi_id)
 
     def print_top_module(self):
-        print(self.top_module)
+        print(self.info.top_module)
 
     def fetch_wokwi_files(self):
         logging.info("fetching wokwi files")
-        src_file = self.src_files[0]
-        url = f"https://wokwi.com/api/projects/{self.wokwi_id}/verilog"
+        src_file = self.info.source_files[0]
+        url = f"https://wokwi.com/api/projects/{self.info.wokwi_id}/verilog"
         git_utils.fetch_file(url, os.path.join(self.src_dir, src_file))
 
         # also fetch the wokwi diagram
-        url = f"https://wokwi.com/api/projects/{self.wokwi_id}/diagram.json"
+        url = f"https://wokwi.com/api/projects/{self.info.wokwi_id}/diagram.json"
         diagram_file = "wokwi_diagram.json"
         git_utils.fetch_file(url, os.path.join(self.src_dir, diagram_file))
 
         # attempt to download the *optional* truthtable for the project
         truthtable_file = "truthtable.md"
-        url = f"https://wokwi.com/api/projects/{self.wokwi_id}/{truthtable_file}"
+        url = f"https://wokwi.com/api/projects/{self.info.wokwi_id}/{truthtable_file}"
         try:
             git_utils.fetch_file(url, os.path.join(self.src_dir, truthtable_file))
             logging.info(
-                f"Wokwi project {self.wokwi_id} has a truthtable included, will test!"
+                f"Wokwi project {self.info.wokwi_id} has a truthtable included, will test!"
             )
             self.install_wokwi_testing()
         except FileNotFoundError:
@@ -469,7 +401,9 @@ class Project:
         for srcTemplate in glob.glob(os.path.join(srcTplDir, "*")):
             with open(srcTemplate, "r") as f:
                 contents = f.read()
-                customizedContents = re.sub("WOKWI_ID", str(self.wokwi_id), contents)
+                customizedContents = re.sub(
+                    "WOKWI_ID", str(self.info.wokwi_id), contents
+                )
                 outputFname = os.path.basename(srcTemplate)
                 with open(os.path.join(destination_dir, outputFname), "w") as outf:
                     logging.info(f"writing src tpl to {outputFname}")
@@ -483,14 +417,14 @@ class Project:
         logging.info("creating include file")
         filename = "user_config.tcl"
         with open(os.path.join(self.src_dir, filename), "w") as fh:
-            fh.write("set ::env(DESIGN_NAME) {}\n".format(self.top_module))
+            fh.write("set ::env(DESIGN_NAME) {}\n".format(self.info.top_module))
             fh.write('set ::env(VERILOG_FILES) "\\\n')
-            for line, source in enumerate(self.src_files):
+            for line, source in enumerate(self.sources):
                 fh.write("    $::env(DESIGN_DIR)/" + source)
-                if line != len(self.src_files) - 1:
+                if line != len(self.sources) - 1:
                     fh.write(" \\\n")
             fh.write('"\n\n')
-            tiles = self.yaml["project"]["tiles"]
+            tiles = self.info.tiles
             die_area = tile_sizes[tiles]
             fh.write(f"# Project area: {tiles} tiles\n")
             fh.write(f'set ::env(DIE_AREA) "{die_area}"\n')
@@ -500,7 +434,6 @@ class Project:
 
     def golden_harden(self):
         logging.info(f"hardening {self}")
-        # copy golden config
         shutil.copyfile("golden_config.tcl", os.path.join(self.src_dir, "config.tcl"))
         self.harden()
 
@@ -553,58 +486,29 @@ class Project:
 
     # doc check
     # makes sure that the basic info is present
-    def check_yaml_docs(self):
-        yaml = self.yaml
-        logging.info("Checking docs")
-        had_error = False
-        if yaml.get("yaml_version", "") != 6:
-            logging.error("yaml_version must be 6")
-            had_error = True
-
-        for key in [
-            "author",
-            "tiles",
-            "title",
-            "description",
-            "language",
-        ]:
-            if key not in yaml["project"]:
-                logging.error("Missing key {} in 'project'".format(key))
-                had_error = True
-            elif yaml["project"][key] == "":
-                logging.error("Missing value for {} in 'project'".format(key))
-                had_error = True
-
-        for key in PINOUT_KEYS:
-            if key not in yaml["pinout"]:
-                logging.error("Missing key {} in 'pinout'".format(key))
-                had_error = True
-
+    def check_docs(self):
         info_md = os.path.join(self.local_dir, "docs/info.md")
         if not os.path.exists(info_md):
             logging.error("Missing docs/info.md file")
-            had_error = True
-        else:
-            with open(info_md) as fh:
-                info_md_content = fh.read()
-            if "# How it works\n\nExplain how your project works" in info_md_content:
-                logging.error("Missing 'How it works' section in docs/info.md")
-                had_error = True
-            if "# How to test\n\nExplain how to use your project" in info_md_content:
-                logging.error("Missing 'How to use' section in docs/info.md")
-                had_error = True
+            exit(1)
 
-        if had_error:
+        with open(info_md) as fh:
+            info_md_content = fh.read()
+
+        if "# How it works\n\nExplain how your project works" in info_md_content:
+            logging.error("Missing 'How it works' section in docs/info.md")
+            exit(1)
+
+        if "# How to test\n\nExplain how to use your project" in info_md_content:
+            logging.error("Missing 'How to use' section in docs/info.md")
             exit(1)
 
     # use pandoc to create a single page PDF preview
     def create_pdf(self):
-        yaml = self.yaml
-        pinout = yaml["pinout"]
-        template_args = copy.deepcopy(yaml["project"])
-        template_args["ui"] = [pinout["ui[{}]".format(i)] for i in range(8)]
-        template_args["uo"] = [pinout["uo[{}]".format(i)] for i in range(8)]
-        template_args["uio"] = [pinout["uio[{}]".format(i)] for i in range(8)]
+        template_args = copy.deepcopy(self.info.__dict__)
+        template_args["ui"] = self.info.pinout.ui
+        template_args["uo"] = self.info.pinout.uo
+        template_args["uio"] = self.info.pinout.uio
 
         logging.info("Creating PDF")
         script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -634,7 +538,7 @@ class Project:
             logging.error("pdf command failed")
 
     # Read and return top-level GDS data from the final GDS file, using gdstk:
-    def get_final_gds_top_cells(self):
+    def get_final_gds_top_cells(self) -> str:
         gds = glob.glob(
             os.path.join(self.local_dir, "runs/wokwi/results/final/gds/*gds")
         )

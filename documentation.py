@@ -3,24 +3,30 @@ import logging
 import os
 import shutil
 import subprocess
+from typing import List
 
 import frontmatter  # type: ignore
-import git
+import git  # type: ignore
 
 from config import Config
 from git_utils import get_first_remote
 from markdown_utils import latex_centered_image, rewrite_image_paths
+from project import Project
+
+
+class DocsArgs:
+    dump_json: str
 
 
 class Docs:
-    def __init__(self, config: Config, projects, args):
+    def __init__(self, config: Config, projects: List[Project], args: DocsArgs):
         self.config = config
         self.projects = projects
         self.args = args
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
 
     # stuff related to docs
-    def build_index(self, filename="shuttle_index.md"):
+    def build_index(self, filename: str = "shuttle_index.md"):
         logging.info(f"building {filename}")
         repo = git.Repo(".")
         readme = self.load_doc_template("shuttle_index_header.md")

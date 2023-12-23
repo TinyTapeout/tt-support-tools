@@ -3,9 +3,14 @@ import json
 import logging
 import os
 import shutil
+from typing import Dict, List
 
 import git
 import yaml
+
+from config import Config
+from project import Project
+from shuttle_index import ShuttleIndex, ShuttleIndexMuxEntry
 
 
 def copy_print(src: str, dest: str):
@@ -20,7 +25,7 @@ def copy_print_glob(pattern: str, dest_dir: str):
 
 
 class ShuttleConfig:
-    def __init__(self, config, projects, modules_yaml_name: str):
+    def __init__(self, config: Config, projects: List[Project], modules_yaml_name: str):
         self.config = config
         self.projects = projects
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -40,7 +45,7 @@ class ShuttleConfig:
                 f"found {len(configured_macros)} preconfigured macros: {configured_macros}"
             )
             for project in self.projects:
-                tiles = project.yaml["project"]["tiles"]
+                tiles = project.info.tiles
                 width, height = map(int, tiles.split("x"))
                 if project.unprefixed_name not in configured_macros:
                     module_config["modules"].append(
@@ -60,14 +65,16 @@ class ShuttleConfig:
             logging.error("Failed to generate multiplexer placement configuration")
             exit(1)
 
-        mux_index = {}
+        mux_index: Dict[str, ShuttleIndexMuxEntry] = {}
         mux_index_reverse = {}
         with open("tt-multiplexer/cfg/modules_placed.yaml") as placed_modules_file:
             placed_modules = yaml.safe_load(placed_modules_file)
             for module in placed_modules["modules"]:
                 mux_address = (module["mux_id"] << 5) | module["blk_id"]
                 module_name = "tt_um_" + module["name"]
-                project = next(p for p in self.projects if p.top_module == module_name)
+                project = next(
+                    p for p in self.projects if p.info.top_module == module_name
+                )
                 project.mux_address = mux_address
                 mux_index[mux_address] = {
                     "macro": module_name,
@@ -84,14 +91,14 @@ class ShuttleConfig:
                 mux_index_reverse[module_name] = mux_address
 
         for project in self.projects:
-            if project.top_module not in mux_index_reverse:
+            if project.info.top_module not in mux_index_reverse:
                 logging.error(f"no placement found for {project}!")
                 exit(1)
-            project.mux_address = mux_index_reverse[project.top_module]
+            project.mux_address = mux_index_reverse[project.info.top_module]
 
         repo = git.Repo(".")
 
-        shuttle_index_data = {
+        shuttle_index_data: ShuttleIndex = {
             "shuttle": self.config["name"],
             "repo": list(repo.remotes[0].urls)[0],
             "commit": repo.commit().hexsha,
@@ -108,7 +115,7 @@ class ShuttleConfig:
                 if project.is_chip_rom():
                     continue
                 includes_file.write(
-                    f"$(USER_PROJECT_VERILOG)/../projects/{project.top_module}/{project.top_module}.v\n"
+                    f"$(USER_PROJECT_VERILOG)/../projects/{project.info.top_module}/{project.info.top_module}.v\n"
                 )
 
     def list(self):
