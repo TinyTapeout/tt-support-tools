@@ -12,7 +12,7 @@ class HeadingsRenderer(MarkdownRenderer):
         self.initial_level = float("inf")
 
     def heading(self, token: Dict[str, Any], state: Any):
-        if self.initial_level is float("inf"):
+        if self.initial_level == float("inf"):
             self.initial_level = token["attrs"]["level"]
         token["attrs"]["level"] += self.min_level - max(1, self.initial_level)
         return super().heading(token, state)
