@@ -13,31 +13,22 @@ weight: {weight}
 * {project_type} project
 * [Extra docs]({doc_link})
 * Clock: {clock_hz} Hz
-* External hardware: {external_hw}
 
-{picture_link}
-
-### How it works
-
-{how_it_works}
-
-### How to test
-
-{how_to_test}
+{user_docs}
 
 ### IO
 
-| # | Input        | Output       | Bidirectional      |
-|---|--------------|--------------| -------------------|
-| 0 | {inputs[0]}  | {outputs[0]} | {bidirectional[0]} |
-| 1 | {inputs[1]}  | {outputs[1]} | {bidirectional[1]} |
-| 2 | {inputs[2]}  | {outputs[2]} | {bidirectional[2]} |
-| 3 | {inputs[3]}  | {outputs[3]} | {bidirectional[3]} |
-| 4 | {inputs[4]}  | {outputs[4]} | {bidirectional[4]} |
-| 5 | {inputs[5]}  | {outputs[5]} | {bidirectional[5]} |
-| 6 | {inputs[6]}  | {outputs[6]} | {bidirectional[6]} |
-| 7 | {inputs[7]}  | {outputs[7]} | {bidirectional[7]} |
+| # | Input          | Output         | Bidirectional   |
+| - | -------------- | -------------- | --------------- |
+| 0 | {pinout.ui[0]} | {pinout.uo[0]} | {pinout.uio[0]} |
+| 1 | {pinout.ui[1]} | {pinout.uo[1]} | {pinout.uio[1]} |
+| 2 | {pinout.ui[2]} | {pinout.uo[2]} | {pinout.uio[2]} |
+| 3 | {pinout.ui[3]} | {pinout.uo[3]} | {pinout.uio[3]} |
+| 4 | {pinout.ui[4]} | {pinout.uo[4]} | {pinout.uio[4]} |
+| 5 | {pinout.ui[5]} | {pinout.uo[5]} | {pinout.uio[5]} |
+| 6 | {pinout.ui[6]} | {pinout.uo[6]} | {pinout.uio[6]} |
+| 7 | {pinout.ui[7]} | {pinout.uo[7]} | {pinout.uio[7]} |
 
 ### Chip location
 
-{{{{< shuttle-map "tt05" "{mux_address}" >}}}}
+{{{{< shuttle-map "{shuttle_id}" "{mux_address}" >}}}}

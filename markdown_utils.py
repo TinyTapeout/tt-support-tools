@@ -1,4 +1,5 @@
 import os
+from typing import Any, Dict
 
 import mistune
 from mistune.renderers.markdown import MarkdownRenderer
@@ -8,9 +9,12 @@ class HeadingsRenderer(MarkdownRenderer):
     def __init__(self, min_level: int):
         super().__init__()
         self.min_level = min_level
+        self.initial_level = float("inf")
 
-    def heading(self, token, state):
-        token["attrs"]["level"] += self.min_level - 1
+    def heading(self, token: Dict[str, Any], state: Any):
+        if self.initial_level is float("inf"):
+            self.initial_level = token["attrs"]["level"]
+        token["attrs"]["level"] += self.min_level - max(1, self.initial_level)
         return super().heading(token, state)
 
 
@@ -34,9 +38,3 @@ class ImagePathRewriterRenderer(MarkdownRenderer):
 def rewrite_image_paths(source: str, prefix: str) -> str:
     markdown = mistune.create_markdown(renderer=ImagePathRewriterRenderer(prefix))
     return markdown(source)
-
-
-def latex_centered_image(src: str):
-    return "\n".join(
-        [r"\begin{center}", rf"\includegraphics[]{{{src}}}", r"\end{center}"]
-    )

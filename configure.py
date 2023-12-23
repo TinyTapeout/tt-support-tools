@@ -92,7 +92,7 @@ class Projects:
 
         logging.info(f"loaded {len(self.projects)} projects")
 
-    def assert_unique(self, check):
+    def assert_unique(self, check: List[str]):
         duplicates = [
             item for item, count in collections.Counter(check).items() if count > 1
         ]
@@ -112,7 +112,6 @@ class Projects:
         min_util = 100.0
         max_util_project = None
         languages: Dict[str, int] = {}
-        tags: List[str] = []
 
         for project in self.projects:
             try:
@@ -120,6 +119,9 @@ class Projects:
                     project.metrics["total_runtime"][:-3], "%Hh%Mm%Ss"
                 )
             except KeyError:
+                continue
+
+            if project.is_chip_rom():
                 continue
 
             delt = datetime.timedelta(
@@ -164,8 +166,7 @@ class Projects:
             num_cells = project.get_cell_count_from_synth()
             total_physical_cells += num_cells
 
-            yaml_data = project.get_project_doc_yaml()
-            lang = yaml_data["language"].lower()
+            lang = project.info.language
             if lang in languages:
                 languages[lang] += 1
             else:
@@ -183,11 +184,6 @@ class Projects:
             if util < min_util:
                 min_util = util
 
-            try:
-                tags += yaml_data["tag"].split(",")
-            except KeyError:
-                pass
-
         logging.info(f"build time for all projects {total_seconds / 3600} hrs")
         logging.info(f"total wire length {total_wire_length} um")
         logging.info(f"total cells {total_physical_cells}")
@@ -196,23 +192,6 @@ class Projects:
         logging.info(f"max util {max_util} for project {max_util_project}")
         logging.info(f"min util {min_util}")
         logging.info(f"languages {languages}")
-        tags = [x.strip().lower() for x in tags]
-        tags = list(filter(lambda a: a != "", tags))
-
-        def count_items(lst: List[str]):
-            freq: Dict[str, int] = {}
-            for item in lst:
-                if item not in freq:
-                    freq[item] = 1
-                else:
-                    freq[item] += 1
-
-            sorted_items = sorted(freq.items(), key=lambda x: x[1], reverse=True)
-            for item, count in sorted_items[0:9]:
-                logging.info(f"{item:10}: {count}")
-
-        logging.info("top 10 tags")
-        count_items(tags)
 
 
 if __name__ == "__main__":
@@ -315,7 +294,7 @@ if __name__ == "__main__":
     else:
         modules_yaml_name = "modules.yaml"
 
-    docs = Docs(config, projects.projects, args=args)
+    docs = Docs(config, projects.projects)
     shuttle = ShuttleConfig(config, projects.projects, modules_yaml_name)
     rom = ROMFile(config)
 
@@ -343,13 +322,10 @@ if __name__ == "__main__":
     if args.update_image:
         docs.update_image()
 
-    if args.dump_json:
-        docs.dump_json()
-
     if args.dump_markdown:
         shuttle.configure_mux()
-        docs.dump_markdown()
+        docs.write_datasheet(args.dump_markdown, args.dump_pdf)
 
     if args.build_hugo_content:
         shuttle.configure_mux()
-        docs.build_hugo_content()
+        docs.build_hugo_content(args.build_hugo_content)

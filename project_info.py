@@ -26,6 +26,9 @@ class PinoutSection:
 
 
 class ProjectInfo:
+    top_module: str
+    source_files: List[str]
+
     def __init__(self, yaml_data: Dict[str, Any]):
         # Validate Version
         yaml_version = yaml_data.get("yaml_version")
@@ -95,7 +98,7 @@ class ProjectInfo:
                 raise ProjectYamlError(
                     "Top module must start with 'tt_um_' (e.g. tt_um_my_project)"
                 )
-            self.top_module: str = top_module
+            self.top_module = top_module
 
             if "source_files" not in project_section:
                 raise ProjectYamlError(
@@ -103,10 +106,12 @@ class ProjectInfo:
                 )
             if len(project_section["source_files"]) == 0:
                 raise ProjectYamlError("No source files specified")
-            self.source_files: List[str] = project_section["source_files"]
+            self.source_files = project_section["source_files"]
 
-        self.discord: Optional[str] = project_section.get("discord")
-        self.clock_hz: Optional[int] = project_section["clock_hz"]
         if "pinout" not in yaml_data:
             raise ProjectYamlError("Missing 'pinout' section")
         self.pinout = PinoutSection(yaml_data["pinout"])
+
+        self.discord: Optional[str] = project_section.get("discord")
+        self.doc_link: Optional[str] = project_section.get("doc_link")
+        self.clock_hz: Optional[int] = project_section["clock_hz"]

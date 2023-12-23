@@ -1,10 +1,10 @@
 ---
-title: "Tiny Tapeout 05"
+title: "{{shuttle_name}}"
 weight: 50
-description: 174 designs, closed 4th November 2023
+description: {{project_count}} designs, closed {{end_date}}
 ---
 
-{{% toc %}}
+{{{{% toc %}}}}
 
 # Design details
 
@@ -22,5 +22,5 @@ description: 174 designs, closed 4th November 2023
 
 # Chip map
 
-{{< shuttle-map "tt05" >}}
+{{{{< shuttle-map "{shuttle_id}" >}}}}
 

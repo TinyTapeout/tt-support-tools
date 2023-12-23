@@ -8,3 +8,5 @@ class Config(TypedDict):
     name: str
     project_dir: str
     start_date: str
+    end_date: str
+    openframe: bool

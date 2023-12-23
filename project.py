@@ -217,20 +217,16 @@ class Project:
         else:
             return "HDL"
 
-    def get_project_doc_yaml(self):
-        # fstring dict support is limited to one level deep, so put the git url and wokwi url in the docs key
-        docs = self.yaml["documentation"]
+    def get_project_docs_dict(self):
+        docs = self.info.__dict__.copy()
         docs["project_type"] = self.get_project_type_string()
         docs["git_url"] = self.git_url
-        # "How it works" and "How to test" may include markdown headings - make sure they don't break the ToC
-        docs["how_it_works"] = limit_markdown_headings(
-            docs["how_it_works"], min_level=4
-        )
-        docs["how_to_test"] = limit_markdown_headings(docs["how_to_test"], min_level=4)
+        with open(os.path.join(self.local_dir, "docs/info.md")) as fh:
+            docs["user_docs"] = limit_markdown_headings(fh.read(), min_level=3)
         return docs
 
     def get_wokwi_url(self):
-        return f"https://wokwi.com/projects/{self.wokwi_id}"
+        return f"https://wokwi.com/projects/{self.info.wokwi_id}"
 
     # top module name is defined in one of the source files, which one?
     def find_top_verilog(self):
@@ -538,7 +534,7 @@ class Project:
             logging.error("pdf command failed")
 
     # Read and return top-level GDS data from the final GDS file, using gdstk:
-    def get_final_gds_top_cells(self) -> str:
+    def get_final_gds_top_cells(self):
         gds = glob.glob(
             os.path.join(self.local_dir, "runs/wokwi/results/final/gds/*gds")
         )
@@ -639,7 +635,7 @@ class Project:
 
         # Compress with pngquant:
         final_png = "gds_render.png"
-        if self.yaml["project"]["tiles"] == "8x2":
+        if self.info.tiles == "8x2":
             quality = "0-10"  # Compress more for 8x2 tiles.
         else:
             quality = "0-30"
