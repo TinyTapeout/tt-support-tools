@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     # handle the options
     if args.check_docs:
-        project.check_yaml_docs()
+        project.check_docs()
 
     if args.print_cell_summary or args.print_cell_category:
         project.summarize()

@@ -86,7 +86,7 @@ class Project:
             else self.local_dir
         )
 
-        yaml_path = os.path.join(self.src_dir, "info.yaml")
+        yaml_path = os.path.join(self.local_dir, "info.yaml")
         try:
             with open(yaml_path) as fh:
                 self.info = ProjectInfo(yaml.safe_load(fh))
