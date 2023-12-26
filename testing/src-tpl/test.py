@@ -24,5 +24,4 @@ async def truthTableCompare(parentDUT):
         return 
     
     usermodule._log.debug(str(tt))
-    await tt.testAll(i_bus, o_bus, usermodule._log)
-
+    await tt.testAll(parentDUT.rst_n, parentDUT.clk, i_bus, o_bus, usermodule._log)
