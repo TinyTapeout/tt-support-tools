@@ -102,10 +102,10 @@ class Project:
 
         if self.is_user_project:
             self.sources = self.info.source_files
-            self.check_sources()
             if self.is_wokwi():
                 self.top_verilog_filename = self.sources[0]
             else:
+                self.check_sources()
                 self.top_verilog_filename = self.find_top_verilog()
         else:
             self.sources = [self.get_gl_verilog_filename()]
