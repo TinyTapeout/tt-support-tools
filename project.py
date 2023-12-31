@@ -425,7 +425,7 @@ class Project:
             fh.write(f"# Project area: {tiles} tiles\n")
             fh.write(f'set ::env(DIE_AREA) "{die_area}"\n')
             fh.write(
-                f'set ::env(FP_DEF_TEMPLATE) "$::env(DESIGN_DIR)/../tt/def/tt_block_{tiles}.def"\n'
+                f'set ::env(FP_DEF_TEMPLATE) "$::env(DESIGN_DIR)/../tt/def/tt_block_{tiles}_pg.def"\n'
             )
 
     def golden_harden(self):
