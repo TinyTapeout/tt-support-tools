@@ -142,7 +142,7 @@ class Project:
         top = self.get_macro_name()
         if not self.is_user_project and self.is_chip_rom():
             return  # Chip ROM is auto generated, so we don't have the verilog yet
-        sources = [os.path.join(self.src_dir, src) for src in self.info.source_files]
+        sources = [os.path.join(self.src_dir, src) for src in self.sources]
         source_list = " ".join(sources)
 
         json_file = "ports.json"
