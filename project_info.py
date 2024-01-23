@@ -108,10 +108,17 @@ class ProjectInfo:
                 raise ProjectYamlError("No source files specified")
             self.source_files = project_section["source_files"]
 
+        if "clock_hz" not in project_section:
+            raise ProjectYamlError("Missing key 'clock_hz' in 'project' section")
+        if not isinstance(project_section["clock_hz"], int):
+            raise ProjectYamlError(
+                "Invalid value for 'clock_hz' in 'project' section, must be an integer"
+            )
+        self.clock_hz: int = project_section["clock_hz"]
+
         if "pinout" not in yaml_data:
             raise ProjectYamlError("Missing 'pinout' section")
         self.pinout = PinoutSection(yaml_data["pinout"])
 
         self.discord: Optional[str] = project_section.get("discord")
         self.doc_link: Optional[str] = project_section.get("doc_link")
-        self.clock_hz: Optional[int] = project_section["clock_hz"]
