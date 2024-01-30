@@ -167,6 +167,10 @@ class Project:
             ["output", "uio_out", 8],
             ["output", "uo_out", 8],
         ]
+        if self.is_analog_design():
+            required_ports += [
+                ["inout", "ua", 8],
+            ]
         if include_power_ports:
             required_ports += [
                 ["input", "VGND", 1],
@@ -261,11 +265,18 @@ class Project:
         repo = Repo(os.path.join(self.local_dir, "tt"))
         return f"{repo.active_branch.name} {repo.commit().hexsha[:8]}"
 
-    def get_workflow_url_when_submitted(self) -> str:
+    def read_commit_info_json(self) -> typing.Dict[str, typing.Any]:
         json_file = os.path.join(self.local_dir, "commit_id.json")
         with open(json_file) as fh:
-            commit_info = json.load(fh)
+            return json.load(fh)
+
+    def get_workflow_url_when_submitted(self) -> str:
+        commit_info = self.read_commit_info_json()
         return commit_info["workflow_url"]
+
+    def is_analog_design(self) -> bool:
+        commit_info = self.read_commit_info_json()
+        return commit_info.get("analog", False)
 
     def get_workflow_url(self):
         GITHUB_SERVER_URL = os.getenv("GITHUB_SERVER_URL")
