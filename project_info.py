@@ -14,6 +14,12 @@ class PinoutSection:
         self.ui = self._pins(yaml_data, "ui", 8)
         self.uo = self._pins(yaml_data, "uo", 8)
         self.uio = self._pins(yaml_data, "uio", 8)
+        self.ua: List[str] = []
+        for i in range(8):
+            pin = yaml_data.get(f"ua[{i}]")
+            if pin is None:
+                break
+            self.ua.append(pin)
 
     def _pins(self, yaml_data: Dict[str, Any], name: str, count: int) -> List[str]:
         result: List[str] = []
