@@ -798,9 +798,7 @@ class Project:
                     total += 1
                     cell_lib = m.group(1)
                     cell_name = m.group(2)
-                    cell_drive = m.group(3)
                     assert cell_lib in ["fd_sc_hd", "ef_sc_hd"]
-                    assert int(cell_drive) > 0
                     try:
                         cell_count[cell_name] += 1
                     except KeyError:
