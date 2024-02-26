@@ -7,6 +7,7 @@ import time
 import traceback
 import xml.etree.ElementTree as ET
 
+import gdstk
 import klayout.db as pya
 import klayout.rdb as rdb
 from klayout_tools import parse_lyp_layers
@@ -23,6 +24,13 @@ if not PDK_ROOT:
 
 class PrecheckFailure(Exception):
     pass
+
+
+def has_sky130_devices(gds: str):
+    for cell_name in gdstk.read_rawcells(gds):
+        if cell_name.startswith("sky130_fd_"):
+            return True
+    return False
 
 
 def magic_drc(gds: str, toplevel: str):
@@ -45,6 +53,8 @@ def magic_drc(gds: str, toplevel: str):
     )
 
     if magic.returncode != 0:
+        if not has_sky130_devices(gds):
+            logging.warning("No sky130 devices present - was the design flattened?")
         raise PrecheckFailure("Magic DRC failed")
 
 
