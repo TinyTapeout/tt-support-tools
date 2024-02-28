@@ -12,8 +12,7 @@ import git_utils
 import git
 import shutil
 
-# can't find a google version
-CELL_URL = 'https://antmicro-skywater-pdk-docs.readthedocs.io/en/test-submodules-in-rtd/contents/libraries/sky130_fd_sc_ls/cells/'
+CELL_URL = 'https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/'
 
 
 class Project():
@@ -293,15 +292,54 @@ class Project():
     def fetch_wokwi_files(self):
         logging.info("fetching wokwi files")
         src_file = self.src_files[0]
-        url = "https://wokwi.com/api/projects/{}/verilog".format(self.wokwi_id)
+        url = f"https://wokwi.com/api/projects/{self.wokwi_id}/verilog"
         git_utils.fetch_file(url, os.path.join(self.local_dir, "src", src_file))
 
         # also fetch the wokwi diagram
-        url = "https://wokwi.com/api/projects/{}/diagram.json".format(self.wokwi_id)
+        url = f"https://wokwi.com/api/projects/{self.wokwi_id}/diagram.json"
         diagram_file = "wokwi_diagram.json"
         git_utils.fetch_file(url, os.path.join(self.local_dir, "src", diagram_file))
 
+        # attempt to download the *optional* truthtable for the project
+        truthtable_file = "truthtable.md"
+        url = f"https://wokwi.com/api/projects/{self.wokwi_id}/{truthtable_file}"
+        try:
+            git_utils.fetch_file(url, os.path.join(self.local_dir, "src", truthtable_file))
+            logging.info(f'Wokwi project {self.wokwi_id} has a truthtable included, will test!')
+            self.install_wokwi_testing()
+        except FileNotFoundError:
+            pass
+
+    def install_wokwi_testing(self, destination_dir='src', resource_dir=None):
+        if resource_dir is None or not len(resource_dir):
+            resource_dir = os.path.join(os.path.dirname(__file__), 'testing')
+
+        # directories in testing/lib to copy over
+        pyLibsDir = os.path.join(resource_dir, 'lib')
+
+        # src template dir
+        srcTplDir = os.path.join(resource_dir, 'src-tpl')
+
+        for libfullpath in glob.glob(os.path.join(pyLibsDir, '*')):
+            logging.info(f'Copying {libfullpath} to {destination_dir}')
+            shutil.copytree(
+                libfullpath,
+                os.path.join(destination_dir, os.path.basename(libfullpath)),
+                dirs_exist_ok=True)
+
+        for srcTemplate in glob.glob(os.path.join(srcTplDir, '*')):
+            with open(srcTemplate, 'r') as f:
+                contents = f.read()
+                customizedContents = re.sub('WOKWI_ID', str(self.wokwi_id), contents)
+                outputFname = os.path.basename(srcTemplate)
+                with open(os.path.join(destination_dir, outputFname), 'w') as outf:
+                    logging.info(f'writing src tpl to {outputFname}')
+                    outf.write(customizedContents)
+                    outf.close()
+
     def create_user_config(self):
+        if self.is_wokwi():
+            self.fetch_wokwi_files()
         logging.info("creating include file")
         filename = 'user_config.tcl'
         with open(os.path.join(self.local_dir, 'src', filename), 'w') as fh:

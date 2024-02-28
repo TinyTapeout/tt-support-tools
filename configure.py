@@ -99,11 +99,6 @@ class Projects():
             project.post_clone_setup()
             logging.debug(project)
 
-            # fetch the wokwi source
-            if args.clone_all:
-                if not project.is_fill() and project.is_wokwi():
-                    project.fetch_wokwi_files()
-
             if args.harden:
                 if filler is False:
                     project.create_user_config()
@@ -205,7 +200,7 @@ class Projects():
         logging.info(f"max util {max_util} for project {max_util_project}")
         logging.info(f"min util {min_util}")
         logging.info(f"languages {languages}")
-        tags = [ x.strip().lower() for x in tags ]
+        tags = [x.strip().lower() for x in tags]
         tags = list(filter(lambda a: a != "", tags))
 
         def count_items(lst):
@@ -222,6 +217,7 @@ class Projects():
 
         logging.info("top 10 tags")
         count_items(tags)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="TinyTapeout configuration and docs")

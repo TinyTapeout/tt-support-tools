@@ -3,7 +3,9 @@ from urllib.parse import urlparse
 import logging
 import requests
 import os
-import zipfile, io
+import zipfile
+import io
+import errno
 
 
 def unique(duplist):
@@ -21,7 +23,7 @@ def fetch_file(url, filename):
     r = requests.get(url)
     if r.status_code != 200:
         logging.warning("couldn't download {}".format(url))
-        exit(1)
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filename)
 
     with open(filename, 'wb') as fh:
         logging.info("written to {}".format(filename))
