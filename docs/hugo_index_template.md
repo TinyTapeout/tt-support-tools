@@ -1,6 +1,6 @@
 ---
-title: "Tiny Tapeout 03"
-weight: 20
+title: "Tiny Tapeout 3"
+weight: 30
 description: 249 designs, closed 24th April 2023
 ---
 
@@ -17,7 +17,8 @@ description: 249 designs, closed 24th April 2023
 
 * Launched: 1 March 2023
 * Submission closed: 24 April 2023
-* Submitted to Efabless 2304C chipIgnite shuttle using Skywater 130nm open source PDK
+* Submitted to Efabless [2304C chipIgnite](https://efabless.com/shuttle-status) shuttle using Skywater 130nm open source PDK
+* Chips expected October 2023, PCBs expected December 2023
 
 # Project statistics
 

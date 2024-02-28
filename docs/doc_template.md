@@ -1,5 +1,7 @@
 ## {index} : {title}
 
+Set project to 0b {binary_spaces}
+
 {picture_link}
 
 * Author: {author}

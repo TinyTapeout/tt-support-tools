@@ -4,12 +4,13 @@ title: "{index} {title}"
 weight: {weight}
 ---
 
-## {index} : {title}
+## {index} : 0b {binary_spaces} : {title}
+
+{{{{< tt-scanchain-switches "{binary}" >}}}}
 
 * Author: {author}
 * Description: {description}
 * [GitHub repository]({git_url})
-* [Most recent GDS build]({git_action})
 * {project_type} project
 * [Extra docs]({doc_link})
 * Clock: {clock_hz} Hz

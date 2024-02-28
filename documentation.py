@@ -60,6 +60,9 @@ class Docs():
         with open(os.path.join(self.script_dir, 'docs', 'STA.md')) as fh:
             doc_sta = fh.read()
 
+        with open(os.path.join(self.script_dir, 'docs', 'silicon_validation.md')) as fh:
+            doc_silicon_validation = fh.read()
+
         with open(os.path.join(self.script_dir, 'docs', 'CREDITS.md')) as fh:
             doc_credits = fh.read()
 
@@ -72,6 +75,7 @@ class Docs():
                 yaml_data = project.get_project_doc_yaml()
 
                 yaml_data['index'] = project.index
+                yaml_data['binary_spaces'] = self.convert_to_9_bit_binary(project.index)
 
                 logging.info(f"building datasheet for {project}")
                 # handle pictures
@@ -98,6 +102,8 @@ class Docs():
             fh.write("\n\clearpage\n")
             fh.write(doc_sta)
             fh.write("\n\clearpage\n")
+            fh.write(doc_silicon_validation)
+            fh.write("\n\clearpage\n")
             fh.write(doc_credits)
 
         logging.info(f'wrote markdown to {self.args.dump_markdown}')
@@ -108,6 +114,18 @@ class Docs():
             p = subprocess.run(pdf_cmd, shell=True)
             if p.returncode != 0:
                 logging.error("pdf command failed")
+
+    @staticmethod
+    def convert_to_9_bit_binary(num, spaces=True):
+        binary_str = bin(int(num))[2:]
+        binary_str = binary_str.zfill(9)
+        # Insert spaces between groups of 3 bits
+        if spaces:
+            joint = ' '
+        else:
+            joint = ''
+        formatted_binary = joint.join([binary_str[i:i+3] for i in range(0, 9, 3)])
+        return formatted_binary
 
     def build_hugo_content(self):
         hugo_root = self.args.build_hugo_content
@@ -143,8 +161,10 @@ class Docs():
                     os.makedirs(project_image_dir)
                     yaml_data = project.get_project_doc_yaml()
                     yaml_data['index'] = project.index
+                    yaml_data['binary_spaces'] = self.convert_to_9_bit_binary(project.index)
+                    yaml_data['binary'] = self.convert_to_9_bit_binary(project.index, spaces=False)
                     yaml_data['weight'] = project.index + 1
-                    yaml_data['git_action'] = project.get_latest_action_url()
+                    #yaml_data['git_action'] = project.get_latest_action_url()
                     yaml_data['picture_link'] = ''
                     if yaml_data['picture']:
                         picture_name = yaml_data['picture']
