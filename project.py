@@ -548,12 +548,17 @@ class Project:
 
     # Read and return top-level GDS data from the final GDS file, using gdstk:
     def get_final_gds_top_cells(self):
-        gds = glob.glob(
-            os.path.join(self.local_dir, "runs/wokwi/results/final/gds/*gds")
-        )
-        if self.args.openlane2:
-            gds = glob.glob(os.path.join(self.local_dir, "runs/wokwi/final/gds/*gds"))
-        library = gdstk.read_gds(gds[0])
+        if "GDS_PATH" in os.environ:
+            gds_path = os.environ["GDS_PATH"]
+        elif self.args.openlane2:
+            gds_path = glob.glob(
+                os.path.join(self.local_dir, "runs/wokwi/results/final/gds/*.gds")
+            )[0]
+        else:
+            gds_path = glob.glob(
+                os.path.join(self.local_dir, "runs/wokwi/final/gds/*.gds")
+            )[0]
+        library = gdstk.read_gds(gds_path)
         top_cells = library.top_level()
         return top_cells[0]
 
