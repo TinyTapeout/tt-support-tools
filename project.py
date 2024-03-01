@@ -552,11 +552,11 @@ class Project:
             gds_path = os.environ["GDS_PATH"]
         elif self.args.openlane2:
             gds_path = glob.glob(
-                os.path.join(self.local_dir, "runs/wokwi/results/final/gds/*.gds")
+                os.path.join(self.local_dir, "runs/wokwi/final/gds/*.gds")
             )[0]
         else:
             gds_path = glob.glob(
-                os.path.join(self.local_dir, "runs/wokwi/final/gds/*.gds")
+                os.path.join(self.local_dir, "runs/wokwi/results/final/gds/*.gds")
             )[0]
         library = gdstk.read_gds(gds_path)
         top_cells = library.top_level()
