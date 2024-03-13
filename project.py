@@ -72,14 +72,12 @@ class Project:
         local_dir: str,
         args: Args,
         is_user_project: bool,
-        power_gated: bool = False,
     ):
         self.git_url = git_url
         self.args = args
         self.index = index
         self.local_dir = local_dir
         self.is_user_project = is_user_project
-        self.power_gated = power_gated
         self.src_dir = (
             os.path.join(self.local_dir, "src")
             if self.is_user_project

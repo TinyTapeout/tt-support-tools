@@ -53,7 +53,6 @@ class ShuttleConfig:
                             "name": project.unprefixed_name,
                             "width": width,
                             "height": height,
-                            "pg_vdd": True if project.power_gated else None,
                         }
                     )
 
@@ -84,7 +83,6 @@ class ShuttleConfig:
                     "repo": project.git_url,
                     "commit": project.commit_id,
                     "features": {
-                        "power_switch": bool(module["pg_vdd"]),
                         "analog": module["analog"],
                     },
                 }
