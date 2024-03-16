@@ -48,13 +48,13 @@ class ShuttleConfig:
                 tiles = project.info.tiles
                 width, height = map(int, tiles.split("x"))
                 if project.unprefixed_name not in configured_macros:
-                    module_config["modules"].append(
-                        {
-                            "name": project.unprefixed_name,
-                            "width": width,
-                            "height": height,
-                        }
-                    )
+                    module_entry = {
+                        "name": project.unprefixed_name,
+                        "width": width,
+                        "height": height,
+                        "analog": {i: None for i in range(len(project.info.pinout.ua))},
+                    }
+                    module_config["modules"].append(module_entry)
 
         with open("tt-multiplexer/cfg/modules.yaml", "w") as mux_modules_file:
             yaml.dump(module_config, mux_modules_file)

@@ -273,10 +273,7 @@ class Project:
         return commit_info["workflow_url"]
 
     def is_analog_design(self) -> bool:
-        if self.is_user_project:
-            return len(self.info.pinout.ua) > 0
-        else:
-            return self.read_commit_info_json().get("analog", False)
+        return len(self.info.pinout.ua) > 0
 
     def get_workflow_url(self):
         GITHUB_SERVER_URL = os.getenv("GITHUB_SERVER_URL")
