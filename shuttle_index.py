@@ -1,22 +1,23 @@
-from typing import Dict, TypedDict
+from typing import List, NotRequired, TypedDict
 
 
-class ShuttleIndexMuxEntry(TypedDict):
+class ShuttleIndexProject(TypedDict):
     macro: str
+    address: int
     x: int
     y: int
     tiles: str
     repo: str
     commit: str
-    features: dict[str, bool]
+    analog_pins: NotRequired[List[int]]
 
 
 class ShuttleIndex(TypedDict):
     """TypedDict for Tiny Tapeout's shuttle_index.json file."""
 
-    shuttle: str
+    name: str
     repo: str
     commit: str
     commit_date: int
     version: int
-    mux: Dict[str, ShuttleIndexMuxEntry]
+    projects: List[ShuttleIndexProject]

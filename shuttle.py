@@ -3,14 +3,14 @@ import json
 import logging
 import os
 import shutil
-from typing import Dict, List
+from typing import List
 
 import git
 import yaml
 
 from config import Config
 from project import Project
-from shuttle_index import ShuttleIndex, ShuttleIndexMuxEntry
+from shuttle_index import ShuttleIndex, ShuttleIndexProject
 
 
 def copy_print(src: str, dest: str):
@@ -64,7 +64,7 @@ class ShuttleConfig:
             logging.error("Failed to generate multiplexer placement configuration")
             exit(1)
 
-        mux_index: Dict[str, ShuttleIndexMuxEntry] = {}
+        project_index: List[ShuttleIndexProject] = []
         mux_index_reverse = {}
         with open("tt-multiplexer/cfg/modules_placed.yaml") as placed_modules_file:
             placed_modules = yaml.safe_load(placed_modules_file)
@@ -75,17 +75,24 @@ class ShuttleConfig:
                     p for p in self.projects if p.info.top_module == module_name
                 )
                 project.mux_address = mux_address
-                mux_index[mux_address] = {
+                project_info: ShuttleIndexProject = {
                     "macro": module_name,
+                    "address": mux_address,
                     "x": module["x"],
                     "y": module["y"],
                     "tiles": f"{module['width']}x{module['height']}",
                     "repo": project.git_url,
                     "commit": project.commit_id,
-                    "features": {
-                        "analog": module["analog"],
-                    },
                 }
+
+                assert list(module["analog"].keys()) == list(
+                    range(len(module["analog"]))
+                ), f"analog pins are not contiguous for {module_name}"
+
+                if len(module["analog"]) > 0:
+                    project_info["analog_pins"] = list(module["analog"].values())
+
+                project_index.append(project_info)
                 mux_index_reverse[module_name] = mux_address
 
         for project in self.projects:
@@ -97,12 +104,12 @@ class ShuttleConfig:
         repo = git.Repo(".")
 
         shuttle_index_data: ShuttleIndex = {
-            "shuttle": self.config["name"],
+            "name": self.config["name"],
             "repo": list(repo.remotes[0].urls)[0],
             "commit": repo.commit().hexsha,
             "commit_date": repo.commit().committed_date,
-            "version": 2,
-            "mux": mux_index,
+            "version": 3,
+            "projects": project_index,
         }
 
         with open("shuttle_index.json", "w") as shuttle_index_file:
