@@ -144,6 +144,20 @@ class ShuttleConfig:
 
         return os.path.join(runs, runlist[-1])
 
+    def copy_mux_macro(self, source_dir: str, name: str):
+        copy_print(
+            f"tt-multiplexer/{source_dir}/{name}.gds",
+            f"tt-multiplexer/ol2/tt_top/gds/{name}.gds",
+        )
+        copy_print(
+            f"tt-multiplexer/{source_dir}/{name}.lef",
+            f"tt-multiplexer/ol2/tt_top/lef/{name}.lef",
+        )
+        copy_print(
+            f"tt-multiplexer/{source_dir}/{name}.v",
+            f"tt-multiplexer/ol2/tt_top/verilog/{name}.v",
+        )
+
     def copy_macros(self):
         logging.info("copying macros to tt_top:")
         copy_print_glob("projects/*/*.gds", "tt-multiplexer/ol2/tt_top/gds")
@@ -167,20 +181,11 @@ class ShuttleConfig:
             copy_print_glob(
                 f"{lastrun}/final/spef/*/*.spef", "tt-multiplexer/ol2/tt_top/spef"
             )
-        # Copy power gate macros:
-        for macro in ["tt_pg_vdd_1", "tt_pg_vdd_2"]:
-            copy_print(
-                f"tt-multiplexer/pg/{macro}/{macro}.gds",
-                f"tt-multiplexer/ol2/tt_top/gds/{macro}.gds",
-            )
-            copy_print(
-                f"tt-multiplexer/pg/{macro}/{macro}.lef",
-                f"tt-multiplexer/ol2/tt_top/lef/{macro}.lef",
-            )
-            copy_print(
-                f"tt-multiplexer/pg/{macro}/{macro}.v",
-                f"tt-multiplexer/ol2/tt_top/verilog/{macro}.v",
-            )
+
+        # Copy power gate / analog switch macros:
+        self.copy_mux_macro("pg/tt_pg_vdd_1", "tt_pg_vdd_1")
+        self.copy_mux_macro("pg/tt_pg_vdd_2", "tt_pg_vdd_2")
+        self.copy_mux_macro("asw/tt_asw_1v8", "tt_asw_1v8")
 
     def copy_final_results(self):
         macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux", "tt_top"]
