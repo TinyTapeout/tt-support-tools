@@ -3,14 +3,14 @@ import json
 import logging
 import os
 import shutil
-from typing import List
+from typing import List, Set
 
 import git
 import yaml
 
 from config import Config
 from project import Project
-from shuttle_index import ShuttleIndex, ShuttleIndexProject
+from shuttle_index import ShuttleIndex, ShuttleIndexLayout, ShuttleIndexProject
 
 
 def copy_print(src: str, dest: str):
@@ -30,15 +30,39 @@ class ShuttleConfig:
         self.projects = projects
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
         self.modules_yaml_name = modules_yaml_name
+        self.mux_config_yaml_name = os.environ.get("TT_CONFIG", "sky130.yaml")
         if config.get("openframe", False):
             self.tt_top_macro = "openframe_project_wrapper"
         else:
             self.tt_top_macro = "user_project_wrapper"
 
+        self.read_mux_config_file()
+        total_rows: int = self.mux_config["tt"]["grid"]["y"]
+        total_mux_rows = total_rows // 2
+        self.layout: ShuttleIndexLayout = {
+            "muxes": [["digital"] * total_mux_rows, ["digital"] * total_mux_rows]
+        }
+        for item in self.mux_config["tt"]["analog"]:
+            mux_id: int
+            for mux_id in item["mux_id"]:
+                x = (mux_id >> 1) & 1
+                y = (
+                    total_mux_rows // 2
+                    - (2 * (mux_id & 1) - 1) * (mux_id >> 2)
+                    - (mux_id & 1)
+                )
+                self.layout["muxes"][x][y] = "analog"
+
+    def read_mux_config_file(self):
+        with open(
+            f"tt-multiplexer/cfg/{self.mux_config_yaml_name}", "r"
+        ) as mux_config_file:
+            self.mux_config = yaml.safe_load(mux_config_file)
+
     def configure_mux(self):
         with open(self.modules_yaml_name, "r") as modules_file:
             module_config = yaml.safe_load(modules_file)
-            configured_macros = set(
+            configured_macros: Set[str] = set(
                 map(lambda mod: mod["name"], module_config["modules"])
             )
             logging.info(
@@ -108,6 +132,7 @@ class ShuttleConfig:
             "repo": list(repo.remotes[0].urls)[0],
             "commit": repo.commit().hexsha,
             "commit_date": repo.commit().committed_date,
+            "layout": self.layout,
             "version": 3,
             "projects": project_index,
         }

@@ -1,4 +1,4 @@
-from typing import List, NotRequired, TypedDict
+from typing import List, Literal, NotRequired, TypedDict
 
 
 class ShuttleIndexProject(TypedDict):
@@ -12,6 +12,10 @@ class ShuttleIndexProject(TypedDict):
     analog_pins: NotRequired[List[int]]
 
 
+class ShuttleIndexLayout(TypedDict):
+    muxes: List[List[Literal["analog", "digital"]]]
+
+
 class ShuttleIndex(TypedDict):
     """TypedDict for Tiny Tapeout's shuttle_index.json file."""
 
@@ -20,4 +24,5 @@ class ShuttleIndex(TypedDict):
     commit: str
     commit_date: int
     version: int
+    layout: ShuttleIndexLayout
     projects: List[ShuttleIndexProject]
