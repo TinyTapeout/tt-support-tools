@@ -136,6 +136,12 @@ class Project:
                 logging.error(f"{filename} doesn't exist in the repo")
                 exit(1)
 
+    def run_yosys(self, command: str, no_output: bool = False):
+        env = os.environ.copy()
+        env["YOSYS_CMD"] = command
+        yosys_cmd = 'yowasp-yosys -qp "$YOSYS_CMD"'
+        return subprocess.run(yosys_cmd, shell=True, env=env, capture_output=no_output)
+
     def check_ports(self, include_power_ports: bool = False):
         top = self.get_macro_name()
         if not self.is_user_project and self.is_chip_rom():
@@ -146,11 +152,14 @@ class Project:
         json_file = "ports.json"
 
         # Heuristic - try reading just the first source file, if that fails, try all of them
-        yosys_cmd = f"yowasp-yosys -qp 'read_verilog -lib -sv {sources[0]}; hierarchy -top {top} ; proc; write_json {json_file}' 2> /dev/null"
-        p = subprocess.run(yosys_cmd, shell=True)
+        p = self.run_yosys(
+            f"read_verilog -lib -sv {sources[0]}; hierarchy -top {top} ; proc; write_json {json_file}",
+            True,
+        )
         if p.returncode != 0:
-            yosys_cmd = f"yowasp-yosys -qp 'read_verilog -lib -sv {source_list}; hierarchy -top {top} ; proc; write_json {json_file}'"
-            p = subprocess.run(yosys_cmd, shell=True)
+            p = self.run_yosys(
+                f"read_verilog -lib -sv {source_list}; hierarchy -top {top} ; proc; write_json {json_file}"
+            )
         if p.returncode != 0:
             logging.error(f"yosys port read failed for {self}")
             exit(1)
