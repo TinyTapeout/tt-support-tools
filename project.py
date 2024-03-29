@@ -144,8 +144,13 @@ class Project:
         source_list = " ".join(sources)
 
         json_file = "ports.json"
-        yosys_cmd = f"yowasp-yosys -qp 'read_verilog -lib -sv {source_list}; hierarchy -top {top} ; proc; write_json {json_file}'"
+
+        # Heuristic - try reading just the first source file, if that fails, try all of them
+        yosys_cmd = f"yowasp-yosys -qp 'read_verilog -lib -sv {sources[0]}; hierarchy -top {top} ; proc; write_json {json_file}' 2> /dev/null"
         p = subprocess.run(yosys_cmd, shell=True)
+        if p.returncode != 0:
+            yosys_cmd = f"yowasp-yosys -qp 'read_verilog -lib -sv {source_list}; hierarchy -top {top} ; proc; write_json {json_file}'"
+            p = subprocess.run(yosys_cmd, shell=True)
         if p.returncode != 0:
             logging.error(f"yosys port read failed for {self}")
             exit(1)
