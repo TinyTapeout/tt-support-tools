@@ -1,1 +1,2 @@
 sky130A_mr.drc from https://github.com/efabless/mpw_precheck revision 4efb33553ee6c2acdb0fa9a6a5f87af099f5c1d5
+pin_label_purposes_overlapping_drawing.rb.drc from https://github.com/efabless/mpw_precheck revision f6b9c3d3f00694f96dce8444149449b4719180f0

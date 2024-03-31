@@ -1,6 +1,7 @@
 drc_beol.xml
 drc_feol.xml
 drc_offgrid.xml
+drc_pin_label_purposes_overlapping_drawing.xml
 magic_drc.mag
 magic_drc.txt
 results.md

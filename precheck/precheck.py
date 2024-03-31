@@ -58,7 +58,7 @@ def magic_drc(gds: str, toplevel: str):
         raise PrecheckFailure("Magic DRC failed")
 
 
-def klayout_drc(gds: str, check: str):
+def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc"):
     logging.info(f"Running klayout {check} on {gds}")
     report_file = f"{REPORTS_PATH}/drc_{check}.xml"
     klayout = subprocess.run(
@@ -66,7 +66,7 @@ def klayout_drc(gds: str, check: str):
             "klayout",
             "-b",
             "-r",
-            f"tech-files/{PDK_NAME}_mr.drc",
+            f"tech-files/{script}",
             "-rd",
             f"{check}=true",
             "-rd",
@@ -126,6 +126,14 @@ def main():
         ["KLayout FEOL", lambda: klayout_drc(args.gds, "feol")],
         ["KLayout BEOL", lambda: klayout_drc(args.gds, "beol")],
         ["KLayout offgrid", lambda: klayout_drc(args.gds, "offgrid")],
+        [
+            "KLayout pin label overlapping drawing",
+            lambda: klayout_drc(
+                args.gds,
+                "pin_label_purposes_overlapping_drawing",
+                "pin_label_purposes_overlapping_drawing.rb.drc",
+            ),
+        ],
         ["KLayout Checks", lambda: klayout_checks(args.gds)],
     ]
 
@@ -144,7 +152,7 @@ def main():
         except Exception as e:
             error_count += 1
             elapsed_time = time.time() - start_time
-            markdown_table += f"| {name} | Fail: {str(e)} |\n"
+            markdown_table += f"| {name} | ❌ Fail: {str(e)} |\n"
             test_case.set("time", str(round(elapsed_time, 2)))
             error = ET.SubElement(test_case, "error", message=str(e))
             error.text = traceback.format_exc()
