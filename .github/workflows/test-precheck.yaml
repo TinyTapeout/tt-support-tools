@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -34,7 +34,7 @@ jobs:
           pdk_root: ${{ env.PDK_ROOT }}
 
       - name: Install Nix
-        uses: rikhuijzer/cache-install@v1.1.2
+        uses: rikhuijzer/cache-install@v1.1.4
         with:
           key: nix-${{ hashFiles('precheck/default.nix') }}
           nix_file: 'precheck/default.nix'
