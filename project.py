@@ -230,6 +230,8 @@ class Project:
     def get_project_type_string(self):
         if self.is_wokwi():
             return f"[Wokwi]({self.get_wokwi_url()})"
+        elif self.is_analog_design():
+            return "Analog"
         else:
             return "HDL"
 
