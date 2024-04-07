@@ -16,11 +16,14 @@
         # see https://github.com/nix-community/poetry2nix/tree/master#api for more functions and examples.
         pkgs = nixpkgs.legacyPackages.${system};
         p2n = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
+        commit = if self ? "rev" then builtins.substring 0 7 self.rev else "dirty";
+        version = "6+${commit}";
       in
       {
         packages = {
-          tt-tools = p2n.mkPoetryApplication {
+          tt-tools = (p2n.mkPoetryApplication {
             projectDir = self;
+
             overrides = p2n.overrides.withDefaults (self: super: {
 
               gdstk = super.gdstk.overridePythonAttrs (old: {
@@ -62,7 +65,17 @@
               });
 
             });
-          };
+          }).overridePythonAttrs (old:
+            {
+              inherit version;
+              patchPhase = ''
+                sed \
+                  -e 's/tt_version\s*=.*/tt_version = "${version}"/' \
+                  -e 's|yowasp-yosys|${pkgs.yosys}/bin/yosys|' \
+                  -i tt_support_tools/project.py \
+
+              '';
+            });
           default = self.packages.${system}.tt-tools;
         };
 
