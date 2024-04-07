@@ -20,8 +20,11 @@ def compare_gds(file1, file2):
     return diff.compare(layout1, layout2)
 
 
-if __name__ == "__main__":
+def main():
     if compare_gds(gds1, gds2):  # noqa: F821
         sys.exit(0)
     else:
         sys.exit(-1)
+
+if __name__ == "__main__":
+    main()

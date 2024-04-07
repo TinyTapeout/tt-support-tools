@@ -5,7 +5,7 @@ import sys
 
 from project import Project
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="TT setup")
     parser.add_argument("--project-dir", help="location of the project", default=".")
     parser.add_argument(
@@ -157,3 +157,6 @@ if __name__ == "__main__":
 
     if args.create_svg:
         project.create_svg()
+
+if __name__ == "__main__":
+    main()
