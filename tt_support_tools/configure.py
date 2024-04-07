@@ -13,11 +13,11 @@ from typing import Dict, List, TypedDict
 
 import yaml
 
-from config import Config
-from documentation import Docs
-from project import Project
-from rom import ROMFile
-from shuttle import ShuttleConfig
+from .config import Config
+from .documentation import Docs
+from .project import Project
+from .rom import ROMFile
+from .shuttle import ShuttleConfig
 
 signal(SIGPIPE, SIG_DFL)
 

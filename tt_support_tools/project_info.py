@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from tile_sizes import tile_sizes
+from .tile_sizes import tile_sizes
 
 YAML_VERSION = 6
 

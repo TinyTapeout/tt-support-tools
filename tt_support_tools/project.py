@@ -14,10 +14,10 @@ import gdstk  # type: ignore
 import yaml
 from git.repo import Repo
 
-import git_utils
-from cells import Cell, load_cells
-from markdown_utils import limit_markdown_headings
-from project_info import ProjectInfo, ProjectYamlError
+from . import git_utils
+from .cells import Cell, load_cells
+from .markdown_utils import limit_markdown_headings
+from .project_info import ProjectInfo, ProjectYamlError
 
 CELL_URL = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/"
 

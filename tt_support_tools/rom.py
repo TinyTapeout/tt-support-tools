@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from git.repo import Repo
 
-from config import Config
+from .config import Config
 
 MAX_ROM_TEXT_SIZE = 92
 

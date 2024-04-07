@@ -7,10 +7,10 @@ from typing import List, Optional
 import frontmatter  # type: ignore
 import git  # type: ignore
 
-from config import Config
-from git_utils import get_first_remote
-from markdown_utils import rewrite_image_paths
-from project import Project
+from .config import Config
+from .git_utils import get_first_remote
+from .markdown_utils import rewrite_image_paths
+from .project import Project
 
 
 class Docs:

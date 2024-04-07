@@ -3,7 +3,7 @@ import argparse
 import logging
 import sys
 
-from project import Project
+from .project import Project
 
 def main():
     parser = argparse.ArgumentParser(description="TT setup")

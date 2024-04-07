@@ -8,9 +8,9 @@ from typing import List, Set
 import git
 import yaml
 
-from config import Config
-from project import Project
-from shuttle_index import ShuttleIndex, ShuttleIndexLayout, ShuttleIndexProject
+from .config import Config
+from .project import Project
+from .shuttle_index import ShuttleIndex, ShuttleIndexLayout, ShuttleIndexProject
 
 
 def copy_print(src: str, dest: str):
