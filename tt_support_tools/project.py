@@ -436,6 +436,15 @@ class Project:
         self.check_ports()
         logging.info("creating include file")
         filename = "user_config.tcl"
+
+        # Copy block file so that docker can find it
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        tiles = self.info.tiles
+        shutil.copyfile(
+            os.path.join(script_dir, "def", f"tt_block_{tiles}_pg.def"),
+            os.path.join(self.src_dir, f"tt_block_{tiles}_pg.def"),
+        )
+
         with open(os.path.join(self.src_dir, filename), "w") as fh:
             fh.write("set ::env(DESIGN_NAME) {}\n".format(self.info.top_module))
             fh.write('set ::env(VERILOG_FILES) "\\\n')
@@ -444,12 +453,11 @@ class Project:
                 if line != len(self.sources) - 1:
                     fh.write(" \\\n")
             fh.write('"\n\n')
-            tiles = self.info.tiles
             die_area = tile_sizes[tiles]
             fh.write(f"# Project area: {tiles} tiles\n")
             fh.write(f'set ::env(DIE_AREA) "{die_area}"\n')
             fh.write(
-                f'set ::env(FP_DEF_TEMPLATE) "$::env(DESIGN_DIR)/../tt/def/tt_block_{tiles}_pg.def"\n'
+                f'set ::env(FP_DEF_TEMPLATE) "$::env(DESIGN_DIR)/tt_block_{tiles}_pg.def"\n'
             )
 
     def golden_harden(self):
