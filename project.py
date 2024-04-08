@@ -694,6 +694,7 @@ class Project:
 
     def print_warnings(self):
         warnings: typing.List[str] = []
+
         synth_log = "runs/wokwi/logs/synthesis/1-synthesis.log"
         if self.args.openlane2:
             synth_log = "runs/wokwi/05-yosys-synthesis/yosys-synthesis.log"
@@ -703,6 +704,22 @@ class Project:
                     # bogus warning https://github.com/YosysHQ/yosys/commit/bfacaddca8a2e113e4bc3d6177612ccdba1555c8
                     if "WIDTHLABEL" not in line:
                         warnings.append(line.strip())
+
+        sta_report = (
+            "runs/wokwi/reports/signoff/30-sta-rcx_nom/multi_corner_sta.checks.rpt"
+        )
+        if self.args.openlane2:
+            sta_report = glob.glob(
+                os.path.join(
+                    self.local_dir,
+                    "runs/wokwi/*-openroad-stapostpnr/nom_tt_025C_1v80/checks.rpt",
+                )
+            )[0]
+        with open(os.path.join(self.local_dir, sta_report)) as f:
+            for line in f.readlines():
+                if line.startswith("Warning:") and "clock" in line:
+                    warnings.append(line.strip())
+
         if len(warnings):
             print("# Synthesis warnings")
             print()
