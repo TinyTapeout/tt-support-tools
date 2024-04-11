@@ -76,6 +76,9 @@ class Docs:
 
             for project in self.projects:
                 yaml_data = project.get_project_docs_dict()
+                yaml_data["user_docs"] = rewrite_image_paths(
+                    yaml_data["user_docs"], f"projects/{project.get_macro_name()}/docs"
+                )
                 yaml_data["mux_address"] = project.mux_address
 
                 logging.info(f"building datasheet for {project}")

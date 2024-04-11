@@ -32,6 +32,10 @@ class ImagePathRewriterRenderer(MarkdownRenderer):
         url = token["attrs"]["url"]
         if "://" not in url and not url.startswith("/"):
             token["attrs"]["url"] = os.path.join(self.prefix, url)
+        elif ".." in url:
+            token["attrs"]["url"] = ""
+        elif url.startswith("/"):
+            token["attrs"]["url"] = os.path.join(self.prefix, "../" + url[1:])
         return super().image(token, state)
 
 
