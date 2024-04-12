@@ -18,6 +18,7 @@ from . import git_utils
 from .cells import Cell, load_cells
 from .markdown_utils import limit_markdown_headings
 from .project_info import ProjectInfo, ProjectYamlError
+from ._version import __version__
 
 CELL_URL = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/"
 
@@ -471,7 +472,10 @@ class Project:
 
         repo = self.get_git_remote()
         commit_hash = self.get_git_commit_hash()
-        tt_version = self.get_tt_tools_version()
+        if __version__ != "0.0.0":
+            tt_version = __version__
+        else:
+            tt_version = self.get_tt_tools_version()
         workflow_url = self.get_workflow_url()
 
         if self.args.openlane2:

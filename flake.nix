@@ -17,7 +17,7 @@
         pkgs = nixpkgs.legacyPackages.${system};
         p2n = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
         commit = if self ? "rev" then builtins.substring 0 7 self.rev else "dirty";
-        version = "6+${commit}";
+        version = "6.0.0+${commit}";
       in
       {
         packages = {

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tt-support-tools"
-version = "6"
+version = "6.0.0"
 description = "tools used by project repos to test configuration, generate OpenLane run summaries and documentation"
 authors = []
 license = "asl-2.0"
@@ -46,6 +46,10 @@ tt-tool = "tt_support_tools.tt_tool:main"
 gds-compare = "tt_support_tools.gds_compare:main"
 reharden = "tt_support_tools.reharden:main"
 
+[tool.poetry-dynamic-versioning]
+enable = true
+format = "{base}+{commit}"
+
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
