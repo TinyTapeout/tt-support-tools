@@ -705,16 +705,15 @@ class Project:
                     if "WIDTHLABEL" not in line:
                         warnings.append(line.strip())
 
-        sta_report = (
-            "runs/wokwi/reports/signoff/30-sta-rcx_nom/multi_corner_sta.checks.rpt"
+        sta_report_glob = (
+            "runs/wokwi/reports/signoff/*-sta-rcx_nom/multi_corner_sta.checks.rpt"
         )
+
         if self.args.openlane2:
-            sta_report = glob.glob(
-                os.path.join(
-                    self.local_dir,
-                    "runs/wokwi/*-openroad-stapostpnr/nom_tt_025C_1v80/checks.rpt",
-                )
-            )[0]
+            sta_report_glob = (
+                "runs/wokwi/*-openroad-stapostpnr/nom_tt_025C_1v80/checks.rpt"
+            )
+        sta_report = glob.glob(os.path.join(self.local_dir, sta_report_glob))[0]
         with open(os.path.join(self.local_dir, sta_report)) as f:
             for line in f.readlines():
                 if line.startswith("Warning:") and "clock" in line:
