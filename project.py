@@ -599,6 +599,8 @@ class Project:
             (71, 5),  # 71/5  - met4.label
         ]
         top_cells.filter(sky130_label_layers)
+        for subcell in top_cells.dependencies(True):
+            subcell.filter(sky130_label_layers)
         svg = "gds_render_preview.svg"
         logging.info("Rendering SVG without text label layers: {}".format(svg))
         top_cells.write_svg(svg, pad=0)
@@ -640,6 +642,8 @@ class Project:
                 # (69,20), # 69/20 - met2.drawing
             ]
             top_cells.filter(sky130_buried_layers)
+            for subcell in top_cells.dependencies(True):
+                subcell.filter(sky130_buried_layers)
             svg_alt = "gds_render_preview_alt.svg"
             logging.info("Rendering SVG with more layers removed: {}".format(svg_alt))
             top_cells.write_svg(svg_alt, pad=0)
