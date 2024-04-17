@@ -87,7 +87,6 @@ class Docs:
                 for key in [
                     "author",
                     "description",
-                    "user_docs",
                     "clock_hz",
                     "git_url",
                     "doc_link",
