@@ -31,9 +31,8 @@ class Projects:
         if not os.path.exists(self.project_dir):
             os.makedirs(self.project_dir)
 
-        only_projects = os.getenv("TT_ONLY_PROJECTS")
-        if only_projects:
-            only_projects = only_projects.split(",")
+        only_projects = os.getenv("TT_ONLY_PROJECTS", "")
+        only_projects_list = only_projects.split(",")
 
         self.projects: List[Project] = []
         project_list = [
@@ -59,7 +58,7 @@ class Projects:
                 logging.warning(f"skipping {project_dir} (skip flag set)")
                 continue
 
-            if only_projects and project_id not in only_projects:
+            if len(only_projects_list) > 0 and project_id not in only_projects:
                 continue
 
             project = Project(
