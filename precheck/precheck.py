@@ -87,6 +87,10 @@ def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc"):
         )
 
 
+def klayout_zero_area(gds: str):
+    return klayout_drc(gds, "zero_area", "zeroarea.rb.drc")
+
+
 def klayout_checks(gds: str):
     layout = pya.Layout()
     layout.read(gds)
@@ -134,6 +138,7 @@ def main():
                 "pin_label_purposes_overlapping_drawing.rb.drc",
             ),
         ],
+        ["KLayout zero area", lambda: klayout_zero_area(args.gds)],
         ["KLayout Checks", lambda: klayout_checks(args.gds)],
     ]
 

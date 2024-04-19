@@ -67,6 +67,20 @@ def gds_fail_metal5_poly(tmp_path_factory: pytest.TempPathFactory):
     return str(gds_file)
 
 
+@pytest.fixture(scope="session")
+def gds_zero_area(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS with a zero-area polygon."""
+    gds_file = tmp_path_factory.mktemp("gds") / "gds_zero_area.gds"
+    layout = pya.Layout()
+    top_cell = layout.create_cell("TEST_zero_area")
+    met1_info = gds_layers["met1.drawing"]
+    met1 = layout.layer(met1_info.layer, met1_info.data_type)
+    rect = pya.DBox(0, 0, 0, 0)
+    top_cell.shapes(met1).insert(rect)
+    layout.write(str(gds_file))
+    return str(gds_file)
+
+
 def test_magic_drc_pass(gds_empty: str):
     precheck.magic_drc(gds_empty, "TEST_empty")
 
@@ -101,3 +115,12 @@ def test_klayout_checks_pass(gds_empty: str):
 def test_klayout_checks_fail(gds_fail_metal5_poly: str):
     with pytest.raises(precheck.PrecheckFailure):
         precheck.klayout_checks(gds_fail_metal5_poly)
+
+
+def test_klayout_zero_area_drc_pass(gds_empty: str):
+    precheck.klayout_zero_area(gds_empty)
+
+
+def test_klayout_zero_area_drc_fail(gds_zero_area: str):
+    with pytest.raises(precheck.PrecheckFailure):
+        precheck.klayout_zero_area(gds_zero_area)
