@@ -31,6 +31,10 @@ class Projects:
         if not os.path.exists(self.project_dir):
             os.makedirs(self.project_dir)
 
+        only_projects = os.getenv("TT_ONLY_PROJECTS")
+        if only_projects:
+            only_projects = only_projects.split(",")
+
         self.projects: List[Project] = []
         project_list = [
             entry
@@ -47,12 +51,15 @@ class Projects:
 
             commit_id_file = os.path.join(project_dir, "commit_id.json")
             if not os.path.exists(commit_id_file):
-                logging.warning(f"no commit_id.json in {project_dir}, skipping")
+                logging.warning(f"no commit_id.json in {project_dir}, skippinggi")
                 continue
 
             commit_id_data = json.load(open(commit_id_file))
             if commit_id_data.get("skip", False):
                 logging.warning(f"skipping {project_dir} (skip flag set)")
+                continue
+
+            if only_projects and project_id not in only_projects:
                 continue
 
             project = Project(
