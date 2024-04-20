@@ -114,35 +114,35 @@ PINS 51 ;
         + PLACED ( 151340 225260 ) N ;
     - ua[0] + NET ua[0] + DIRECTION INOUT + USE SIGNAL
       + PORT
-        + LAYER met4 ( -300 -500 ) ( 300 500 )
+        + LAYER met4 ( -450 -500 ) ( 450 500 )
         + PLACED ( 156860 500 ) N ;
     - ua[1] + NET ua[1] + DIRECTION INOUT + USE SIGNAL
       + PORT
-        + LAYER met4 ( -300 -500 ) ( 300 500 )
+        + LAYER met4 ( -450 -500 ) ( 450 500 )
         + PLACED ( 134780 500 ) N ;
     - ua[2] + NET ua[2] + DIRECTION INOUT + USE SIGNAL
       + PORT
-        + LAYER met4 ( -300 -500 ) ( 300 500 )
+        + LAYER met4 ( -450 -500 ) ( 450 500 )
         + PLACED ( 112700 500 ) N ;
     - ua[3] + NET ua[3] + DIRECTION INOUT + USE SIGNAL
       + PORT
-        + LAYER met4 ( -300 -500 ) ( 300 500 )
+        + LAYER met4 ( -450 -500 ) ( 450 500 )
         + PLACED ( 90620 500 ) N ;
     - ua[4] + NET ua[4] + DIRECTION INOUT + USE SIGNAL
       + PORT
-        + LAYER met4 ( -300 -500 ) ( 300 500 )
+        + LAYER met4 ( -450 -500 ) ( 450 500 )
         + PLACED ( 68540 500 ) N ;
     - ua[5] + NET ua[5] + DIRECTION INOUT + USE SIGNAL
       + PORT
-        + LAYER met4 ( -300 -500 ) ( 300 500 )
+        + LAYER met4 ( -450 -500 ) ( 450 500 )
         + PLACED ( 46460 500 ) N ;
     - ua[6] + NET ua[6] + DIRECTION INOUT + USE SIGNAL
       + PORT
-        + LAYER met4 ( -300 -500 ) ( 300 500 )
+        + LAYER met4 ( -450 -500 ) ( 450 500 )
         + PLACED ( 24380 500 ) N ;
     - ua[7] + NET ua[7] + DIRECTION INOUT + USE SIGNAL
       + PORT
-        + LAYER met4 ( -300 -500 ) ( 300 500 )
+        + LAYER met4 ( -450 -500 ) ( 450 500 )
         + PLACED ( 2300 500 ) N ;
     - ui_in[0] + NET ui_in[0] + DIRECTION INPUT + USE SIGNAL
       + PORT
