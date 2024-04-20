@@ -124,7 +124,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--gds", required=True)
     parser.add_argument("--top-module", required=False)
-    parser.add_argument("--markdown-report", required=False)
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     logging.info(f"PDK_ROOT: {PDK_ROOT}")
