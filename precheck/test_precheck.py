@@ -13,11 +13,15 @@ gds_layers = klayout_tools.parse_lyp_layers(LYP_FILE)
 
 
 @pytest.fixture(scope="session")
-def gds_empty(tmp_path_factory: pytest.TempPathFactory):
-    """Creates a GDS with an empty cell that should pass DRC."""
-    gds_file = tmp_path_factory.mktemp("gds") / "gds_empty.gds"
+def gds_valid(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a minimal GDS that should pass DRC."""
+    gds_file = tmp_path_factory.mktemp("gds") / "gds_valid.gds"
     layout = pya.Layout()
-    layout.create_cell("TEST_empty")
+    top_cell = layout.create_cell("TEST_valid")
+    prboundary_info = gds_layers["prBoundary.boundary"]
+    prboundary = layout.layer(prboundary_info.layer, prboundary_info.data_type)
+    rect = pya.DBox(0, 0, 161, 111.52)
+    top_cell.shapes(prboundary).insert(rect)
     layout.write(str(gds_file))
     return str(gds_file)
 
@@ -68,6 +72,16 @@ def gds_fail_metal5_poly(tmp_path_factory: pytest.TempPathFactory):
 
 
 @pytest.fixture(scope="session")
+def gds_no_pr_boundary(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS without a pr boundary layer."""
+    gds_file = tmp_path_factory.mktemp("gds") / "gds_no_pr_boundary.gds"
+    layout = pya.Layout()
+    layout.create_cell("TEST_no_prboundary")
+    layout.write(str(gds_file))
+    return str(gds_file)
+
+
+@pytest.fixture(scope="session")
 def gds_zero_area(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS with a zero-area polygon."""
     gds_file = tmp_path_factory.mktemp("gds") / "gds_zero_area.gds"
@@ -81,8 +95,8 @@ def gds_zero_area(tmp_path_factory: pytest.TempPathFactory):
     return str(gds_file)
 
 
-def test_magic_drc_pass(gds_empty: str):
-    precheck.magic_drc(gds_empty, "TEST_empty")
+def test_magic_drc_pass(gds_valid: str):
+    precheck.magic_drc(gds_valid, "TEST_valid")
 
 
 def test_magic_drc_fail(gds_fail_met1_poly: str):
@@ -90,8 +104,8 @@ def test_magic_drc_fail(gds_fail_met1_poly: str):
         precheck.magic_drc(gds_fail_met1_poly, "TEST_met1_error")
 
 
-def test_klayout_feol_pass(gds_empty: str):
-    precheck.klayout_drc(gds_empty, "feol")
+def test_klayout_feol_pass(gds_valid: str):
+    precheck.klayout_drc(gds_valid, "feol")
 
 
 def test_klayout_feol_fail(gds_fail_nwell_poly: str):
@@ -99,8 +113,8 @@ def test_klayout_feol_fail(gds_fail_nwell_poly: str):
         precheck.klayout_drc(gds_fail_nwell_poly, "feol")
 
 
-def test_klayout_beol_pass(gds_empty: str):
-    precheck.klayout_drc(gds_empty, "beol")
+def test_klayout_beol_pass(gds_valid: str):
+    precheck.klayout_drc(gds_valid, "beol")
 
 
 def test_klayout_beol_fail(gds_fail_met1_poly: str):
@@ -108,17 +122,22 @@ def test_klayout_beol_fail(gds_fail_met1_poly: str):
         precheck.klayout_drc(gds_fail_met1_poly, "beol")
 
 
-def test_klayout_checks_pass(gds_empty: str):
-    precheck.klayout_checks(gds_empty)
+def test_klayout_checks_pass(gds_valid: str):
+    precheck.klayout_checks(gds_valid)
 
 
-def test_klayout_checks_fail(gds_fail_metal5_poly: str):
+def test_klayout_checks_fail_metal5(gds_fail_metal5_poly: str):
     with pytest.raises(precheck.PrecheckFailure):
         precheck.klayout_checks(gds_fail_metal5_poly)
 
 
-def test_klayout_zero_area_drc_pass(gds_empty: str):
-    precheck.klayout_zero_area(gds_empty)
+def test_klayout_checks_fail_pr_boundary(gds_no_pr_boundary: str):
+    with pytest.raises(precheck.PrecheckFailure):
+        precheck.klayout_checks(gds_no_pr_boundary)
+
+
+def test_klayout_zero_area_drc_pass(gds_valid: str):
+    precheck.klayout_zero_area(gds_valid)
 
 
 def test_klayout_zero_area_drc_fail(gds_zero_area: str):

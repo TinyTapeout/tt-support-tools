@@ -110,6 +110,15 @@ def klayout_checks(gds: str):
         if layer_index is not None:
             raise PrecheckFailure(f"Forbidden layer {layer} found in {gds}")
 
+    logging.info("Running prBoundary check...")
+    layer_info = layers["prBoundary.boundary"]
+    layer_index = layout.find_layer(layer_info.layer, layer_info.data_type)
+    if layer_index is None:
+        calma_index = f"{layer_info.layer}/{layer_info.data_type}"
+        raise PrecheckFailure(
+            f"prBoundary.boundary ({calma_index}) layer not found in {gds}"
+        )
+
 
 def main():
     parser = argparse.ArgumentParser()
