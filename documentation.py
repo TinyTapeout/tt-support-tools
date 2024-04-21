@@ -9,7 +9,7 @@ import git  # type: ignore
 
 from config import Config
 from git_utils import get_first_remote
-from markdown_utils import rewrite_image_paths
+from markdown_utils import rewrite_image_paths, rewrite_image_paths_for_website
 from project import Project
 
 
@@ -175,6 +175,11 @@ class Docs:
                 yaml_data["weight"] = project.index + 1
                 yaml_data["git_action"] = project.get_workflow_url_when_submitted()
                 yaml_data["shuttle_id"] = self.config["id"]
+                yaml_data["user_docs"] = rewrite_image_paths_for_website(
+                    yaml_data["user_docs"],
+                    os.path.join(project.src_dir, "docs"),
+                    project_image_dir,
+                )
 
                 doc = doc_template.format(**yaml_data)
                 with open(os.path.join(project_dir, "_index.md"), "w") as pfh:
