@@ -1,4 +1,5 @@
 import os
+import shutil
 from typing import Any, Dict
 
 import mistune
@@ -41,4 +42,35 @@ class ImagePathRewriterRenderer(MarkdownRenderer):
 
 def rewrite_image_paths(source: str, prefix: str) -> str:
     markdown = mistune.create_markdown(renderer=ImagePathRewriterRenderer(prefix))
+    return markdown(source)
+
+
+class WebsiteImagePathRewriterRenderer(MarkdownRenderer):
+    def __init__(self, source_dir: str, target_dir: str):
+        super().__init__()
+        self.source_dir = source_dir
+        self.target_dir = target_dir
+
+    def image(self, token, state):
+        url = token["attrs"]["url"]
+        if ".." in url:
+            token["attrs"]["url"] = ""
+        elif "://" not in url and not url.startswith("/"):
+            filename = os.path.basename(url)
+            if url.startswith("/"):
+                url = "../" + url[1:]
+            shutil.copyfile(
+                os.path.join(self.source_dir, url),
+                os.path.join(self.target_dir, filename),
+            )
+            token["attrs"]["url"] = f"images/{filename}"
+        return super().image(token, state)
+
+
+def rewrite_image_paths_for_website(
+    source: str, source_dir: str, target_dir: str
+) -> str:
+    markdown = mistune.create_markdown(
+        renderer=WebsiteImagePathRewriterRenderer(source_dir, target_dir)
+    )
     return markdown(source)
