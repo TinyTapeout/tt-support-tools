@@ -11,23 +11,34 @@ class ProjectYamlError(Exception):
 
 class PinoutSection:
     def __init__(self, yaml_data: Dict[str, Any]):
+        self.__nonEmptyPins = 0
+        yaml_data = yaml_data.copy()
         self.ui = self._pins(yaml_data, "ui", 8)
         self.uo = self._pins(yaml_data, "uo", 8)
         self.uio = self._pins(yaml_data, "uio", 8)
-        self.ua: List[str] = []
-        for i in range(8):
-            pin = yaml_data.get(f"ua[{i}]")
-            if pin is None:
-                break
-            self.ua.append(pin)
+        self.ua: List[str] = self._pins(yaml_data, "ua", 8, True)
+        if self.__nonEmptyPins == 0:
+            raise ProjectYamlError("Please fill in the 'pinout' section")
+        if len(yaml_data) > 0:
+            raise ProjectYamlError(
+                f"Invalid keys {list(yaml_data.keys())} in 'pinout' section. Please remove them."
+            )
 
-    def _pins(self, yaml_data: Dict[str, Any], name: str, count: int) -> List[str]:
+    def _pins(
+        self, yaml_data: Dict[str, Any], name: str, count: int, optional: bool = False
+    ) -> List[str]:
         result: List[str] = []
         for i in range(count):
-            pin = yaml_data.get(f"{name}[{i}]")
+            key = f"{name}[{i}]"
+            pin = yaml_data.get(key)
             if pin is None:
+                if optional:
+                    break
                 raise ProjectYamlError(f"Missing '{name}[{i}]' in 'pinout' section")
+            if pin != "":
+                self.__nonEmptyPins += 1
             result.append(pin)
+            del yaml_data[key]
         return result
 
 
