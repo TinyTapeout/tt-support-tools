@@ -15,7 +15,7 @@ gds_layers = klayout_tools.parse_lyp_layers(LYP_FILE)
 @pytest.fixture(scope="session")
 def gds_valid(tmp_path_factory: pytest.TempPathFactory):
     """Creates a minimal GDS that should pass DRC."""
-    gds_file = tmp_path_factory.mktemp("gds") / "gds_valid.gds"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_valid.gds"
     layout = pya.Layout()
     top_cell = layout.create_cell("TEST_valid")
     prboundary_info = gds_layers["prBoundary.boundary"]
@@ -29,7 +29,7 @@ def gds_valid(tmp_path_factory: pytest.TempPathFactory):
 @pytest.fixture(scope="session")
 def gds_fail_met1_poly(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS that fails Magic DRC and BEOL because the met1 rect is too small."""
-    gds_file = tmp_path_factory.mktemp("gds") / "gds_met1_fail.gds"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_met1_error.gds"
     layout = pya.Layout()
     met1_info = gds_layers["met1.drawing"]
     met1 = layout.layer(met1_info.layer, met1_info.data_type)
@@ -45,7 +45,7 @@ def gds_fail_met1_poly(tmp_path_factory: pytest.TempPathFactory):
 @pytest.fixture(scope="session")
 def gds_fail_nwell_poly(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS that fails FEOL because the nwell is too small."""
-    gds_file = tmp_path_factory.mktemp("gds") / "gds_nwell_fail.gds"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_nwell_error.gds"
     layout = pya.Layout()
     nwell_info = gds_layers["nwell.drawing"]
     nwell = layout.layer(nwell_info.layer, nwell_info.data_type)
@@ -60,7 +60,7 @@ def gds_fail_nwell_poly(tmp_path_factory: pytest.TempPathFactory):
 @pytest.fixture(scope="session")
 def gds_fail_metal5_poly(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS with drawings on layer5, should fail our precheck."""
-    gds_file = tmp_path_factory.mktemp("gds") / "gds_metal5_fail.gds"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_met5_error.gds"
     layout = pya.Layout()
     met5_info = gds_layers["met5.drawing"]
     met5 = layout.layer(met5_info.layer, met5_info.data_type)
@@ -74,7 +74,7 @@ def gds_fail_metal5_poly(tmp_path_factory: pytest.TempPathFactory):
 @pytest.fixture(scope="session")
 def gds_no_pr_boundary(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS without a pr boundary layer."""
-    gds_file = tmp_path_factory.mktemp("gds") / "gds_no_pr_boundary.gds"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_no_prboundary.gds"
     layout = pya.Layout()
     layout.create_cell("TEST_no_prboundary")
     layout.write(str(gds_file))
@@ -84,13 +84,23 @@ def gds_no_pr_boundary(tmp_path_factory: pytest.TempPathFactory):
 @pytest.fixture(scope="session")
 def gds_zero_area(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS with a zero-area polygon."""
-    gds_file = tmp_path_factory.mktemp("gds") / "gds_zero_area.gds"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_zero_area.gds"
     layout = pya.Layout()
     top_cell = layout.create_cell("TEST_zero_area")
     met1_info = gds_layers["met1.drawing"]
     met1 = layout.layer(met1_info.layer, met1_info.data_type)
     rect = pya.DBox(0, 0, 0, 0)
     top_cell.shapes(met1).insert(rect)
+    layout.write(str(gds_file))
+    return str(gds_file)
+
+
+@pytest.fixture(scope="session")
+def gds_invalid_macro_name(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS with a top cell name that doesn't match the filename."""
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_invalid_macro_name.gds"
+    layout = pya.Layout()
+    layout.create_cell("wrong_name")
     layout.write(str(gds_file))
     return str(gds_file)
 
@@ -127,13 +137,26 @@ def test_klayout_checks_pass(gds_valid: str):
 
 
 def test_klayout_checks_fail_metal5(gds_fail_metal5_poly: str):
-    with pytest.raises(precheck.PrecheckFailure):
+    with pytest.raises(
+        precheck.PrecheckFailure, match=r"Forbidden layer met5\.drawing found in .+"
+    ):
         precheck.klayout_checks(gds_fail_metal5_poly)
 
 
 def test_klayout_checks_fail_pr_boundary(gds_no_pr_boundary: str):
-    with pytest.raises(precheck.PrecheckFailure):
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match=r"prBoundary.boundary \(235/4\) layer not found in .+",
+    ):
         precheck.klayout_checks(gds_no_pr_boundary)
+
+
+def test_klayout_top_module_name(gds_invalid_macro_name: str):
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="Top macro name mismatch: expected TEST_invalid_macro_name, got wrong_name",
+    ):
+        precheck.klayout_checks(gds_invalid_macro_name)
 
 
 def test_klayout_zero_area_drc_pass(gds_valid: str):
@@ -141,5 +164,5 @@ def test_klayout_zero_area_drc_pass(gds_valid: str):
 
 
 def test_klayout_zero_area_drc_fail(gds_zero_area: str):
-    with pytest.raises(precheck.PrecheckFailure):
+    with pytest.raises(precheck.PrecheckFailure, match="Klayout zero_area failed"):
         precheck.klayout_zero_area(gds_zero_area)

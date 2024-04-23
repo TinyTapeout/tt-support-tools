@@ -96,6 +96,14 @@ def klayout_checks(gds: str):
     layout.read(gds)
     layers = parse_lyp_layers(LYP_FILE)
 
+    logging.info("Running top macro name check...")
+    top_cell = layout.top_cell()
+    expected_name = os.path.splitext(os.path.basename(gds))[0]
+    if top_cell.name != expected_name:
+        raise PrecheckFailure(
+            f"Top macro name mismatch: expected {expected_name}, got {top_cell.name}"
+        )
+
     logging.info("Running forbidden layer check...")
     forbidden_layers = [
         "met5.drawing",
