@@ -321,7 +321,7 @@ class Project:
             else:
                 return os.path.join(self.local_dir, "runs/wokwi/reports/metrics.csv")
         else:
-            return os.path.join(self.local_dir, "metrics.csv")
+            return os.path.join(self.local_dir, "stats/metrics.csv")
 
     def get_gl_path(self):
         if self.is_user_project:
@@ -811,7 +811,7 @@ class Project:
     def get_cell_count_from_synth(self):
         num_cells = 0
         try:
-            yosys_report = f"{self.local_dir}/synthesis-stats.txt"
+            yosys_report = f"{self.local_dir}/stats/synthesis-stats.txt"
             with open(yosys_report) as fh:
                 for line in fh.readlines():
                     m = re.search(r"Number of cells:\s+(\d+)", line)
