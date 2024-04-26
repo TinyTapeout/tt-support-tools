@@ -19,4 +19,3 @@ Tiny Tapeout would not be possible without a lot of people helping. We would esp
 * [Tim Ansell and Google](https://www.youtube.com/watch?v=EczW2IWdnOM) for supporting the open source silicon movement
 * [Zero to ASIC course](https://zerotoasiccourse.com/) community for all your support
 * Jeremy Birch for help with STA
-* [Aisler](https://aisler.net/) for sponsoring PCB development
