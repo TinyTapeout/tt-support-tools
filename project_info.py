@@ -16,7 +16,7 @@ class PinoutSection:
         self.ui = self._pins(yaml_data, "ui", 8)
         self.uo = self._pins(yaml_data, "uo", 8)
         self.uio = self._pins(yaml_data, "uio", 8)
-        self.ua: List[str] = self._pins(yaml_data, "ua", 8, True)
+        self.ua = self._pins(yaml_data, "ua", 6, True)
         if self.__nonEmptyPins == 0:
             raise ProjectYamlError("Please fill in the 'pinout' section")
         if len(yaml_data) > 0:
@@ -32,7 +32,7 @@ class PinoutSection:
             key = f"{name}[{i}]"
             pin = yaml_data.get(key)
             if pin is None:
-                if optional:
+                if optional and i == 0:
                     break
                 raise ProjectYamlError(f"Missing '{name}[{i}]' in 'pinout' section")
             if pin != "":
