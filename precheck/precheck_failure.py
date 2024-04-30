@@ -1,0 +1,2 @@
+class PrecheckFailure(Exception):
+    pass

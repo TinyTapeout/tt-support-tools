@@ -10,7 +10,10 @@ import xml.etree.ElementTree as ET
 import gdstk
 import klayout.db as pya
 import klayout.rdb as rdb
+import yaml
 from klayout_tools import parse_lyp_layers
+from pin_check import pin_check
+from precheck_failure import PrecheckFailure
 
 PDK_ROOT = os.getenv("PDK_ROOT")
 PDK_NAME = os.getenv("PDK_NAME") or "sky130A"
@@ -20,10 +23,6 @@ REPORTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "report
 if not PDK_ROOT:
     logging.error("PDK_ROOT environment variable not set")
     exit(1)
-
-
-class PrecheckFailure(Exception):
-    pass
 
 
 def has_sky130_devices(gds: str):
@@ -131,6 +130,8 @@ def klayout_checks(gds: str):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--gds", required=True)
+    parser.add_argument("--lef", required=False)
+    parser.add_argument("--template-def", required=False)
     parser.add_argument("--top-module", required=False)
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -140,6 +141,26 @@ def main():
         top_module = args.top_module
     else:
         top_module = os.path.splitext(os.path.basename(args.gds))[0]
+
+    if args.lef:
+        lef = args.lef
+    else:
+        lef = os.path.splitext(args.gds)[0] + ".lef"
+
+    if args.template_def:
+        template_def = args.template_def
+    else:
+        yaml_dir = os.path.dirname(os.path.dirname(args.gds))
+        yaml_file = f"{yaml_dir}/info.yaml"
+        yaml_data = yaml.safe_load(open(yaml_file))
+        logging.info("info.yaml data:" + str(yaml_data))
+        tiles = yaml_data.get("project", {}).get("tiles", "1x1")
+        is_analog = yaml_data.get("project", {}).get("analog_pins", 0) > 0
+        if is_analog:
+            template_def = f"../def/analog/tt_block_{tiles}_pg_ana.def"
+        else:
+            template_def = f"../def/tt_block_{tiles}_pg.def"
+        logging.info(f"using def template {template_def}")
 
     checks = [
         ["Magic DRC", lambda: magic_drc(args.gds, top_module)],
@@ -156,6 +177,7 @@ def main():
         ],
         ["KLayout zero area", lambda: klayout_zero_area(args.gds)],
         ["KLayout Checks", lambda: klayout_checks(args.gds)],
+        ["Pin check", lambda: pin_check(args.gds, lef, template_def, top_module)],
     ]
 
     testsuite = ET.Element("testsuite", name="Tiny Tapeout Prechecks")
