@@ -17,6 +17,7 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
     logging.info("Running pin check...")
 
     # parse pins from template def
+    # def syntax: https://coriolis.lip6.fr/doc/lefdef/lefdefref/DEFSyntax.html
 
     diearea_re = re.compile(r"DIEAREA \( (\S+) (\S+) \) \( (\S+) (\S+) \) ;")
     pins_re = re.compile(r"PINS (\d+) ;")
@@ -34,7 +35,9 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
                 match = diearea_re.match(line)
                 lx, by, rx, ty = map(int, match.groups())
                 if (lx, by) != (0, 0):
-                    raise PrecheckFailure("Wrong die origin in template DEF")
+                    raise PrecheckFailure(
+                        "Wrong die origin in template DEF, expecting (0, 0)"
+                    )
                 die_width = rx
                 die_height = ty
             elif line.startswith("PINS "):
@@ -48,12 +51,14 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
             pin_name, net_name, direction, use = match.groups()
             if pin_name != net_name:
                 raise PrecheckFailure(
-                    "Inconsistent pin name and net name in template DEF"
+                    f"Inconsistent pin name and net name in template DEF: {pin_name} vs {net_name}"
                 )
 
             line = next(f)
             if not line.strip().startswith("+ PORT"):
-                raise PrecheckFailure("Unexpected token in template DEF")
+                raise PrecheckFailure(
+                    "Unexpected token in template DEF: PINS not followed by PORT"
+                )
 
             line = next(f)
             match = layer_re.match(line)
@@ -72,9 +77,12 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
 
         line = next(f)
         if not line.startswith("END PINS"):
-            raise PrecheckFailure("Unexpected token in template DEF")
+            raise PrecheckFailure(
+                f"Unexpected token in template DEF: PINS {pin_count} section does not end after {pin_count} pins"
+            )
 
     # parse pins from user lef
+    # lef syntax: https://coriolis.lip6.fr/doc/lefdef/lefdefref/LEFSyntax.html
 
     origin_re = re.compile(r"ORIGIN (\S+) (\S+) ;")
     size_re = re.compile(r"SIZE (\S+) BY (\S+) ;")
@@ -102,7 +110,9 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
                     match = origin_re.match(line)
                     lx, by = map(parsefp3, match.groups())
                     if lx != 0 or by != 0:
-                        raise PrecheckFailure("Wrong die origin in LEF")
+                        raise PrecheckFailure(
+                            "Wrong die origin in LEF, expecting (0, 0)"
+                        )
                 elif line.startswith("SIZE "):
                     match = size_re.match(line)
                     rx, ty = map(parsefp3, match.groups())
@@ -112,7 +122,10 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
                         )
                 elif line.startswith("PIN "):
                     if current_pin is not None:
-                        raise PrecheckFailure("Unexpected token in LEF")
+                        new_pin = line.removeprefix("PIN ")
+                        raise PrecheckFailure(
+                            f"Unexpected token in LEF: pin {new_pin} starts without ending previous pin {current_pin}"
+                        )
                     current_pin = line.removeprefix("PIN ")
                     pins_seen.add(current_pin)
                     if current_pin not in pins_expected:
@@ -121,7 +134,9 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
                     pin_rects = 0
                 elif line == "PORT":
                     if current_pin is None:
-                        raise PrecheckFailure("Unexpected token in LEF")
+                        raise PrecheckFailure(
+                            "Unexpected token in LEF: PORT outside of PIN"
+                        )
                     line = next(f).strip()
                     while line.startswith("LAYER "):
                         match = layer_re.match(line)
@@ -136,7 +151,9 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
                             lef_ports[current_pin].append((layer, lx, by, rx, ty))
                             line = next(f).strip()
                     if line != "END":
-                        raise PrecheckFailure("Unexpected token in LEF")
+                        raise PrecheckFailure(
+                            "Unexpected token in LEF: LAYER within PORT should be followed by RECT or LAYER lines until END of port"
+                        )
                 elif current_pin is not None and line.startswith("END " + current_pin):
                     if pin_rects < 1:
                         logging.error(f"No ports for pin {current_pin} in {lef}")
@@ -235,7 +252,10 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
     gds_errors = 0
     for current_pin, lef_rects in sorted(lef_ports.items()):
         for layer, lx, by, rx, ty in lef_rects:
-            assert layer + ".pin" in gds_layers, "Unexpected port layer in LEF"
+            if layer + ".pin" not in gds_layers:
+                raise PrecheckFailure(
+                    f"Unexpected port layer in LEF: {current_pin} is on layer {layer}"
+                )
             pin_layer = gds_layers[layer + ".pin"]
 
             pin_ok = False
