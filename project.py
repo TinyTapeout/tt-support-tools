@@ -530,7 +530,10 @@ class Project:
             logging.error("synthesis failed")
             exit(1)
 
-        nextpnr_cmd = f"nextpnr-ice40 -l {build_dir}/02-nextpnr.log --pcf-allow-unconstrained --seed 10 --freq 48 --package sg48 --up5k --asc {build_dir}/tt_fpga.asc --pcf {SCRIPT_DIR}/fpga/tt_fpga_top.pcf --json {build_dir}/tt_fpga.json"
+        seed = os.getenv("TT_FPGA_SEED", "10")
+        freq = os.getenv("TT_FPGA_FREQ", "12")
+
+        nextpnr_cmd = f"nextpnr-ice40 -l {build_dir}/02-nextpnr.log --pcf-allow-unconstrained --seed {seed} --freq {freq} --package sg48 --up5k --asc {build_dir}/tt_fpga.asc --pcf {SCRIPT_DIR}/fpga/tt_fpga_top.pcf --json {build_dir}/tt_fpga.json"
         logging.debug(nextpnr_cmd)
         p = subprocess.run(nextpnr_cmd, shell=True)
         if p.returncode != 0:
