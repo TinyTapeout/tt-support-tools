@@ -1,0 +1,68 @@
+#
+# Pinmap for the TT ASIC SIMULATOR version 1.0
+#
+
+
+# Clock
+set_io -nowarn clk_fpga 37 # IOT_45a_G1
+
+
+# SPI
+set_io -nowarn spi_mosi 14
+set_io -nowarn spi_miso 17
+set_io -nowarn spi_clk  15
+set_io -nowarn spi_cs_n 16
+
+# USB
+set_io -nowarn usb_dp 32 # IOT_43A
+set_io -nowarn usb_dn 31 # IOT_42B
+set_io -nowarn usb_pu 34 # IOT_44B 
+
+
+# Button
+set_io -nowarn -pullup yes btn 13 # IOB_24A / boot button
+
+
+# Leds
+set_io -nowarn rgb[0] 39
+set_io -nowarn rgb[1] 40
+set_io -nowarn rgb[2] 41
+
+
+# "project clock"
+set_io -nowarn  clk   35 # IOT_46B_G0
+set_io -nowarn  rst_n   38 # IOT_50B
+set_io -nowarn  gpio_led      36 # IOT_48B
+
+
+# I/O
+# pmod buttons
+set_io -nowarn ui_in[0]       2
+set_io -nowarn ui_in[1]       3
+set_io -nowarn ui_in[2]       4
+set_io -nowarn ui_in[3]       6
+set_io -nowarn ui_in[4]       9
+set_io -nowarn ui_in[5]       10
+set_io -nowarn ui_in[6]       11
+set_io -nowarn ui_in[7]       12
+
+
+set_io -nowarn uo_out[0]      18 
+set_io -nowarn uo_out[1]      20
+set_io -nowarn uo_out[2]      19
+set_io -nowarn uo_out[3]      21
+set_io -nowarn uo_out[4]      23
+set_io -nowarn uo_out[5]      26
+set_io -nowarn uo_out[6]      25
+set_io -nowarn uo_out[7]      28
+     
+
+
+set_io -nowarn uio[0]        27     
+set_io -nowarn uio[1]        42
+set_io -nowarn uio[2]        44
+set_io -nowarn uio[3]        43
+set_io -nowarn uio[4]        46
+set_io -nowarn uio[5]        45
+set_io -nowarn uio[6]        48
+set_io -nowarn uio[7]        47

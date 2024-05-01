@@ -48,6 +48,8 @@ PINOUT_KEYS = [
     "uio[7]",
 ]
 
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
 
 with open(os.path.join(os.path.dirname(__file__), "tile_sizes.yaml"), "r") as stream:
     tile_sizes = yaml.safe_load(stream)
@@ -504,6 +506,46 @@ class Project:
 
         os.chdir(cwd)
 
+    def create_fpga_bitstream(self):
+        logging.info(f"Creating FPGA bitstream for {self}")
+
+        with open(os.path.join(SCRIPT_DIR, "fpga/tt_fpga_top.v"), "r") as f:
+            top_module_template = f.read()
+
+        with open(os.path.join(self.src_dir, "_tt_fpga_top.v"), "w") as f:
+            f.write(
+                top_module_template.replace("__tt_um_placeholder", self.info.top_module)
+            )
+
+        build_dir = os.path.join(self.local_dir, "build")
+        os.makedirs(build_dir, exist_ok=True)
+
+        sources = [os.path.join(self.src_dir, src) for src in self.sources]
+        source_list = " ".join(sources)
+
+        yosys_cmd = f"yosys -l {build_dir}/01-synth.log -DSYNTH -p 'synth_ice40 -top tt_fpga_top -json {build_dir}/tt_fpga.json' src/_tt_fpga_top.v {source_list}"
+        logging.debug(yosys_cmd)
+        p = subprocess.run(yosys_cmd, shell=True)
+        if p.returncode != 0:
+            logging.error("synthesis failed")
+            exit(1)
+
+        nextpnr_cmd = f"nextpnr-ice40 -l {build_dir}/02-nextpnr.log --pcf-allow-unconstrained --seed 10 --freq 48 --package sg48 --up5k --asc {build_dir}/tt_fpga.asc --pcf {SCRIPT_DIR}/fpga/tt_fpga_top.pcf --json {build_dir}/tt_fpga.json"
+        logging.debug(nextpnr_cmd)
+        p = subprocess.run(nextpnr_cmd, shell=True)
+        if p.returncode != 0:
+            logging.error("placement failed")
+            exit(1)
+
+        icepack_cmd = f"icepack {build_dir}/tt_fpga.asc {build_dir}/tt_fpga.bin"
+        logging.debug(icepack_cmd)
+        p = subprocess.run(icepack_cmd, shell=True)
+        if p.returncode != 0:
+            logging.error("bitstream creation failed failed")
+            exit(1)
+
+        logging.info(f"Bitstream created successfully: {build_dir}/tt_fpga.bin")
+
     # doc check
     # makes sure that the basic info is present
     def check_docs(self):
@@ -531,10 +573,9 @@ class Project:
         template_args["uio"] = self.info.pinout.uio
 
         logging.info("Creating PDF")
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(script_dir, "docs/project_header.md")) as fh:
+        with open(os.path.join(SCRIPT_DIR, "docs/project_header.md")) as fh:
             doc_header = fh.read()
-        with open(os.path.join(script_dir, "docs/project_preview.md")) as fh:
+        with open(os.path.join(SCRIPT_DIR, "docs/project_preview.md")) as fh:
             doc_template = fh.read()
         info_md = os.path.join(self.local_dir, "docs/info.md")
         with open(info_md) as fh:
@@ -743,12 +784,11 @@ class Project:
     # Print the summaries
     def summarize(self):
         cell_count = self.get_cell_counts_from_gl()
-        script_dir = os.path.dirname(os.path.realpath(__file__))
 
         Categories = typing.TypedDict(
             "Categories", {"categories": typing.List[str], "map": typing.Dict[str, int]}
         )
-        with open(os.path.join(script_dir, "categories.json")) as fh:
+        with open(os.path.join(SCRIPT_DIR, "categories.json")) as fh:
             categories: Categories = json.load(fh)
 
         defs = load_cells()

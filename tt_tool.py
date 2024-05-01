@@ -104,6 +104,14 @@ if __name__ == "__main__":
         const=True,
     )
 
+    # FPGA
+    parser.add_argument(
+        "--create-fpga-bitstream",
+        help="create the FPGA bitstream",
+        action="store_const",
+        const=True,
+    )
+
     args = parser.parse_args()
 
     # setup log
@@ -157,3 +165,6 @@ if __name__ == "__main__":
 
     if args.create_svg:
         project.create_svg()
+
+    if args.create_fpga_bitstream:
+        project.create_fpga_bitstream()
