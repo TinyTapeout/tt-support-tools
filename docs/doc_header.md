@@ -17,11 +17,3 @@ header-includes:
 ---
 
 \pagebreak
-
-# Render of whole chip
-
-![Full GDS](pics/tinytapeout_numbered.png)
-
-\pagebreak
-
-# Projects 
