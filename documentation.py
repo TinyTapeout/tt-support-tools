@@ -72,6 +72,7 @@ class Docs:
 
     def dump_markdown(self):
         doc_header = self.load_doc_template("doc_header.md")
+        doc_chip_map = self.load_doc_template("../../docs/chip_map.md")
         doc_template = self.load_doc_template("doc_template.md")
         doc_pinout = self.load_doc_template("PINOUT.md")
         doc_info = self.load_doc_template("../../tt-multiplexer/docs/INFO.md")
@@ -82,6 +83,8 @@ class Docs:
             fh.write(
                 doc_header.format(name=self.config["name"], repo=get_first_remote(repo))
             )
+            fh.write(doc_chip_map)
+            fh.write("# Projects\n")
 
             self.projects.sort(key=lambda x: x.mux_address)
 
