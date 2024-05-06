@@ -1,0 +1,19 @@
+## {{title}} [{{mux_address}}]
+
+* Author: {{author}}
+* Description: {{&description}}
+* [GitHub repository]({{git_url}})
+* {{project_type}} project
+* Mux address: {{mux_address}}
+* [Extra docs]({{doc_link}})
+* Clock: {{clock_hz}} Hz
+
+{{&user_docs}}
+
+### Pinout
+
+| #             | Input    | Output   | Bidirectional   |
+| ------------- | -------- | -------- | --------------- |
+{{#pins}}
+| {{pin_index}} | {{&ui}}  | {{&uo}}  | {{&uio[0]}}     |
+{{/pins}}

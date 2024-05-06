@@ -4,6 +4,7 @@ import shutil
 import subprocess
 from typing import List, Optional
 
+import chevron
 import frontmatter  # type: ignore
 import git  # type: ignore
 
@@ -60,9 +61,9 @@ class Docs:
             return doc.content + "\n"
 
     def write_datasheet(self, markdown_file: str, pdf_file: Optional[str] = None):
-        doc_header = self.load_doc_template("doc_header.md")
+        doc_header = self.load_doc_template("doc_header.md.mustache")
         doc_chip_map = self.load_doc_template("../../docs/chip_map.md")
-        doc_template = self.load_doc_template("doc_template.md")
+        doc_template = self.load_doc_template("doc_template.md.mustache")
         doc_pinout = self.load_doc_template("PINOUT.md")
         doc_info = self.load_doc_template("../../tt-multiplexer/docs/INFO.md")
         doc_credits = self.load_doc_template("CREDITS.md")
@@ -70,7 +71,13 @@ class Docs:
         with open(markdown_file, "w") as fh:
             repo = git.Repo(".")
             fh.write(
-                doc_header.format(name=self.config["name"], repo=get_first_remote(repo))
+                chevron.render(
+                    doc_header,
+                    {
+                        "name": self.config["name"],
+                        "repo": get_first_remote(repo),
+                    },
+                )
             )
             fh.write(doc_chip_map)
             fh.write("# Projects\n")
@@ -79,10 +86,24 @@ class Docs:
 
             for project in self.projects:
                 yaml_data = project.get_project_docs_dict()
-                yaml_data["user_docs"] = rewrite_image_paths(
-                    yaml_data["user_docs"], f"projects/{project.get_macro_name()}/docs"
+                yaml_data.update(
+                    {
+                        "user_docs": rewrite_image_paths(
+                            yaml_data["user_docs"],
+                            f"projects/{project.get_macro_name()}/docs",
+                        ),
+                        "mux_address": project.mux_address,
+                        "pins": [
+                            {
+                                "pin_index": str(i),
+                                "ui": project.info.pinout.ui[i],
+                                "uo": project.info.pinout.uo[i],
+                                "uio": project.info.pinout.uio[i],
+                            }
+                            for i in range(8)
+                        ],
+                    }
                 )
-                yaml_data["mux_address"] = project.mux_address
 
                 logging.info(f"building datasheet for {project}")
 
@@ -103,7 +124,7 @@ class Docs:
 
                 # now build the doc & print it
                 try:
-                    doc = doc_template.format(**yaml_data)
+                    doc = chevron.render(doc_template, yaml_data)
                     fh.write(doc)
                     fh.write("\n\\clearpage\n")
                 except IndexError:
