@@ -113,8 +113,9 @@ class ShuttleConfig:
                     range(len(module["analog"]))
                 ), f"analog pins are not contiguous for {module_name}"
 
+                project.analog_pins = tuple(module["analog"].values())
                 if len(module["analog"]) > 0:
-                    project_info["analog_pins"] = list(module["analog"].values())
+                    project_info["analog_pins"] = project.analog_pins
 
                 project_index.append(project_info)
                 mux_index_reverse[module_name] = mux_address
@@ -123,7 +124,6 @@ class ShuttleConfig:
             if project.info.top_module not in mux_index_reverse:
                 logging.error(f"no placement found for {project}!")
                 exit(1)
-            project.mux_address = mux_index_reverse[project.info.top_module]
 
         repo = git.Repo(".")
 
