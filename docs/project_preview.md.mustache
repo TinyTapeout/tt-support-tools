@@ -13,3 +13,13 @@
 {{#pins}}
 | {{pin_index}} | {{&ui}}  | {{&uo}}  | {{&uio}}       |
 {{/pins}}
+
+{{#is_analog}}
+## Analog pins
+
+| `ua`#        | `analog`#        | Description        |
+|--------------|------------------|--------------------|
+{{#analog_pins}}
+| {{ua_index}} | {{analog_index}} | {{&desc}}          |
+{{/analog_pins}}
+{{/is_analog}}

@@ -539,6 +539,15 @@ class Project:
                     }
                     for i in range(8)
                 ],
+                "analog_pins": [
+                    {
+                        "ua_index": str(i),
+                        "analog_index": "?",
+                        "desc": desc,
+                    }
+                    for i, desc in enumerate(self.info.pinout.ua)
+                ],
+                "is_analog": bool(self.info.pinout.ua),
             }
         )
 
