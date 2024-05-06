@@ -1,6 +1,0 @@
-# {name}
-
-This repository contains the GDS file for the [{name}](https://tinytapeout.com) project. It was generated from {git_repo}@{git_commit}.
-
-## Project Index
-
