@@ -9,7 +9,7 @@ class ShuttleIndexProject(TypedDict):
     tiles: str
     repo: str
     commit: str
-    analog_pins: NotRequired[List[int]]
+    analog_pins: NotRequired[tuple[int, ...]]
 
 
 class ShuttleIndexLayout(TypedDict):
