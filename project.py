@@ -65,6 +65,7 @@ class Args:
 class Project:
     top_verilog_filename: str
     mux_address: int
+    analog_pins: tuple[int, ...]
     commit_id: str
     sort_id: int
 
