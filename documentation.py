@@ -24,13 +24,16 @@ class Docs:
     def build_index(self, filename: str = "shuttle_index.md"):
         logging.info(f"building {filename}")
         repo = git.Repo(".")
-        readme = self.load_doc_template("shuttle_index_header.md")
+        readme = self.load_doc_template("shuttle_index_header.md.mustache")
         with open(filename, "w") as fh:
             fh.write(
-                readme.format(
-                    name=self.config["name"],
-                    git_repo=get_first_remote(repo),
-                    git_commit=repo.head.commit.hexsha,
+                chevron.render(
+                    readme,
+                    {
+                        "name": self.config["name"],
+                        "git_repo": get_first_remote(repo),
+                        "git_commit": repo.head.commit.hexsha,
+                    },
                 )
             )
             fh.write("| Address | Author | Title | Type | Git Repo |\n")
