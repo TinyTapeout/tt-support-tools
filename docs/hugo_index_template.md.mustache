@@ -1,10 +1,10 @@
 ---
-title: "{shuttle_name}"
+title: "{{shuttle_name}}"
 weight: 50
-description: {project_count} designs, closed {end_date}
+description: {{project_count}} designs, closed {{end_date}}
 ---
 
-{{{{% toc %}}}}
+{{#hugo}}% toc %{{/hugo}}
 
 # Design details
 
@@ -22,5 +22,5 @@ description: {project_count} designs, closed {end_date}
 
 # Chip map
 
-{{{{< shuttle-map "{shuttle_id}" >}}}}
+{{#hugo}}< shuttle-map "{shuttle_id}" >{{/hugo}}
 
