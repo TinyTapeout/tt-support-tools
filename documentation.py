@@ -152,11 +152,13 @@ class Docs:
         os.makedirs(hugo_root)
         os.makedirs(hugo_images)
 
-        with open(os.path.join(self.script_dir, "docs", "hugo_template.md")) as fh:
+        with open(
+            os.path.join(self.script_dir, "docs", "hugo_template.md.mustache")
+        ) as fh:
             doc_template = fh.read()
 
         with open(
-            os.path.join(self.script_dir, "docs", "hugo_index_template.md")
+            os.path.join(self.script_dir, "docs", "hugo_index_template.md.mustache")
         ) as fh:
             index_template = fh.read()
 
@@ -169,6 +171,7 @@ class Docs:
 
         # index page
         logging.info("building pages")
+        hugo_tag = {"hugo": lambda text, render: "{{" + render(text) + "}}"}
         shuttle_info = {
             "shuttle_name": self.config["name"],
             "shuttle_id": self.config["id"],
@@ -176,7 +179,8 @@ class Docs:
             "end_date": self.config["end_date"],
         }
         with open(os.path.join(hugo_root, "_index.md"), "w") as fh:
-            fh.write(index_template.format(**shuttle_info))
+            shuttle_info.update(hugo_tag)
+            fh.write(chevron.render(index_template, shuttle_info))
             fh.write("# All projects\n")
             fh.write("| Index | Title | Author |\n")
             fh.write("| ----- | ----- | -------|\n")
@@ -190,17 +194,31 @@ class Docs:
                 os.makedirs(project_dir)
                 os.makedirs(project_image_dir)
                 yaml_data = project.get_project_docs_dict()
-                yaml_data["mux_address"] = project.mux_address
-                yaml_data["index"] = project.index
-                yaml_data["weight"] = project.index + 1
-                yaml_data["git_action"] = project.get_workflow_url_when_submitted()
-                yaml_data["shuttle_id"] = self.config["id"]
-                yaml_data["user_docs"] = rewrite_image_paths_for_website(
-                    yaml_data["user_docs"],
-                    os.path.join(project.src_dir, "docs"),
-                    project_image_dir,
+                yaml_data.update(
+                    {
+                        "mux_address": project.mux_address,
+                        "index": project.index,
+                        "weight": project.index,
+                        "git_action": project.get_workflow_url_when_submitted(),
+                        "shuttle_id": self.config["id"],
+                        "user_docs": rewrite_image_paths_for_website(
+                            yaml_data["user_docs"],
+                            os.path.join(project.src_dir, "docs"),
+                            project_image_dir,
+                        ),
+                        "pins": [
+                            {
+                                "pin_index": str(i),
+                                "ui": project.info.pinout.ui[i],
+                                "uo": project.info.pinout.uo[i],
+                                "uio": project.info.pinout.uio[i],
+                            }
+                            for i in range(8)
+                        ],
+                    }
                 )
 
-                doc = doc_template.format(**yaml_data)
+                yaml_data.update(hugo_tag)
+                doc = chevron.render(doc_template, yaml_data)
                 with open(os.path.join(project_dir, "_index.md"), "w") as pfh:
                     pfh.write(doc)
