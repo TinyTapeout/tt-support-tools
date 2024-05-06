@@ -24,6 +24,10 @@ def limit_markdown_headings(source: str, min_level: int) -> str:
     return markdown(source)
 
 
+def unescape_braces(text: str):
+    return text.replace("%7B", "{").replace("%7D", "}")
+
+
 class ImagePathRewriterRenderer(MarkdownRenderer):
     def __init__(self, prefix: str):
         super().__init__()
@@ -31,18 +35,21 @@ class ImagePathRewriterRenderer(MarkdownRenderer):
 
     def image(self, token, state):
         url = token["attrs"]["url"]
-        if "://" not in url and not url.startswith("/"):
-            token["attrs"]["url"] = os.path.join(self.prefix, url)
+        if "%7B" in url:
+            pass
+        elif "://" not in url and not url.startswith("/"):
+            url = os.path.join(self.prefix, url)
         elif ".." in url:
-            token["attrs"]["url"] = ""
+            url = ""
         elif url.startswith("/"):
-            token["attrs"]["url"] = os.path.join(self.prefix, "../" + url[1:])
+            url = os.path.join(self.prefix, "../" + url[1:])
+        token["attrs"]["url"] = url
         return super().image(token, state)
 
 
 def rewrite_image_paths(source: str, prefix: str) -> str:
     markdown = mistune.create_markdown(renderer=ImagePathRewriterRenderer(prefix))
-    return markdown(source)
+    return unescape_braces(markdown(source))
 
 
 class WebsiteImagePathRewriterRenderer(MarkdownRenderer):
@@ -53,8 +60,10 @@ class WebsiteImagePathRewriterRenderer(MarkdownRenderer):
 
     def image(self, token, state):
         url = token["attrs"]["url"]
-        if ".." in url:
-            token["attrs"]["url"] = ""
+        if "%7B" in url:
+            pass
+        elif ".." in url:
+            url = ""
         elif "://" not in url and not url.startswith("/"):
             filename = os.path.basename(url)
             if url.startswith("/"):
@@ -63,7 +72,8 @@ class WebsiteImagePathRewriterRenderer(MarkdownRenderer):
                 os.path.join(self.source_dir, url),
                 os.path.join(self.target_dir, filename),
             )
-            token["attrs"]["url"] = f"images/{filename}"
+            url = f"images/{filename}"
+        token["attrs"]["url"] = url
         return super().image(token, state)
 
 
@@ -73,4 +83,4 @@ def rewrite_image_paths_for_website(
     markdown = mistune.create_markdown(
         renderer=WebsiteImagePathRewriterRenderer(source_dir, target_dir)
     )
-    return markdown(source)
+    return unescape_braces(markdown(source))
