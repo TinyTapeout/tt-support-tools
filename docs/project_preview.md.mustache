@@ -1,0 +1,15 @@
+# {{title}}
+
+* Author: {{author}}
+* Description: {{&description}}
+* Language: {{language}}
+
+{{&info}}
+
+## Pinout
+
+| #             | Input    | Output   | Bidirectional  |
+|---------------|----------|----------|----------------|
+{{#pins}}
+| {{pin_index}} | {{&ui}}  | {{&uo}}  | {{&uio}}       |
+{{/pins}}
