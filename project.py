@@ -10,6 +10,7 @@ import subprocess
 import typing
 
 import cairosvg  # type: ignore
+import chevron
 import gdstk  # type: ignore
 import yaml
 from git.repo import Repo
@@ -571,14 +572,24 @@ class Project:
     # use pandoc to create a single page PDF preview
     def create_pdf(self):
         template_args = copy.deepcopy(self.info.__dict__)
-        template_args["ui"] = self.info.pinout.ui
-        template_args["uo"] = self.info.pinout.uo
-        template_args["uio"] = self.info.pinout.uio
+        template_args.update(
+            {
+                "pins": [
+                    {
+                        "pin_index": str(i),
+                        "ui": self.info.pinout.ui[i],
+                        "uo": self.info.pinout.uo[i],
+                        "uio": self.info.pinout.uio[i],
+                    }
+                    for i in range(8)
+                ],
+            }
+        )
 
         logging.info("Creating PDF")
         with open(os.path.join(SCRIPT_DIR, "docs/project_header.md")) as fh:
             doc_header = fh.read()
-        with open(os.path.join(SCRIPT_DIR, "docs/project_preview.md")) as fh:
+        with open(os.path.join(SCRIPT_DIR, "docs/project_preview.md.mustache")) as fh:
             doc_template = fh.read()
         info_md = os.path.join(self.local_dir, "docs/info.md")
         with open(info_md) as fh:
@@ -589,7 +600,7 @@ class Project:
 
             # now build the doc & print it
             try:
-                doc = doc_template.format(**template_args)
+                doc = chevron.render(doc_template, template_args)
                 fh.write(doc)
                 fh.write("\n\\pagebreak\n")
             except IndexError:
