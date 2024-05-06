@@ -1,0 +1,29 @@
+---
+hidden: true
+title: "{{mux_address}} {{title}}"
+weight: {{weight}}
+---
+
+## {{mux_address}} : {{title}}
+
+* Author: {{author}}
+* Description: {{&description}}
+* [GitHub repository]({{git_url}})
+* [GDS submitted]({{git_action}})
+* {{project_type}} project
+* [Extra docs]({{doc_link}})
+* Clock: {{clock_hz}} Hz
+
+{{&user_docs}}
+
+### IO
+
+| #             | Input    | Output   | Bidirectional   |
+| ------------- | -------- | -------- | --------------- |
+{{#pins}}
+| {{pin_index}} | {{&ui}}  | {{&uo}}  | {{&uio[0]}}     |
+{{/pins}}
+
+### Chip location
+
+{{#hugo}}< shuttle-map "{{shuttle_id}}" "{{mux_address}}" >{{/hugo}}
