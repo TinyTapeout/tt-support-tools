@@ -150,7 +150,11 @@ def main():
     if args.template_def:
         template_def = args.template_def
     else:
-        yaml_dir = os.path.dirname(os.path.dirname(args.gds))
+        yaml_dir = os.path.dirname(args.gds)
+        while not os.path.exists(f"{yaml_dir}/info.yaml"):
+            yaml_dir = os.path.dirname(yaml_dir)
+            if yaml_dir == "/":
+                raise PrecheckFailure("info.yaml not found")
         yaml_file = f"{yaml_dir}/info.yaml"
         yaml_data = yaml.safe_load(open(yaml_file))
         logging.info("info.yaml data:" + str(yaml_data))
