@@ -203,6 +203,26 @@ def gds_lef_analog_wrong_vgnd(tmp_path_factory: pytest.TempPathFactory):
     return str(gds_file), str(lef_file)
 
 
+@pytest.fixture(scope="session")
+def gds_lef_analog_overlapping_vgnd(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS and LEF using the 1x2 analog template, with VGND overlapping uio_oe[7]"""
+    tcl_file = tmp_path_factory.mktemp("tcl") / "TEST_analog_overlapping_vgnd.tcl"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_analog_overlapping_vgnd.gds"
+    lef_file = tmp_path_factory.mktemp("lef") / "TEST_analog_overlapping_vgnd.lef"
+
+    generate_analog_example(
+        str(tcl_file),
+        str(gds_file),
+        str(lef_file),
+        "TEST_analog_overlapping_vgnd",
+        "met4",
+        "100 500 250 22076",
+        "met4",
+        "349 20 549 22504",
+    )
+    return str(gds_file), str(lef_file)
+
+
 def test_magic_drc_pass(gds_valid: str):
     precheck.magic_drc(gds_valid, "TEST_valid")
 
@@ -287,4 +307,18 @@ def test_pin_analog_wrong_vgnd(gds_lef_analog_wrong_vgnd: tuple[str, str]):
             lef_file,
             "../def/analog/tt_block_1x2_pg_ana.def",
             "TEST_analog_wrong_vgnd",
+        )
+
+
+def test_pin_analog_overlapping_vgnd(gds_lef_analog_overlapping_vgnd: tuple[str, str]):
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="Some ports are missing or have wrong dimensions",
+    ):
+        gds_file, lef_file = gds_lef_analog_wrong_vgnd
+        precheck.pin_check(
+            gds_file,
+            lef_file,
+            "../def/analog/tt_block_1x2_pg_ana.def",
+            "TEST_analog_overlapping_vgnd",
         )
