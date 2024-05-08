@@ -1,5 +1,6 @@
 import logging
 import re
+from itertools import combinations
 
 import gdstk
 from precheck_failure import PrecheckFailure
@@ -233,6 +234,20 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
             f"VPWR and VGND have different widths in {lef}: {vpwr_width/1000} != {vgnd_width/1000} um"
         )
         lef_errors += 1
+
+    # check for overlapping pins
+
+    for (pin1, rects1), (pin2, rects2) in combinations(sorted(lef_ports.items()), 2):
+        for layer1, lx1, by1, rx1, ty1 in rects1:
+            for layer2, lx2, by2, rx2, ty2 in rects2:
+                if layer1 != layer2:
+                    continue
+                if rx1 < lx2 or rx2 < lx1:
+                    continue
+                if ty1 < by2 or ty2 < by1:
+                    continue
+                logging.error(f"Overlapping pins in {lef}: {pin1} and {pin2}")
+                lef_errors += 1
 
     # check gds for the ports being present
 
