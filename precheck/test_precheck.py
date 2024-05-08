@@ -315,7 +315,7 @@ def test_pin_analog_overlapping_vgnd(gds_lef_analog_overlapping_vgnd: tuple[str,
         precheck.PrecheckFailure,
         match="Some ports are missing or have wrong dimensions",
     ):
-        gds_file, lef_file = gds_lef_analog_wrong_vgnd
+        gds_file, lef_file = gds_lef_analog_overlapping_vgnd
         precheck.pin_check(
             gds_file,
             lef_file,
