@@ -246,7 +246,10 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
                     continue
                 if ty1 < by2 or ty2 < by1:
                     continue
-                logging.error(f"Overlapping pins in {lef}: {pin1} and {pin2}")
+                logging.error(
+                    f"Overlapping pins in {lef}: {pin1} and {pin2}."
+                    "All exported pins have to be separate, and must not overlap or abut."
+                )
                 lef_errors += 1
 
     # check gds for the ports being present
