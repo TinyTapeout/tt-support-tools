@@ -222,7 +222,10 @@ class ShuttleConfig:
             logging.info(f"** {macro_name} **")
             logging.info(f"  FROM {lastrun}")
             copy_print(f"{lastrun}/final/gds/{macro_name}.gds", f"gds/{macro_name}.gds")
-            copy_print(f"{lastrun}/final/lef/{macro_name}.lef", f"lef/{macro_name}.lef")
+            if macro != "tt_top":
+                copy_print(
+                    f"{lastrun}/final/lef/{macro_name}.lef", f"lef/{macro_name}.lef"
+                )
             copy_print(
                 f"{lastrun}/final/pnl/{macro_name}.pnl.v", f"verilog/gl/{macro_name}.v"
             )
@@ -263,8 +266,4 @@ class ShuttleConfig:
         copy_print(
             f"{lastrun}/final/gds/{self.tt_top_macro}.gds",
             f"efabless/gds/{self.tt_top_macro}.gds",
-        )
-        copy_print(
-            f"{lastrun}/final/lef/{self.tt_top_macro}.lef",
-            f"efabless/lef/{self.tt_top_macro}.lef",
         )
