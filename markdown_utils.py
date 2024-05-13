@@ -1,3 +1,4 @@
+import math
 import os
 import shutil
 from typing import Any, Dict
@@ -10,12 +11,14 @@ class HeadingsRenderer(MarkdownRenderer):
     def __init__(self, min_level: int):
         super().__init__()
         self.min_level = min_level
-        self.initial_level = float("inf")
+        self.initial_level = math.inf
 
     def heading(self, token: Dict[str, Any], state: Any):
-        if self.initial_level == float("inf"):
+        if self.initial_level == math.inf:
             self.initial_level = token["attrs"]["level"]
-        token["attrs"]["level"] += self.min_level - max(1, self.initial_level)
+        token["attrs"]["level"] = self.min_level + max(
+            token["attrs"]["level"] - self.initial_level, 0
+        )
         return super().heading(token, state)
 
 
