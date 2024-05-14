@@ -567,7 +567,7 @@ class Project:
             exit(1)
 
         if "# How to test\n\nExplain how to use your project" in info_md_content:
-            logging.error("Missing 'How to use' section in docs/info.md")
+            logging.error("Missing 'How to test' section in docs/info.md")
             exit(1)
 
     # use pandoc to create a single page PDF preview
