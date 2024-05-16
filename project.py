@@ -117,8 +117,16 @@ class Project:
 
     def load_metrics(self):
         try:
+            if self.is_user_project:
+                openlane2 = self.args.openlane2
+            else:
+                commit_data = json.load(open("commit_id.json"))
+                openlane2 = commit_data["openlane_version"].startswith("OpenLane2")
             with open(self.get_metrics_path()) as fh:
-                self.metrics = next(csv.DictReader(fh))
+                if openlane2:
+                    self.metrics = dict(csv.reader(fh))
+                else:
+                    self.metrics = next(csv.DictReader(fh))
         except FileNotFoundError:
             self.metrics = {}
 
@@ -471,23 +479,22 @@ class Project:
         workflow_url = self.get_workflow_url()
 
         if self.args.openlane2:
-            if not os.path.exists("runs/wokwi"):
-                print(
-                    "OpenLane 2 harden not supported yet, please run OpenLane 2 manually"
-                )
-                exit(1)
-            print(
-                "Writing commit information on top of the existing OpenLane 2 run (runs/wokwi)"
-            )
+            # workaround for wrong pin sizes in lef
+            with open("src/config_patched.tcl", "w") as f:
+                f.write(open("src/config.tcl").read())
+                f.write("set ::env(MAGIC_WRITE_LEF_PINONLY) 1\n")
+            shutil.rmtree("runs/wokwi", ignore_errors=True)
+            os.makedirs("runs/wokwi", exist_ok=True)
+            harden_cmd = "python -m openlane --dockerized --run-tag wokwi --force-run-dir runs/wokwi src/config_patched.tcl"
         else:
             # requires PDK, PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
             harden_cmd = 'docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME /bin/bash -c "./flow.tcl -overwrite -design /work/src -run_path /work/runs -tag wokwi"'
-            logging.debug(harden_cmd)
-            env = os.environ.copy()
-            p = subprocess.run(harden_cmd, shell=True, env=env)
-            if p.returncode != 0:
-                logging.error("harden failed")
-                exit(1)
+        logging.debug(harden_cmd)
+        env = os.environ.copy()
+        p = subprocess.run(harden_cmd, shell=True, env=env)
+        if p.returncode != 0:
+            logging.error("harden failed")
+            exit(1)
 
         # Write commit information
         commit_id_json_path = "runs/wokwi/results/final/commit_id.json"
@@ -505,6 +512,18 @@ class Project:
                 indent=2,
             )
             f.write("\n")
+
+        if self.args.openlane2:
+            resolved_json_path = "runs/wokwi/resolved.json"
+            config = json.load(open(os.path.join(self.local_dir, resolved_json_path)))
+            openlane_version = config["meta"]["openlane_version"]
+            pdk_sources_file = os.path.join(
+                config["PDK_ROOT"], config["PDK"], "SOURCES"
+            )
+            open("runs/wokwi/OPENLANE_VERSION", "w").write(
+                f"OpenLane2 {openlane_version}\n"
+            )
+            open("runs/wokwi/PDK_SOURCES", "w").write(open(pdk_sources_file).read())
 
         os.chdir(cwd)
 
@@ -766,7 +785,8 @@ class Project:
 
         synth_log = "runs/wokwi/logs/synthesis/1-synthesis.log"
         if self.args.openlane2:
-            synth_log = "runs/wokwi/05-yosys-synthesis/yosys-synthesis.log"
+            synth_log_glob = "runs/wokwi/*-yosys-synthesis/yosys-synthesis.log"
+            synth_log = glob.glob(os.path.join(self.local_dir, synth_log_glob))[0]
         with open(os.path.join(self.local_dir, synth_log)) as f:
             for line in f.readlines():
                 if line.startswith("Warning:"):
@@ -795,15 +815,27 @@ class Project:
                 print(f"* {warning}")
 
     def print_stats(self):
+        if self.args.openlane2:
+            # openlane2 doesn't have the same util% in its metrics as openlane1
+            util_glob = (
+                "runs/wokwi/*-openroad-globalplacement/openroad-globalplacement.log"
+            )
+            util_log = glob.glob(os.path.join(self.local_dir, util_glob))[0]
+            util_label = "[INFO GPL-0019] Util(%):"
+            util_line = next(
+                line for line in open(util_log) if line.startswith(util_label)
+            )
+            util = util_line.removeprefix(util_label).strip()
+            wire_length = self.metrics["route__wirelength"]
+        else:
+            util = self.metrics["OpenDP_Util"]
+            wire_length = self.metrics["wire_length"]
+
         print("# Routing stats")
         print()
         print("| Utilisation (%) | Wire length (um) |")
         print("|-------------|------------------|")
-        print(
-            "| {} | {} |".format(
-                self.metrics["OpenDP_Util"], self.metrics["wire_length"]
-            )
-        )
+        print("| {} | {} |".format(util, wire_length))
 
     # Print the summaries
     def summarize(self):
