@@ -14,12 +14,12 @@ GitPython==3.1.40
 idna==3.4
 importlib-resources==5.12.0
 mistune==3.0.1
-numpy==1.24.3
+numpy==1.26.4
 Pillow==9.5.0
 pycparser==2.21
 python-frontmatter==1.0.0
 pytz==2023.3
-PyYAML==6.0
+PyYAML==6.0.1
 requests==2.31.0
 smmap==5.0.0
 stripe==5.4.0
