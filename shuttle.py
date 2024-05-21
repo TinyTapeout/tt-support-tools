@@ -171,15 +171,15 @@ class ShuttleConfig:
 
     def copy_mux_macro(self, source_dir: str, name: str):
         copy_print(
-            f"tt-multiplexer/{source_dir}/{name}.gds",
+            f"tt-multiplexer/{source_dir}/gds/{name}.gds",
             f"tt-multiplexer/ol2/tt_top/gds/{name}.gds",
         )
         copy_print(
-            f"tt-multiplexer/{source_dir}/{name}.lef",
+            f"tt-multiplexer/{source_dir}/lef/{name}.lef",
             f"tt-multiplexer/ol2/tt_top/lef/{name}.lef",
         )
         copy_print(
-            f"tt-multiplexer/{source_dir}/{name}.v",
+            f"tt-multiplexer/{source_dir}/src/{name}.v",
             f"tt-multiplexer/ol2/tt_top/verilog/{name}.v",
         )
 
@@ -211,6 +211,7 @@ class ShuttleConfig:
         self.copy_mux_macro("pg/tt_pg_vdd_1", "tt_pg_vdd_1")
         self.copy_mux_macro("pg/tt_pg_vdd_2", "tt_pg_vdd_2")
         self.copy_mux_macro("asw/tt_asw_1v8", "tt_asw_1v8")
+        self.copy_mux_macro("asw/tt_asw_3v3", "tt_asw_3v3")
 
     def copy_final_results(self):
         macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux", "tt_top"]
@@ -241,15 +242,15 @@ class ShuttleConfig:
         # Copy power gate macros:
         for macro in ["tt_pg_vdd_1", "tt_pg_vdd_2"]:
             copy_print(
-                f"tt-multiplexer/pg/{macro}/{macro}.gds",
+                f"tt-multiplexer/pg/{macro}/gds/{macro}.gds",
                 f"gds/{macro}.gds",
             )
             copy_print(
-                f"tt-multiplexer/pg/{macro}/{macro}.lef",
+                f"tt-multiplexer/pg/{macro}/lef/{macro}.lef",
                 f"lef/{macro}.lef",
             )
             copy_print(
-                f"tt-multiplexer/pg/{macro}/{macro}.v",
+                f"tt-multiplexer/pg/{macro}/src/{macro}.v",
                 f"verilog/gl/{macro}.v",
             )
 
