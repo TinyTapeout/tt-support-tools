@@ -472,7 +472,7 @@ class Project:
         tt_version = self.get_tt_tools_version()
         workflow_url = self.get_workflow_url()
 
-        config = read_config("src/config", ("json", "tcl"))
+        config = read_config("src/config", ("yaml", "json", "tcl"))
         if self.args.openlane2:
             config["MAGIC_WRITE_LEF_PINONLY"] = "1"
         user_config = read_config("src/user_config", ("json",))
