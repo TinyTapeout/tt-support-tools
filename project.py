@@ -17,6 +17,7 @@ from git.repo import Repo
 
 import git_utils
 from cells import Cell, load_cells
+from config_utils import read_config, write_config
 from markdown_utils import limit_markdown_headings
 from project_info import ProjectInfo, ProjectYamlError
 
@@ -447,22 +448,15 @@ class Project:
             self.fetch_wokwi_files()
         self.check_ports()
         logging.info("creating include file")
-        filename = "user_config.tcl"
-        with open(os.path.join(self.src_dir, filename), "w") as fh:
-            fh.write("set ::env(DESIGN_NAME) {}\n".format(self.info.top_module))
-            fh.write('set ::env(VERILOG_FILES) "\\\n')
-            for line, source in enumerate(self.sources):
-                fh.write("    $::env(DESIGN_DIR)/" + source)
-                if line != len(self.sources) - 1:
-                    fh.write(" \\\n")
-            fh.write('"\n\n')
-            tiles = self.info.tiles
-            die_area = tile_sizes[tiles]
-            fh.write(f"# Project area: {tiles} tiles\n")
-            fh.write(f'set ::env(DIE_AREA) "{die_area}"\n')
-            fh.write(
-                f'set ::env(FP_DEF_TEMPLATE) "$::env(DESIGN_DIR)/../tt/def/tt_block_{tiles}_pg.def"\n'
-            )
+        tiles = self.info.tiles
+        die_area = tile_sizes[tiles]
+        config = {
+            "DESIGN_NAME": self.info.top_module,
+            "VERILOG_FILES": [f"dir::{src}" for src in self.sources],
+            "DIE_AREA": die_area,
+            "FP_DEF_TEMPLATE": f"dir::../tt/def/tt_block_{tiles}_pg.def",
+        }
+        write_config(config, os.path.join(self.src_dir, "user_config"), ("tcl",))
 
     def golden_harden(self):
         logging.info(f"hardening {self}")
@@ -478,18 +472,21 @@ class Project:
         tt_version = self.get_tt_tools_version()
         workflow_url = self.get_workflow_url()
 
+        config = read_config("src/config", ("tcl", "json"))
         if self.args.openlane2:
-            # workaround for wrong pin sizes in lef
-            with open("src/config_patched.tcl", "w") as f:
-                f.write(open("src/config.tcl").read())
-                f.write("set ::env(MAGIC_WRITE_LEF_PINONLY) 1\n")
+            config["MAGIC_WRITE_LEF_PINONLY"] = "1"
+        user_config = read_config("src/user_config", ("tcl",))
+        config.update(user_config)
+        write_config(config, "src/config_merged", ("tcl",))
+
+        if self.args.openlane2:
             shutil.rmtree("runs/wokwi", ignore_errors=True)
             os.makedirs("runs/wokwi", exist_ok=True)
             progress = "--hide-progress-bar" if "CI" in os.environ else ""
-            harden_cmd = f"python -m openlane --dockerized --run-tag wokwi --force-run-dir runs/wokwi {progress} src/config_patched.tcl"
+            harden_cmd = f"python -m openlane --dockerized --run-tag wokwi --force-run-dir runs/wokwi {progress} src/config_merged.tcl"
         else:
             # requires PDK, PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
-            harden_cmd = 'docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME /bin/bash -c "./flow.tcl -overwrite -design /work/src -run_path /work/runs -tag wokwi"'
+            harden_cmd = 'docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME /bin/bash -c "./flow.tcl -overwrite -design /work/src -run_path /work/runs -config_file /work/src/config_merged.tcl -tag wokwi"'
         logging.debug(harden_cmd)
         env = os.environ.copy()
         p = subprocess.run(harden_cmd, shell=True, env=env)
