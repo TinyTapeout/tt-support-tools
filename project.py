@@ -456,11 +456,11 @@ class Project:
             "DIE_AREA": die_area,
             "FP_DEF_TEMPLATE": f"dir::../tt/def/tt_block_{tiles}_pg.def",
         }
-        write_config(config, os.path.join(self.src_dir, "user_config"), ("tcl",))
+        write_config(config, os.path.join(self.src_dir, "user_config"), ("json", "tcl"))
 
     def golden_harden(self):
         logging.info(f"hardening {self}")
-        shutil.copyfile("golden_config.tcl", os.path.join(self.src_dir, "config.tcl"))
+        shutil.copyfile("golden_config.json", os.path.join(self.src_dir, "config.json"))
         self.harden()
 
     def harden(self):
@@ -472,21 +472,21 @@ class Project:
         tt_version = self.get_tt_tools_version()
         workflow_url = self.get_workflow_url()
 
-        config = read_config("src/config", ("tcl", "json"))
+        config = read_config("src/config", ("json", "tcl"))
         if self.args.openlane2:
             config["MAGIC_WRITE_LEF_PINONLY"] = "1"
-        user_config = read_config("src/user_config", ("tcl",))
+        user_config = read_config("src/user_config", ("json",))
         config.update(user_config)
-        write_config(config, "src/config_merged", ("tcl",))
+        write_config(config, "src/config_merged", ("json",))
 
         if self.args.openlane2:
             shutil.rmtree("runs/wokwi", ignore_errors=True)
             os.makedirs("runs/wokwi", exist_ok=True)
             progress = "--hide-progress-bar" if "CI" in os.environ else ""
-            harden_cmd = f"python -m openlane --dockerized --run-tag wokwi --force-run-dir runs/wokwi {progress} src/config_merged.tcl"
+            harden_cmd = f"python -m openlane --dockerized --run-tag wokwi --force-run-dir runs/wokwi {progress} src/config_merged.json"
         else:
             # requires PDK, PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
-            harden_cmd = 'docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME /bin/bash -c "./flow.tcl -overwrite -design /work/src -run_path /work/runs -config_file /work/src/config_merged.tcl -tag wokwi"'
+            harden_cmd = 'docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME /bin/bash -c "./flow.tcl -overwrite -design /work/src -run_path /work/runs -config_file /work/src/config_merged.json -tag wokwi"'
         logging.debug(harden_cmd)
         env = os.environ.copy()
         p = subprocess.run(harden_cmd, shell=True, env=env)
