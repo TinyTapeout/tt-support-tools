@@ -456,7 +456,7 @@ class Project:
             "DIE_AREA": die_area,
             "FP_DEF_TEMPLATE": f"dir::../tt/def/tt_block_{tiles}_pg.def",
         }
-        write_config(config, os.path.join(self.src_dir, "user_config"), ("json", "tcl"))
+        write_config(config, os.path.join(self.src_dir, "user_config"), ("json",))
 
     def golden_harden(self):
         logging.info(f"hardening {self}")
@@ -473,8 +473,6 @@ class Project:
         workflow_url = self.get_workflow_url()
 
         config = read_config("src/config", ("yaml", "json", "tcl"))
-        if self.args.openlane2:
-            config["MAGIC_WRITE_LEF_PINONLY"] = "1"
         user_config = read_config("src/user_config", ("json",))
         config.update(user_config)
         write_config(config, "src/config_merged", ("json",))
