@@ -91,6 +91,17 @@ class ProjectInfo:
             )
         self.tiles: str = tiles
 
+        analog_pins = project_section.get("analog_pins", 0)
+        if not isinstance(analog_pins, int):
+            raise ProjectYamlError(
+                "Invalid value for 'analog_pins' in 'project' section, must be an integer"
+            )
+        if analog_pins < 0 or analog_pins > 6:
+            raise ProjectYamlError(
+                "Invalid value for 'analog_pins' in 'project' section, must be between 0 and 6"
+            )
+        self.analog_pins: int = analog_pins
+
         language = project_section.get("language")
         if language is None:
             raise ProjectYamlError("Missing key 'language' in 'project' section")

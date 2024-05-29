@@ -76,7 +76,7 @@ class ShuttleConfig:
                         "name": project.unprefixed_name,
                         "width": width,
                         "height": height,
-                        "analog": {i: None for i in range(len(project.info.pinout.ua))},
+                        "analog": {i: None for i in range(project.info.analog_pins)},
                     }
                     module_config["modules"].append(module_entry)
 
