@@ -1,3 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2024, Tiny Tapeout LTD
+# Author: Uri Shaked
+
+# Generates the ROM file for the shuttle. The ROM layout is documented at:
+# https://github.com/TinyTapeout/tt-chip-rom/blob/main/docs/info.md.
+
+import binascii
 import os
 from urllib.parse import urlparse
 
@@ -39,11 +47,11 @@ class ROMFile:
     def __init__(self, config: Config):
         self.config = config
 
-    def get_git_remote(self):
+    def get_git_remote(self) -> str:
         repo_url = list(Repo(".").remotes[0].urls)[0]
         return urlparse(repo_url).path[1:]
 
-    def get_git_commit_hash(self):
+    def get_git_commit_hash(self) -> str:
         return Repo(".").commit().hexsha
 
     def write_rom(self):
@@ -63,6 +71,8 @@ class ROMFile:
         rom[0 : len(shuttle_id)] = map(segment_char, shuttle_id)
         rom[8:16] = map(segment_char, short_sha.upper())
         rom[32 : 32 + len(rom_text)] = rom_text.encode("ascii")
+        rom[248:252] = b"TT\xFA\xBB"
+        rom[252:256] = binascii.crc32(rom[0:252]).to_bytes(4, "little")
 
         with open(os.path.join(os.path.dirname(__file__), "rom/rom.vmem"), "w") as fh:
             for line in rom_text.split("\n"):

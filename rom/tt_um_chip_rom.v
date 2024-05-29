@@ -1,7 +1,8 @@
 /*
  * tt_um_chip_rom.v
  *
- * ROM module for Tiny Tapeout chips
+ * ROM module for Tiny Tapeout chips. The layout of the ROM is documented at
+ * https://github.com/TinyTapeout/tt-chip-rom/blob/main/docs/info.md.
  *
  * Author: Uri Shaked
  */
