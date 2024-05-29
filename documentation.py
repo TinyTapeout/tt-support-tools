@@ -89,6 +89,7 @@ class Docs:
 
             for project in self.projects:
                 yaml_data = project.get_project_docs_dict()
+                analog_pins = project.info.analog_pins
                 yaml_data.update(
                     {
                         "user_docs": rewrite_image_paths(
@@ -111,9 +112,11 @@ class Docs:
                                 "analog_index": str(project.analog_pins[i]),
                                 "desc": desc,
                             }
-                            for i, desc in enumerate(project.info.pinout.ua)
+                            for i, desc in enumerate(
+                                project.info.pinout.ua[:analog_pins]
+                            )
                         ],
-                        "is_analog": bool(project.info.pinout.ua),
+                        "is_analog": analog_pins > 0,
                     }
                 )
 
@@ -206,6 +209,7 @@ class Docs:
                 os.makedirs(project_dir)
                 os.makedirs(project_image_dir)
                 yaml_data = project.get_project_docs_dict()
+                analog_pins = project.info.analog_pins
                 yaml_data.update(
                     {
                         "mux_address": project.mux_address,
@@ -233,9 +237,11 @@ class Docs:
                                 "analog_index": str(project.analog_pins[i]),
                                 "desc": desc,
                             }
-                            for i, desc in enumerate(project.info.pinout.ua)
+                            for i, desc in enumerate(
+                                project.info.pinout.ua[:analog_pins]
+                            )
                         ],
-                        "is_analog": bool(project.info.pinout.ua),
+                        "is_analog": analog_pins > 0,
                     }
                 )
 
