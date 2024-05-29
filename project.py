@@ -640,7 +640,8 @@ class Project:
         logging.info(pdf_cmd)
         p = subprocess.run(pdf_cmd, shell=True)
         if p.returncode != 0:
-            logging.error("pdf command failed")
+            logging.error("pdf generation failed")
+            raise RuntimeError(f"pdf generation failed with code {p.returncode}")
 
     # Read and return top-level GDS data from the final GDS file, using gdstk:
     def get_final_gds_top_cells(self):

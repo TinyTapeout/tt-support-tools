@@ -159,7 +159,8 @@ class Docs:
             logging.info(pdf_cmd)
             p = subprocess.run(pdf_cmd, shell=True)
             if p.returncode != 0:
-                logging.error("pdf command failed")
+                logging.error("pdf generation failed")
+                raise RuntimeError(f"pdf generation failed with code {p.returncode}")
 
     def build_hugo_content(self, hugo_root: str) -> None:
         hugo_images = os.path.join(hugo_root, "images")
