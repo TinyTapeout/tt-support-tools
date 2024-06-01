@@ -93,7 +93,7 @@ if __name__ == "__main__":
     # configure
     parser.add_argument(
         "--create-user-config",
-        help="create the user_config.tcl file with top module and source files",
+        help="create the user_config.json file with top module and source files",
         action="store_const",
         const=True,
     )
