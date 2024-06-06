@@ -4,12 +4,13 @@
 # defaults
 SIM ?= icarus
 TOPLEVEL_LANG ?= verilog
+SRC_DIR = $(PWD)/../src
 
 # normal simulation
 ifneq ($(GATES),yes)
 
 # this is the only part you should need to modify:
-VERILOG_SOURCES += $(PWD)/cells.v  $(PWD)/tt_um_wokwi_WOKWI_ID.v $(PWD)/test_wokwi.v
+VERILOG_SOURCES += $(SRC_DIR)/cells.v  $(SRC_DIR)/tt_um_wokwi_WOKWI_ID.v $(PWD)/test_wokwi.v
 
 
 else
