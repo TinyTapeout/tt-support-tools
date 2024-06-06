@@ -88,6 +88,11 @@ class Project:
             if self.is_user_project
             else self.local_dir
         )
+        self.test_dir = (
+            os.path.join(self.local_dir, "test")
+            if self.is_user_project
+            else self.local_dir
+        )
 
         yaml_path = os.path.join(self.local_dir, "info.yaml")
         try:
@@ -403,7 +408,7 @@ class Project:
         truthtable_file = "truthtable.md"
         url = f"https://wokwi.com/api/projects/{self.info.wokwi_id}/{truthtable_file}"
         try:
-            git_utils.fetch_file(url, os.path.join(self.src_dir, truthtable_file))
+            git_utils.fetch_file(url, os.path.join(self.test_dir, truthtable_file))
             logging.info(
                 f"Wokwi project {self.info.wokwi_id} has a truthtable included, will test!"
             )
@@ -412,7 +417,7 @@ class Project:
             pass
 
     def install_wokwi_testing(
-        self, destination_dir: str = "src", resource_dir: typing.Optional[str] = None
+        self, destination_dir: str = "test", resource_dir: typing.Optional[str] = None
     ):
         if resource_dir is None or not len(resource_dir):
             resource_dir = os.path.join(os.path.dirname(__file__), "testing")
