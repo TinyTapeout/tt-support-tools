@@ -208,8 +208,9 @@ class ShuttleConfig:
             )
 
         # Copy power gate / analog switch macros:
-        self.copy_mux_macro("pg/tt_pg_vdd_1", "tt_pg_vdd_1")
-        self.copy_mux_macro("pg/tt_pg_vdd_2", "tt_pg_vdd_2")
+        self.copy_mux_macro("pg/tt_pg_1v8_1", "tt_pg_1v8_1")
+        self.copy_mux_macro("pg/tt_pg_1v8_2", "tt_pg_1v8_2")
+        self.copy_mux_macro("pg/tt_pg_3v3_2", "tt_pg_3v3_2")
         self.copy_mux_macro("asw/tt_asw_1v8", "tt_asw_1v8")
         self.copy_mux_macro("asw/tt_asw_3v3", "tt_asw_3v3")
 
