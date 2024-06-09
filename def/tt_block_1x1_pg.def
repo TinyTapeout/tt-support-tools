@@ -61,55 +61,55 @@ PINS 43 ;
     - clk + NET clk + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 155020 111020 ) N ;
+        + PLACED ( 143980 111020 ) N ;
     - ena + NET ena + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 158700 111020 ) N ;
+        + PLACED ( 146740 111020 ) N ;
     - rst_n + NET rst_n + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 151340 111020 ) N ;
+        + PLACED ( 141220 111020 ) N ;
     - ui_in[0] + NET ui_in[0] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 147660 111020 ) N ;
+        + PLACED ( 138460 111020 ) N ;
     - ui_in[1] + NET ui_in[1] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 143980 111020 ) N ;
+        + PLACED ( 135700 111020 ) N ;
     - ui_in[2] + NET ui_in[2] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 140300 111020 ) N ;
+        + PLACED ( 132940 111020 ) N ;
     - ui_in[3] + NET ui_in[3] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 136620 111020 ) N ;
+        + PLACED ( 130180 111020 ) N ;
     - ui_in[4] + NET ui_in[4] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 132940 111020 ) N ;
+        + PLACED ( 127420 111020 ) N ;
     - ui_in[5] + NET ui_in[5] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 129260 111020 ) N ;
+        + PLACED ( 124660 111020 ) N ;
     - ui_in[6] + NET ui_in[6] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 125580 111020 ) N ;
+        + PLACED ( 121900 111020 ) N ;
     - ui_in[7] + NET ui_in[7] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 121900 111020 ) N ;
+        + PLACED ( 119140 111020 ) N ;
     - uio_in[0] + NET uio_in[0] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 118220 111020 ) N ;
+        + PLACED ( 116380 111020 ) N ;
     - uio_in[1] + NET uio_in[1] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 114540 111020 ) N ;
+        + PLACED ( 113620 111020 ) N ;
     - uio_in[2] + NET uio_in[2] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
@@ -117,119 +117,119 @@ PINS 43 ;
     - uio_in[3] + NET uio_in[3] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 107180 111020 ) N ;
+        + PLACED ( 108100 111020 ) N ;
     - uio_in[4] + NET uio_in[4] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 103500 111020 ) N ;
+        + PLACED ( 105340 111020 ) N ;
     - uio_in[5] + NET uio_in[5] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 99820 111020 ) N ;
+        + PLACED ( 102580 111020 ) N ;
     - uio_in[6] + NET uio_in[6] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 96140 111020 ) N ;
+        + PLACED ( 99820 111020 ) N ;
     - uio_in[7] + NET uio_in[7] + DIRECTION INPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 92460 111020 ) N ;
+        + PLACED ( 97060 111020 ) N ;
     - uio_oe[0] + NET uio_oe[0] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 29900 111020 ) N ;
+        + PLACED ( 50140 111020 ) N ;
     - uio_oe[1] + NET uio_oe[1] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 26220 111020 ) N ;
+        + PLACED ( 47380 111020 ) N ;
     - uio_oe[2] + NET uio_oe[2] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 22540 111020 ) N ;
+        + PLACED ( 44620 111020 ) N ;
     - uio_oe[3] + NET uio_oe[3] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 18860 111020 ) N ;
+        + PLACED ( 41860 111020 ) N ;
     - uio_oe[4] + NET uio_oe[4] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 15180 111020 ) N ;
+        + PLACED ( 39100 111020 ) N ;
     - uio_oe[5] + NET uio_oe[5] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 11500 111020 ) N ;
+        + PLACED ( 36340 111020 ) N ;
     - uio_oe[6] + NET uio_oe[6] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 7820 111020 ) N ;
+        + PLACED ( 33580 111020 ) N ;
     - uio_oe[7] + NET uio_oe[7] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 4140 111020 ) N ;
+        + PLACED ( 30820 111020 ) N ;
     - uio_out[0] + NET uio_out[0] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 59340 111020 ) N ;
+        + PLACED ( 72220 111020 ) N ;
     - uio_out[1] + NET uio_out[1] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 55660 111020 ) N ;
+        + PLACED ( 69460 111020 ) N ;
     - uio_out[2] + NET uio_out[2] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 51980 111020 ) N ;
+        + PLACED ( 66700 111020 ) N ;
     - uio_out[3] + NET uio_out[3] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 48300 111020 ) N ;
+        + PLACED ( 63940 111020 ) N ;
     - uio_out[4] + NET uio_out[4] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 44620 111020 ) N ;
+        + PLACED ( 61180 111020 ) N ;
     - uio_out[5] + NET uio_out[5] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 40940 111020 ) N ;
+        + PLACED ( 58420 111020 ) N ;
     - uio_out[6] + NET uio_out[6] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 37260 111020 ) N ;
+        + PLACED ( 55660 111020 ) N ;
     - uio_out[7] + NET uio_out[7] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 33580 111020 ) N ;
+        + PLACED ( 52900 111020 ) N ;
     - uo_out[0] + NET uo_out[0] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 88780 111020 ) N ;
+        + PLACED ( 94300 111020 ) N ;
     - uo_out[1] + NET uo_out[1] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 85100 111020 ) N ;
+        + PLACED ( 91540 111020 ) N ;
     - uo_out[2] + NET uo_out[2] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 81420 111020 ) N ;
+        + PLACED ( 88780 111020 ) N ;
     - uo_out[3] + NET uo_out[3] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 77740 111020 ) N ;
+        + PLACED ( 86020 111020 ) N ;
     - uo_out[4] + NET uo_out[4] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 74060 111020 ) N ;
+        + PLACED ( 83260 111020 ) N ;
     - uo_out[5] + NET uo_out[5] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 70380 111020 ) N ;
+        + PLACED ( 80500 111020 ) N ;
     - uo_out[6] + NET uo_out[6] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 66700 111020 ) N ;
+        + PLACED ( 77740 111020 ) N ;
     - uo_out[7] + NET uo_out[7] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
         + LAYER met4 ( -150 -500 ) ( 150 500 )
-        + PLACED ( 63020 111020 ) N ;
+        + PLACED ( 74980 111020 ) N ;
 END PINS
 SPECIALNETS 2 ;
     - VGND + USE GROUND ;
