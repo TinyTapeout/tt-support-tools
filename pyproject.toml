@@ -1,0 +1,22 @@
+[project]
+name = "tt-support-tools"
+requires-python = ">=3.11"
+dynamic = ["version"]
+dependencies = [
+    "CairoSVG",
+    "chevron",
+    "cocotb",
+    "gdstk",
+    "GitPython",
+    "klayout",
+    "mistune",
+    "pre-commit",
+    "pytest",
+    "python-frontmatter",
+    "PyYAML",
+    "requests",
+    "yowasp-yosys",
+]
+
+[tool.setuptools]
+packages = []
