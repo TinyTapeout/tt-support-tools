@@ -121,7 +121,7 @@ def generate_analog_example(
         f.write(
             textwrap.dedent(
                 f"""
-                def read ../def/analog/tt_block_1x2_pg_ana.def
+                def read ../def/analog/tt_analog_1x2.def
                 cellname rename tt_um_template {toplevel}
 
                 # VPWR
@@ -315,7 +315,7 @@ def test_pin_analog_example(gds_lef_analog_example: tuple[str, str]):
     precheck.pin_check(
         gds_file,
         lef_file,
-        "../def/analog/tt_block_1x2_pg_ana.def",
+        "../def/analog/tt_analog_1x2.def",
         "TEST_analog_example",
     )
 
@@ -329,7 +329,7 @@ def test_pin_analog_wrong_vgnd(gds_lef_analog_wrong_vgnd: tuple[str, str]):
         precheck.pin_check(
             gds_file,
             lef_file,
-            "../def/analog/tt_block_1x2_pg_ana.def",
+            "../def/analog/tt_analog_1x2.def",
             "TEST_analog_wrong_vgnd",
         )
 
@@ -343,7 +343,7 @@ def test_pin_analog_overlapping_vgnd(gds_lef_analog_overlapping_vgnd: tuple[str,
         precheck.pin_check(
             gds_file,
             lef_file,
-            "../def/analog/tt_block_1x2_pg_ana.def",
+            "../def/analog/tt_analog_1x2.def",
             "TEST_analog_overlapping_vgnd",
         )
 
@@ -353,6 +353,6 @@ def test_pin_analog_compound_vgnd(gds_lef_analog_compound_vgnd: tuple[str, str])
     precheck.pin_check(
         gds_file,
         lef_file,
-        "../def/analog/tt_block_1x2_pg_ana.def",
+        "../def/analog/tt_analog_1x2.def",
         "TEST_analog_compound_vgnd",
     )

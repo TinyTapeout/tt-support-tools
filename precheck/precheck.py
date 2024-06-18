@@ -161,7 +161,7 @@ def main():
         tiles = yaml_data.get("project", {}).get("tiles", "1x1")
         is_analog = yaml_data.get("project", {}).get("analog_pins", 0) > 0
         if is_analog:
-            template_def = f"../def/analog/tt_block_{tiles}_pg_ana.def"
+            template_def = f"../def/analog/tt_analog_{tiles}.def"
         else:
             template_def = f"../def/tt_block_{tiles}_pg.def"
         logging.info(f"using def template {template_def}")
