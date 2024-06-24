@@ -101,6 +101,13 @@ class ProjectInfo:
                 "Invalid value for 'analog_pins' in 'project' section, must be between 0 and 6"
             )
         self.analog_pins: int = analog_pins
+        self.is_analog: bool = self.analog_pins > 0
+
+        self.uses_3v3: bool = project_section.get("uses_3v3", False)
+        if self.uses_3v3 and not self.is_analog:
+            raise ProjectYamlError(
+                "Projects with 3v3 power need at least one analog pin"
+            )
 
         language = project_section.get("language")
         if language is None:

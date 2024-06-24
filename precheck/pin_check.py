@@ -98,8 +98,13 @@ def parsefp3(value: str):
     return int(mul)
 
 
-def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
+def pin_check(gds: str, lef: str, template_def: str, toplevel: str, uses_3v3: bool):
     logging.info("Running pin check...")
+    logging.info(f"* gds: {gds}")
+    logging.info(f"* lef: {lef}")
+    logging.info(f"* template_def: {template_def}")
+    logging.info(f"* toplevel: {toplevel}")
+    logging.info(f"* uses_3v3: {uses_3v3}")
 
     # parse pins from template def
     # def syntax: https://coriolis.lip6.fr/doc/lefdef/lefdefref/DEFSyntax.html
@@ -174,8 +179,13 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
     layer_re = re.compile(r"LAYER (\S+) ;")
     rect_re = re.compile(r"RECT (\S+) (\S+) (\S+) (\S+) ;")
 
+    power_pins = ["VGND", "VDPWR"]
+    if uses_3v3:
+        power_pins.append("VAPWR")
+    compat_pins = {"VPWR": "VDPWR"}
+
     macro_active = False
-    pins_expected = set(def_pins).union({"VPWR", "VGND"})
+    pins_expected = set(def_pins).union(power_pins).union(compat_pins)
     pins_seen = set()
     current_pin = None
     pin_rects = 0
@@ -259,6 +269,16 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
                 ports.append((layer, lx, by, rx, ty))
         lef_ports[current_pin] = ports
 
+    for old_pin, new_pin in compat_pins.items():
+        if old_pin in lef_ports:
+            if new_pin in lef_ports:
+                logging.error(f"Both {old_pin} and {new_pin} ports appear in {lef}")
+                lef_errors += 1
+            else:
+                lef_ports[new_pin] = []
+            lef_ports[new_pin].extend(lef_ports[old_pin])
+            del lef_ports[old_pin]
+
     for current_pin in def_pins:
         if current_pin not in lef_ports:
             logging.error(f"Pin {current_pin} not found in {lef}")
@@ -280,21 +300,13 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
                 )
                 lef_errors += 1
 
-    pin_widths = {}
-    for current_pin in ("VPWR", "VGND"):
+    for current_pin in power_pins:
         if current_pin not in lef_ports:
             logging.error(f"Pin {current_pin} not found in {lef}")
             lef_errors += 1
         else:
             for layer, lx, by, rx, ty in lef_ports[current_pin]:
-                width, height = rx - lx, ty - by
-                if current_pin in pin_widths:
-                    if pin_widths[current_pin] != width:
-                        logging.error(
-                            f"Multiple {current_pin} rectangles with different widths in {lef}: {pin_widths[current_pin]/1000} != {width/1000} um"
-                        )
-                        lef_errors += 1
-                pin_widths[current_pin] = width
+                width = rx - lx
                 if layer != "met4":
                     logging.error(
                         f"Port {current_pin} has wrong layer in {lef}: {layer} != met4"
@@ -305,14 +317,14 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
                         f"Port {current_pin} has too small width in {lef}: {width/1000} < 1.2 um"
                     )
                     lef_errors += 1
-                if width > 2000:
+                if by > 10000:
                     logging.error(
-                        f"Port {current_pin} has too large width in {lef}: {width/1000} > 2.0 um"
+                        f"Port {current_pin} is too far from bottom edge of module: {by/1000} > 10 um"
                     )
                     lef_errors += 1
-                if height < die_height * 0.95:
+                if die_height - ty > 10000:
                     logging.error(
-                        f"Port {current_pin} has too small height in {lef}: {height/1000} < {die_height*0.95/1000} um"
+                        f"Port {current_pin} is too far from top edge of module: {(die_height-ty)/1000} > 10 um"
                     )
                     lef_errors += 1
                 if lx < 0 or rx > die_width or by < 0 or ty > die_height:
@@ -320,18 +332,6 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str):
                         f"Port {current_pin} not entirely within project area in {lef}"
                     )
                     lef_errors += 1
-
-    if (
-        "VPWR" in pin_widths
-        and "VGND" in pin_widths
-        and pin_widths["VPWR"] != pin_widths["VGND"]
-    ):
-        vpwr_width = pin_widths["VPWR"]
-        vgnd_width = pin_widths["VGND"]
-        logging.error(
-            f"VPWR and VGND have different widths in {lef}: {vpwr_width/1000} != {vgnd_width/1000} um"
-        )
-        lef_errors += 1
 
     # check for overlapping pins
 

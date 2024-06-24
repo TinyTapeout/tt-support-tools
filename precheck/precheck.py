@@ -160,8 +160,16 @@ def main():
         logging.info("info.yaml data:" + str(yaml_data))
         tiles = yaml_data.get("project", {}).get("tiles", "1x1")
         is_analog = yaml_data.get("project", {}).get("analog_pins", 0) > 0
+        uses_3v3 = bool(yaml_data.get("project", {}).get("uses_3v3", False))
+        if uses_3v3 and not is_analog:
+            raise PrecheckFailure(
+                "Projects with 3v3 power need at least one analog pin"
+            )
         if is_analog:
-            template_def = f"../def/analog/tt_analog_{tiles}.def"
+            if uses_3v3:
+                template_def = f"../def/analog/tt_analog_{tiles}_3v3.def"
+            else:
+                template_def = f"../def/analog/tt_analog_{tiles}.def"
         else:
             template_def = f"../def/tt_block_{tiles}_pg.def"
         logging.info(f"using def template {template_def}")
@@ -181,7 +189,10 @@ def main():
         ],
         ["KLayout zero area", lambda: klayout_zero_area(args.gds)],
         ["KLayout Checks", lambda: klayout_checks(args.gds)],
-        ["Pin check", lambda: pin_check(args.gds, lef, template_def, top_module)],
+        [
+            "Pin check",
+            lambda: pin_check(args.gds, lef, template_def, top_module, uses_3v3),
+        ],
     ]
 
     testsuite = ET.Element("testsuite", name="Tiny Tapeout Prechecks")

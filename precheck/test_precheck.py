@@ -107,50 +107,69 @@ def gds_invalid_macro_name(tmp_path_factory: pytest.TempPathFactory):
     return str(gds_file)
 
 
+class PortRect:
+    def __init__(
+        self, layer: str, bottom_left: tuple[int, int], top_right: tuple[int, int]
+    ):
+        self.layer = layer
+        self.lx, self.by = bottom_left
+        self.rx, self.ty = top_right
+
+
+class CompoundPort:
+    def __init__(self, name: str, rects: list[PortRect]):
+        self.name = name
+        self.port_use = "ground" if name == "VGND" else "power"
+        self.port_class = "bidirectional"
+        self.rects = rects
+
+
+class SimplePort(CompoundPort):
+    def __init__(self, name: str, *rect_args: list):
+        super().__init__(name, [PortRect(*rect_args)])
+
+
 def generate_analog_example(
     tcl_file: str,
     gds_file: str,
     lef_file: str,
     toplevel: str,
-    vpwr_layer: str,
-    vpwr_boxes: str,
-    vgnd_layer: str,
-    vgnd_boxes: str,
+    extra_ports: list[CompoundPort],
 ):
     with open(tcl_file, "w") as f:
-        f.write(
-            textwrap.dedent(
+
+        def tcl_append(s):
+            f.write(textwrap.dedent(s))
+
+        tcl_append(
+            f"""
+            def read ../def/analog/tt_analog_1x2.def
+            cellname rename tt_um_template {toplevel}
+            """
+        )
+        for port in extra_ports:
+            for rect in port.rects:
+                tcl_append(
+                    f"""
+                    box {rect.lx} {rect.by} {rect.rx} {rect.ty}
+                    paint {rect.layer}
+                    label {port.name} FreeSans {rect.layer}
+                    """
+                )
+            tcl_append(
                 f"""
-                def read ../def/analog/tt_analog_1x2.def
-                cellname rename tt_um_template {toplevel}
-
-                # VPWR
-                foreach vpwr_box {{ {vpwr_boxes} }} {{
-                    box {{*}}$vpwr_box
-                    paint {vpwr_layer}
-                    label VPWR FreeSans {vpwr_layer}
-                }}
-                port VPWR makeall n
-                port VPWR use power
-                port VPWR class bidirectional
+                port {port.name} makeall n
+                port {port.name} use {port.port_use}
+                port {port.name} class {port.port_class}
                 port conn n s e w
-
-                # VGND
-                foreach vgnd_box {{ {vgnd_boxes} }} {{
-                    box {{*}}$vgnd_box
-                    paint {vgnd_layer}
-                    label VGND FreeSans {vgnd_layer}
-                }}
-                port VGND makeall n
-                port VGND use ground
-                port VGND class bidirectional
-                port conn n s e w
-
-                # Export
-                gds write {gds_file}
-                lef write {lef_file}
                 """
             )
+        tcl_append(
+            f"""
+            # Export
+            gds write {gds_file}
+            lef write {lef_file}
+            """
         )
 
     magic = subprocess.run(
@@ -179,10 +198,30 @@ def gds_lef_analog_example(tmp_path_factory: pytest.TempPathFactory):
         str(gds_file),
         str(lef_file),
         "TEST_analog_example",
-        "met4",
-        "{100 500 250 22076}",
-        "met4",
-        "{4900 500 5050 22076}",
+        [
+            SimplePort("VDPWR", "met4", (100, 500), (250, 22076)),
+            SimplePort("VGND", "met4", (4900, 500), (5050, 22076)),
+        ],
+    )
+    return str(gds_file), str(lef_file)
+
+
+@pytest.fixture(scope="session")
+def gds_lef_analog_power_compat(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS and LEF using the 1x2 analog template, with VPWR instead of VDPWR."""
+    tcl_file = tmp_path_factory.mktemp("tcl") / "TEST_analog_power_compat.tcl"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_analog_power_compat.gds"
+    lef_file = tmp_path_factory.mktemp("lef") / "TEST_analog_power_compat.lef"
+
+    generate_analog_example(
+        str(tcl_file),
+        str(gds_file),
+        str(lef_file),
+        "TEST_analog_power_compat",
+        [
+            SimplePort("VPWR", "met4", (100, 500), (250, 22076)),
+            SimplePort("VGND", "met4", (4900, 500), (5050, 22076)),
+        ],
     )
     return str(gds_file), str(lef_file)
 
@@ -199,10 +238,10 @@ def gds_lef_analog_wrong_vgnd(tmp_path_factory: pytest.TempPathFactory):
         str(gds_file),
         str(lef_file),
         "TEST_analog_wrong_vgnd",
-        "met4",
-        "{100 500 250 22076}",
-        "met3",
-        "{4900 500 5250 12076}",
+        [
+            SimplePort("VDPWR", "met4", (100, 500), (250, 22076)),
+            SimplePort("VGND", "met3", (4900, 500), (5250, 12076)),
+        ],
     )
     return str(gds_file), str(lef_file)
 
@@ -219,10 +258,10 @@ def gds_lef_analog_overlapping_vgnd(tmp_path_factory: pytest.TempPathFactory):
         str(gds_file),
         str(lef_file),
         "TEST_analog_overlapping_vgnd",
-        "met4",
-        "{100 500 250 22076}",
-        "met4",
-        "{349 20 549 22504}",
+        [
+            SimplePort("VDPWR", "met4", (100, 500), (250, 22076)),
+            SimplePort("VGND", "met4", (3000, 20), (3200, 22504)),
+        ],
     )
     return str(gds_file), str(lef_file)
 
@@ -230,19 +269,46 @@ def gds_lef_analog_overlapping_vgnd(tmp_path_factory: pytest.TempPathFactory):
 @pytest.fixture(scope="session")
 def gds_lef_analog_compound_vgnd(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS and LEF using the 1x2 analog template, with VGND consisting of two rectangles."""
-    tcl_file = tmp_path_factory.mktemp("tcl") / "TEST_analog_example.tcl"
-    gds_file = tmp_path_factory.mktemp("gds") / "TEST_analog_example.gds"
-    lef_file = tmp_path_factory.mktemp("lef") / "TEST_analog_example.lef"
+    tcl_file = tmp_path_factory.mktemp("tcl") / "TEST_analog_compound_vgnd.tcl"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_analog_compound_vgnd.gds"
+    lef_file = tmp_path_factory.mktemp("lef") / "TEST_analog_compound_vgnd.lef"
 
     generate_analog_example(
         str(tcl_file),
         str(gds_file),
         str(lef_file),
         "TEST_analog_compound_vgnd",
-        "met4",
-        "{100 500 250 22076}",
-        "met4",
-        "{4900 500 5050 12076} {4900 12000 5050 22076}",
+        [
+            SimplePort("VDPWR", "met4", (100, 500), (250, 22076)),
+            CompoundPort(
+                "VGND",
+                [
+                    PortRect("met4", (4900, 500), (5050, 12076)),
+                    PortRect("met4", (4900, 12000), (5050, 22076)),
+                ],
+            ),
+        ],
+    )
+    return str(gds_file), str(lef_file)
+
+
+@pytest.fixture(scope="session")
+def gds_lef_analog_example_3v3(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS and LEF using the 1x2 analog template."""
+    tcl_file = tmp_path_factory.mktemp("tcl") / "TEST_analog_example_3v3.tcl"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_analog_example_3v3.gds"
+    lef_file = tmp_path_factory.mktemp("lef") / "TEST_analog_example_3v3.lef"
+
+    generate_analog_example(
+        str(tcl_file),
+        str(gds_file),
+        str(lef_file),
+        "TEST_analog_example_3v3",
+        [
+            SimplePort("VDPWR", "met4", (100, 500), (250, 22076)),
+            SimplePort("VAPWR", "met4", (2500, 500), (2650, 22076)),
+            SimplePort("VGND", "met4", (4900, 500), (5050, 22076)),
+        ],
     )
     return str(gds_file), str(lef_file)
 
@@ -317,6 +383,18 @@ def test_pin_analog_example(gds_lef_analog_example: tuple[str, str]):
         lef_file,
         "../def/analog/tt_analog_1x2.def",
         "TEST_analog_example",
+        False,
+    )
+
+
+def test_pin_analog_power_compat(gds_lef_analog_power_compat: tuple[str, str]):
+    gds_file, lef_file = gds_lef_analog_power_compat
+    precheck.pin_check(
+        gds_file,
+        lef_file,
+        "../def/analog/tt_analog_1x2.def",
+        "TEST_analog_power_compat",
+        False,
     )
 
 
@@ -331,6 +409,7 @@ def test_pin_analog_wrong_vgnd(gds_lef_analog_wrong_vgnd: tuple[str, str]):
             lef_file,
             "../def/analog/tt_analog_1x2.def",
             "TEST_analog_wrong_vgnd",
+            False,
         )
 
 
@@ -345,6 +424,7 @@ def test_pin_analog_overlapping_vgnd(gds_lef_analog_overlapping_vgnd: tuple[str,
             lef_file,
             "../def/analog/tt_analog_1x2.def",
             "TEST_analog_overlapping_vgnd",
+            False,
         )
 
 
@@ -355,4 +435,46 @@ def test_pin_analog_compound_vgnd(gds_lef_analog_compound_vgnd: tuple[str, str])
         lef_file,
         "../def/analog/tt_analog_1x2.def",
         "TEST_analog_compound_vgnd",
+        False,
     )
+
+
+def test_pin_analog_example_3v3(gds_lef_analog_example_3v3: tuple[str, str]):
+    gds_file, lef_file = gds_lef_analog_example_3v3
+    precheck.pin_check(
+        gds_file,
+        lef_file,
+        "../def/analog/tt_analog_1x2.def",
+        "TEST_analog_example_3v3",
+        True,
+    )
+
+
+def test_pin_analog_3v3_mismatch1(gds_lef_analog_example: tuple[str, str]):
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="Some ports are missing or have wrong dimensions",
+    ):
+        gds_file, lef_file = gds_lef_analog_example
+        precheck.pin_check(
+            gds_file,
+            lef_file,
+            "../def/analog/tt_analog_1x2.def",
+            "TEST_analog_example",
+            True,
+        )
+
+
+def test_pin_analog_3v3_mismatch2(gds_lef_analog_example_3v3: tuple[str, str]):
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="Some ports are missing or have wrong dimensions",
+    ):
+        gds_file, lef_file = gds_lef_analog_example_3v3
+        precheck.pin_check(
+            gds_file,
+            lef_file,
+            "../def/analog/tt_analog_1x2.def",
+            "TEST_analog_example_3v3",
+            False,
+        )

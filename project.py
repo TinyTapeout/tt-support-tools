@@ -187,6 +187,19 @@ class Project:
         os.unlink(json_file)
 
         module_ports = ports["modules"][top]["ports"]
+        if "VPWR" in module_ports:
+            if "VDPWR" in module_ports:
+                logging.error(
+                    f"{self} top module '{top}' uses both VPWR and VDPWR ports"
+                )
+                exit(1)
+            else:
+                logging.info(
+                    f"{self} top module '{top}' uses VPWR port, substituting VDPWR"
+                )
+                module_ports["VDPWR"] = module_ports["VPWR"]
+                del module_ports["VPWR"]
+
         required_ports = [
             ["input", "clk", 1],
             ["input", "ena", 1],
@@ -197,15 +210,19 @@ class Project:
             ["output", "uio_out", 8],
             ["output", "uo_out", 8],
         ]
-        if self.is_analog_design():
+        if self.info.is_analog:
             required_ports += [
                 ["inout", "ua", 8],
             ]
         if include_power_ports:
             required_ports += [
                 ["input", "VGND", 1],
-                ["input", "VPWR", 1],
+                ["input", "VDPWR", 1],
             ]
+            if self.info.uses_3v3:
+                required_ports += [
+                    ["input", "VAPWR", 1],
+                ]
         for direction, port, bits in required_ports:
             if port not in module_ports:
                 logging.error(f"{self} port '{port}' missing from top module ('{top}')")
@@ -248,7 +265,7 @@ class Project:
     def get_project_type_string(self):
         if self.is_wokwi():
             return f"[Wokwi]({self.get_wokwi_url()})"
-        elif self.is_analog_design():
+        elif self.info.is_analog:
             return "Analog"
         else:
             return "HDL"
@@ -305,9 +322,6 @@ class Project:
     def get_workflow_url_when_submitted(self) -> str:
         commit_info = self.read_commit_info_json()
         return commit_info["workflow_url"]
-
-    def is_analog_design(self) -> bool:
-        return len(self.info.pinout.ua) > 0
 
     def get_workflow_url(self):
         GITHUB_SERVER_URL = os.getenv("GITHUB_SERVER_URL")
@@ -612,7 +626,8 @@ class Project:
                     }
                     for i, desc in enumerate(self.info.pinout.ua)
                 ],
-                "is_analog": bool(self.info.pinout.ua),
+                "is_analog": self.info.is_analog,
+                "uses_3v3": self.info.uses_3v3,
             }
         )
 
