@@ -77,6 +77,7 @@ class ShuttleConfig:
                         "width": width,
                         "height": height,
                         "analog": {i: None for i in range(project.info.analog_pins)},
+                        "pg_vaa": project.info.uses_3v3,
                     }
                     module_config["modules"].append(module_entry)
 
@@ -241,7 +242,7 @@ class ShuttleConfig:
                 dirs_exist_ok=True,
             )
         # Copy power gate macros:
-        for macro in ["tt_pg_vdd_1", "tt_pg_vdd_2"]:
+        for macro in ["tt_pg_1v8_1", "tt_pg_1v8_2", "tt_pg_1v8_4", "tt_pg_3v3_2"]:
             copy_print(
                 f"tt-multiplexer/pg/{macro}/gds/{macro}.gds",
                 f"gds/{macro}.gds",
