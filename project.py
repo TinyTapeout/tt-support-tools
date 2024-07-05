@@ -214,6 +214,13 @@ class Project:
             required_ports += [
                 ["inout", "ua", 8],
             ]
+        if self.info.tiles == "micro":
+            required_ports = [
+                ["input", "clk", 1],
+                ["input", "rst_n", 1],
+                ["input", "ui_in", 8],
+                ["output", "uo_out", 8],
+            ]
         if include_power_ports:
             required_ports += [
                 ["input", "VGND", 1],
@@ -469,11 +476,12 @@ class Project:
         logging.info("creating include file")
         tiles = self.info.tiles
         die_area = tile_sizes[tiles]
+        pg_suffix = "_pg" if tiles != "micro" else ""
         config = {
             "DESIGN_NAME": self.info.top_module,
             "VERILOG_FILES": [f"dir::{src}" for src in self.sources],
             "DIE_AREA": die_area,
-            "FP_DEF_TEMPLATE": f"dir::../tt/def/tt_block_{tiles}_pg.def",
+            "FP_DEF_TEMPLATE": f"dir::../tt/def/tt_block_{tiles}{pg_suffix}.def",
         }
         write_config(config, os.path.join(self.src_dir, "user_config"), ("json",))
 

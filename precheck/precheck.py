@@ -171,7 +171,10 @@ def main():
             else:
                 template_def = f"../def/analog/tt_analog_{tiles}.def"
         else:
-            template_def = f"../def/tt_block_{tiles}_pg.def"
+            if tiles == "micro":
+                template_def = f"../def/tt_block_{tiles}.def"
+            else:
+                template_def = f"../def/tt_block_{tiles}_pg.def"
         logging.info(f"using def template {template_def}")
 
     checks = [
