@@ -269,9 +269,6 @@ if __name__ == "__main__":
     )
     parser.add_argument("--dump-pdf", help="create pdf from the markdown")
     parser.add_argument(
-        "--build-hugo-content", help="directory to where to build hugo content"
-    )
-    parser.add_argument(
         "--metrics", help="print some project metrics", action="store_const", const=True
     )
 
@@ -330,7 +327,3 @@ if __name__ == "__main__":
     if args.dump_markdown:
         shuttle.configure_mux()
         docs.write_datasheet(args.dump_markdown, args.dump_pdf)
-
-    if args.build_hugo_content:
-        shuttle.configure_mux()
-        docs.build_hugo_content(args.build_hugo_content)

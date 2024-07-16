@@ -255,9 +255,6 @@ class Project:
             if num_cells < 11:
                 logging.warning(f"{self} only has {num_cells} cells")
 
-    def get_hugo_row(self) -> str:
-        return f"| {self.mux_address} | [{self.info.title}]({self.mux_address :03}) | {self.info.author}|\n"
-
     # docs stuff for index on README.md
     def get_index_row(self):
         return f"| {self.mux_address} | {self.info.author} | {self.info.title} | {self.get_project_type_string()} | {self.git_url} |\n"
