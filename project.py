@@ -21,7 +21,10 @@ from config_utils import read_config, write_config
 from markdown_utils import limit_markdown_headings
 from project_info import ProjectInfo, ProjectYamlError
 
-CELL_URL = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/"
+_CELL_URL_FMT = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/{name}/README.html"
+
+def _cell_url(cell_name):
+    return _CELL_URL_FMT.format(name=cell_name)
 
 PINOUT_KEYS = [
     "ui[0]",
@@ -875,7 +878,7 @@ class Project:
             ):
                 if count > 0:
                     total += count
-                    cell_link = f"{CELL_URL}{name}"
+                    cell_link = _cell_url(name)
                     print(
                         f'| [{name}]({cell_link}) | {defs[name]["description"]} |{count} |'
                     )
@@ -911,7 +914,7 @@ class Project:
                 by_category.items(), key=lambda x: x[1]["count"], reverse=True
             ):
                 cell_links = [
-                    f"[{name}]({CELL_URL}{name})" for name in cat_dict["examples"]
+                    f"[{name}]({_cell_url(name)})" for name in cat_dict["examples"]
                 ]
                 print(f'|{cat_name} | {" ".join(cell_links)} | {cat_dict["count"]}|')
 
