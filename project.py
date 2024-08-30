@@ -23,8 +23,10 @@ from project_info import ProjectInfo, ProjectYamlError
 
 _CELL_URL_FMT = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/{name}/README.html"
 
+
 def _cell_url(cell_name):
     return _CELL_URL_FMT.format(name=cell_name)
+
 
 PINOUT_KEYS = [
     "ui[0]",
@@ -219,21 +221,23 @@ class Project:
             ]
         if include_power_ports:
             required_ports += [
-                ["input", "VGND", 1],
-                ["input", "VDPWR", 1],
+                [("input", "inout"), "VGND", 1],
+                [("input", "inout"), "VDPWR", 1],
             ]
             if self.info.uses_3v3:
                 required_ports += [
-                    ["input", "VAPWR", 1],
+                    [("input", "inout"), "VAPWR", 1],
                 ]
-        for direction, port, bits in required_ports:
+        for valid_directions, port, bits in required_ports:
             if port not in module_ports:
                 logging.error(f"{self} port '{port}' missing from top module ('{top}')")
                 exit(1)
             actual_direction = module_ports[port]["direction"]
-            if actual_direction != direction:
+            if type(valid_directions) is str:
+                valid_directions = (valid_directions,)
+            if actual_direction not in valid_directions:
                 logging.error(
-                    f"{self} incorrect direction for port '{port}' in module '{top}': {direction} required, {actual_direction} found"
+                    f"{self} incorrect direction for port '{port}' in module '{top}': {valid_directions} required, {actual_direction} found"
                 )
                 exit(1)
             actual_bits = len(module_ports[port]["bits"])
