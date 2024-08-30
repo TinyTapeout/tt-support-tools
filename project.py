@@ -233,11 +233,13 @@ class Project:
                 logging.error(f"{self} port '{port}' missing from top module ('{top}')")
                 exit(1)
             actual_direction = module_ports[port]["direction"]
-            if type(valid_directions) is str:
-                valid_directions = (valid_directions,)
-            if actual_direction not in valid_directions:
+            if type(valid_directions) is tuple:
+                valid_directions_tuple = valid_directions
+            else:
+                valid_directions_tuple = (valid_directions,)
+            if actual_direction not in valid_directions_tuple:
                 logging.error(
-                    f"{self} incorrect direction for port '{port}' in module '{top}': {valid_directions} required, {actual_direction} found"
+                    f"{self} incorrect direction for port '{port}' in module '{top}': {valid_directions_tuple} required, {actual_direction} found"
                 )
                 exit(1)
             actual_bits = len(module_ports[port]["bits"])
