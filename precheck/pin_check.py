@@ -183,6 +183,9 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str, uses_3v3: bo
     if uses_3v3:
         power_pins.append("VAPWR")
     compat_pins = {"VPWR": "VDPWR"}
+    power_pins_layer = "met4"
+    if "tt_block_micro" in template_def:
+        power_pins_layer = "met2"
 
     macro_active = False
     pins_expected = set(def_pins).union(power_pins).union(compat_pins)
@@ -307,9 +310,9 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str, uses_3v3: bo
         else:
             for layer, lx, by, rx, ty in lef_ports[current_pin]:
                 width = rx - lx
-                if layer != "met4":
+                if layer != power_pins_layer:
                     logging.error(
-                        f"Port {current_pin} has wrong layer in {lef}: {layer} != met4"
+                        f"Port {current_pin} has wrong layer in {lef}: {layer} != {power_pins_layer}"
                     )
                     lef_errors += 1
                 if width < 1200:
