@@ -851,7 +851,7 @@ class Project:
                 "runs/wokwi/*-openroad-globalplacement/openroad-globalplacement.log"
             )
             util_log = glob.glob(os.path.join(self.local_dir, util_glob))[0]
-            util_label = "[INFO GPL-0019] Util(%):"
+            util_label = "[INFO GPL-0019] Util:"
             util_line = next(
                 line for line in open(util_log) if line.startswith(util_label)
             )
