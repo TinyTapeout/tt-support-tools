@@ -90,8 +90,8 @@ def build_metrics(shuttle_index):
     min_util = 100
     max_util_project = None
 
-    for project in shuttle_index["mux"]:
-        macro: str = shuttle_index["mux"][project]["macro"]
+    for project in shuttle_index["projects"]:
+        macro: str = project["macro"]
         repo_dir = os.path.join(REHARDEN_DIR, macro)
         metrics = load_metrics(repo_dir)
         if metrics is None:
@@ -171,23 +171,23 @@ if __name__ == "__main__":
 
     shuttle_index = json.load(open("shuttle_index.json"))
     differences: List[str] = []
-    for number, project in enumerate(shuttle_index["mux"]):
+    for number, project in enumerate(shuttle_index["projects"]):
         if number < args.start_from:
             continue
         if number > args.end_at:
             continue
 
-        repo = shuttle_index["mux"][project]["repo"]
-        commit = shuttle_index["mux"][project]["commit"]
-        macro = shuttle_index["mux"][project]["macro"]
+        repo = project["repo"]
+        commit = project["commit"]
+        macro = project["macro"]
         repo_dir = os.path.join(REHARDEN_DIR, macro)
 
         if macro == "tt_um_chip_rom":
             logging.info(f"[{number :03}] skipping chip ROM")
             continue
 
-        if shuttle_index["mux"][project]["features"]["power_switch"]:
-            logging.info(f"[{number :03}] skipping power gated project {macro}")
+        if "analog_pins" in project:
+            logging.info(f"[{number :03}] skipping analog project {macro}")
             continue
 
         if args.clone:
