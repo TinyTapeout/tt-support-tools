@@ -16,6 +16,7 @@ dependencies = [
     "python-frontmatter",
     "PyYAML",
     "requests",
+    "volare",
     "yowasp-yosys",
 ]
 
