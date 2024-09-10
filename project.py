@@ -12,6 +12,7 @@ import typing
 import cairosvg  # type: ignore
 import chevron
 import gdstk  # type: ignore
+import volare
 import yaml
 from git.repo import Repo
 
@@ -506,7 +507,7 @@ class Project:
             shutil.rmtree("runs/wokwi", ignore_errors=True)
             os.makedirs("runs/wokwi", exist_ok=True)
             progress = "--hide-progress-bar" if "CI" in os.environ else ""
-            harden_cmd = f"python -m openlane --dockerized --run-tag wokwi --force-run-dir runs/wokwi {progress} src/config_merged.json"
+            harden_cmd = f"python -m openlane --pdk-root $PDK_ROOT --dockerized --run-tag wokwi --force-run-dir runs/wokwi {progress} src/config_merged.json"
         else:
             # requires PDK, PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
             harden_cmd = "docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME ./flow.tcl -overwrite -design /work/src -run_path /work/runs -config_file /work/src/config_merged.json -tag wokwi"
@@ -541,10 +542,16 @@ class Project:
             pdk_sources_file = os.path.join(
                 config["PDK_ROOT"], config["PDK"], "SOURCES"
             )
+            pdk_sources = open(pdk_sources_file).read()
             open("runs/wokwi/OPENLANE_VERSION", "w").write(
                 f"OpenLane2 {openlane_version}\n"
             )
-            open("runs/wokwi/PDK_SOURCES", "w").write(open(pdk_sources_file).read())
+            open("runs/wokwi/PDK_SOURCES", "w").write(pdk_sources)
+            volare.enable(
+                os.environ["PDK_ROOT"],
+                {"sky130A": "sky130"}[config["PDK"]],
+                pdk_sources.split()[1],
+            )
 
         os.chdir(cwd)
 
