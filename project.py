@@ -506,8 +506,9 @@ class Project:
         if self.args.openlane2:
             shutil.rmtree("runs/wokwi", ignore_errors=True)
             os.makedirs("runs/wokwi", exist_ok=True)
-            progress = "--hide-progress-bar" if "CI" in os.environ else ""
-            harden_cmd = f"python -m openlane --pdk-root $PDK_ROOT --docker-no-tty --dockerized --run-tag wokwi --force-run-dir runs/wokwi {progress} src/config_merged.json"
+            arg_progress = "--hide-progress-bar" if "CI" in os.environ else ""
+            arg_pdk_root = '--pdk-root "$PDK_ROOT"' if "PDK_ROOT" in os.environ else ""
+            harden_cmd = f"python -m openlane {arg_pdk_root} --docker-no-tty --dockerized --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
         else:
             # requires PDK, PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
             harden_cmd = "docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME ./flow.tcl -overwrite -design /work/src -run_path /work/runs -config_file /work/src/config_merged.json -tag wokwi"
