@@ -8,7 +8,7 @@ dependencies = [
     "cocotb",
     "gdstk",
     "GitPython",
-    "klayout>=0.28.17.post1,<0.29.0",
+    "klayout<0.30.0,>=0.29.0",
     "mistune",
     "numpy<2",
     "pre-commit",
