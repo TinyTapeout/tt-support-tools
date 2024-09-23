@@ -549,7 +549,7 @@ class Project:
             )
             open("runs/wokwi/PDK_SOURCES", "w").write(pdk_sources)
             volare.enable(
-                os.environ["PDK_ROOT"],
+                volare.get_volare_home(),  # uses PDK_ROOT if set, ~/.volare otherwise
                 {"sky130A": "sky130"}[config["PDK"]],
                 pdk_sources.split()[1],
             )
