@@ -368,7 +368,7 @@ class Project:
             if self.args.orfs:
                 return os.path.join(
                     self.local_dir,
-                    "runs/ihp/results/ihp-sg13g2/tt-submission/base/metrics.csv",
+                    "runs/wokwi/results/ihp-sg13g2/tt-submission/base/metrics.csv",
                 )
             elif self.args.openlane2:
                 return os.path.join(self.local_dir, "runs/wokwi/final/metrics.csv")
@@ -382,7 +382,7 @@ class Project:
             if self.args.orfs:
                 return os.path.join(
                     self.local_dir,
-                    "runs/ihp/results/ihp-sg13g2/tt-submission/base/6_final.v",
+                    "runs/wokwi/results/ihp-sg13g2/tt-submission/base/6_final.v",
                 )
             if self.args.openlane2:
                 return glob.glob(
@@ -538,8 +538,8 @@ class Project:
             write_config(config, "src/config_merged", ("json",))
 
         if self.args.orfs:
-            shutil.rmtree("runs/ihp", ignore_errors=True)
-            os.makedirs("runs/ihp", exist_ok=True)
+            shutil.rmtree("runs/wokwi", ignore_errors=True)
+            os.makedirs("runs/wokwi", exist_ok=True)
             harden_cmd = f"make -B -C $ORFS_ROOT/flow all generate_abstract"
             env = os.environ.copy()
             if "ORFS_ROOT" not in env:
@@ -560,7 +560,7 @@ class Project:
                 env["KLAYOUT_HOME"] = os.path.join(
                     env["IHP_PDK_ROOT"], "ihp-sg13g2/libs.tech/klayout"
                 )
-            env["WORK_HOME"] = os.path.join(self.local_dir, "runs/ihp")
+            env["WORK_HOME"] = os.path.join(self.local_dir, "runs/wokwi")
             env["DESIGN_HOME"] = self.src_dir
             env["DESIGN_CONFIG"] = os.path.join(self.src_dir, "config_merged.mk")
         elif self.args.openlane2:
@@ -583,7 +583,7 @@ class Project:
         # Write commit information
         if self.args.orfs:
             commit_id_json_path = (
-                "runs/ihp/results/ihp-sg13g2/tt-submission/base/commit_id.json"
+                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/commit_id.json"
             )
         elif self.args.openlane2:
             commit_id_json_path = "runs/wokwi/final/commit_id.json"
@@ -607,14 +607,15 @@ class Project:
             metrics = {}
             metrics_inputs = glob.glob(
                 os.path.join(
-                    self.local_dir, "runs/ihp/logs/ihp-sg13g2/tt-submission/base/*.json"
+                    self.local_dir,
+                    "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/*.json",
                 )
             )
             for metrics_input in metrics_inputs:
                 with open(metrics_input) as mf:
                     metrics.update(json.load(mf))
             metrics_output = (
-                "runs/ihp/results/ihp-sg13g2/tt-submission/base/metrics.csv"
+                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/metrics.csv"
             )
             with open(metrics_output, "w") as mf:
                 wr = csv.writer(mf)
@@ -639,7 +640,7 @@ class Project:
                     tool_versions[tool_name] = (
                         Repo(os.path.join(self.local_dir, query_param)).commit().hexsha
                     )
-            with open("runs/ihp/tool_versions.json", "w") as f:
+            with open("runs/wokwi/tool_versions.json", "w") as f:
                 json.dump(tool_versions, f, indent=2)
 
         elif self.args.openlane2:
@@ -785,7 +786,7 @@ class Project:
         elif self.args.orfs:
             gds_path = os.path.join(
                 self.local_dir,
-                "runs/ihp/results/ihp-sg13g2/tt-submission/base/6_final.gds",
+                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/6_final.gds",
             )
         elif self.args.openlane2:
             gds_path = glob.glob(
@@ -949,7 +950,7 @@ class Project:
         warnings: typing.List[str] = []
 
         if self.args.orfs:
-            synth_log = "runs/ihp/logs/ihp-sg13g2/tt-submission/base/1_1_yosys.log"
+            synth_log = "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/1_1_yosys.log"
         elif self.args.openlane2:
             synth_log_glob = "runs/wokwi/*-yosys-synthesis/yosys-synthesis.log"
             synth_log = glob.glob(os.path.join(self.local_dir, synth_log_glob))[0]
@@ -963,7 +964,7 @@ class Project:
                         warnings.append(line.strip())
 
         if self.args.orfs:
-            report = "runs/ihp/logs/ihp-sg13g2/tt-submission/base/6_report.log"
+            report = "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/6_report.log"
             with open(os.path.join(self.local_dir, report)) as f:
                 for line in f.readlines():
                     if line.startswith("Warning:"):
@@ -992,7 +993,7 @@ class Project:
             # ORFS & openlane2 don't have the same util% in its metrics as openlane1
             if self.args.orfs:
                 util_log = (
-                    "runs/ihp/logs/ihp-sg13g2/tt-submission/base/3_3_place_gp.log"
+                    "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/3_3_place_gp.log"
                 )
             else:
                 util_glob = (
