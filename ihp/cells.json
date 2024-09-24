@@ -1,0 +1,232 @@
+{
+   "a21o" : {
+      "description" : "2-input AND into first input of 2-input OR.",
+      "doc_name": "AO21x",
+      "doc_ref" : 7
+   },
+   "a21oi" : {
+      "description" : "2-input AND into first input of 2-input NOR.",
+      "doc_name": "A21OIx",
+      "doc_ref" : 1
+   },
+   "a221oi" : {
+      "description" : "2-input AND into first two inputs of 3-input NOR.",
+      "doc_name": "A221OI",
+      "doc_ref" : 2
+   },
+   "a22oi" : {
+      "description" : "2-input AND into both inputs of 2-input NOR.",
+      "doc_name": "A22OI",
+      "doc_ref" : 3
+   },
+   "and2" : {
+      "description" : "2-input AND.",
+      "doc_name": "AND2x",
+      "doc_ref" : 4
+   },
+   "and3" : {
+      "description" : "3-input AND.",
+      "doc_name": "AND3x",
+      "doc_ref" : 5
+   },
+   "and4" : {
+      "description" : "4-input AND.",
+      "doc_name": "AND4x",
+      "doc_ref" : 6
+   },
+   "antennanp" : {
+      "description" : "Antenna tie-down diode.",
+      "doc_name": "NP_ANT",
+      "doc_ref" : 38
+   },
+   "buf" : {
+      "description" : "Buffer.",
+      "doc_name": "BUx",
+      "doc_ref" : 9
+   },
+   "decap" : {
+      "description" : "Decoupling capacitance filler.",
+      "doc_name": "DECAPx",
+      "doc_ref" : 10
+   },
+   "dfrbp" : {
+      "description" : "Delay flop, inverted reset, complementary outputs.",
+      "doc_name": "DFFRRx",
+      "doc_ref" : 11
+   },
+   "dlhq" : {
+      "description" : "Delay latch, non-inverted enable, single output.",
+      "doc_name": "DLHQ",
+      "doc_ref" : 12
+   },
+   "dlhr" : {
+      "description" : "Delay latch, inverted reset, non-inverted enable, complementary outputs.",
+      "doc_name": "DLHR",
+      "doc_ref" : 14
+   },
+   "dlhrq" : {
+      "description" : "Delay latch, inverted reset, non-inverted enable, single output.",
+      "doc_name": "DLHRQ",
+      "doc_ref" : 13
+   },
+   "dllr" : {
+      "description" : "Delay latch, inverted reset, inverted enable, complementary outputs.",
+      "doc_name": "DLLR",
+      "doc_ref" : 16
+   },
+   "dllrq" : {
+      "description" : "Delay latch, inverted reset, inverted enable, single output.",
+      "doc_name": "DLLRQ",
+      "doc_ref" : 15
+   },
+   "dlygate4sd1" : {
+      "description" : "Delay Buffer 4-stage ... length inner stage gates.",
+      "doc_name": "DLY1",
+      "doc_ref" : 17
+   },
+   "dlygate4sd2" : {
+      "description" : "Delay Buffer 4-stage ... length inner stage gates.",
+      "doc_name": "DLY2",
+      "doc_ref" : 18
+   },
+   "dlygate4sd3" : {
+      "description" : "Delay Buffer 4-stage ... length inner stage gates.",
+      "doc_name": "DLY4",
+      "doc_ref" : 19
+   },
+   "ebufn" : {
+      "description" : "Tri-state buffer, negative enable.",
+      "doc_name": "BTLx",
+      "doc_ref" : 8
+   },
+   "einvn" : {
+      "description" : "Tri-state inverter, negative enable.",
+      "doc_name": "EINVINx, ITL",
+      "doc_ref" : 20
+   },
+   "fill" : {
+      "description" : "Fill cell.",
+      "doc_name": "FILLx",
+      "doc_ref" : 21
+   },
+   "inv" : {
+      "description" : "Inverter.",
+      "doc_name": "INx",
+      "doc_ref" : 23
+   },
+   "lgcp" : {
+      "description" : "Clock gate.",
+      "doc_name": "GCLK",
+      "doc_ref" : 22
+   },
+   "mux2" : {
+      "description" : "2-input multiplexer.",
+      "doc_name": "MUX2x",
+      "doc_ref" : 26
+   },
+   "mux4" : {
+      "description" : "4-input multiplexer.",
+      "doc_name": "MUX4",
+      "doc_ref" : 27
+   },
+   "nand2" : {
+      "description" : "2-input NAND.",
+      "doc_name": "NAND2x",
+      "doc_ref" : 30
+   },
+   "nand2b" : {
+      "description" : "2-input NAND, first input inverted.",
+      "doc_name": "NAND2B1, NAND2B2",
+      "doc_ref" : 28
+   },
+   "nand3" : {
+      "description" : "3-input NAND.",
+      "doc_name": "NAND3",
+      "doc_ref" : 32
+   },
+   "nand3b" : {
+      "description" : "3-input NAND, first input inverted.",
+      "doc_name": "NAND3B1",
+      "doc_ref" : 31
+   },
+   "nand4" : {
+      "description" : "4-input NAND.",
+      "doc_name": "NAND4",
+      "doc_ref" : 33
+   },
+   "nor2" : {
+      "description" : "2-input NOR.",
+      "doc_name": "NOR2x",
+      "doc_ref" : 35
+   },
+   "nor2b" : {
+      "description" : "2-input NOR, first input inverted.",
+      "doc_name": "NOR2Bx",
+      "doc_ref" : 34
+   },
+   "nor3" : {
+      "description" : "3-input NOR.",
+      "doc_name": "NOR3x",
+      "doc_ref" : 36
+   },
+   "nor4" : {
+      "description" : "4-input NOR.",
+      "doc_name": "NOR4x",
+      "doc_ref" : 37
+   },
+   "o21ai" : {
+      "description" : "2-input OR into first input of 2-input NAND.",
+      "doc_name": "O21AI",
+      "doc_ref" : 39
+   },
+   "or2" : {
+      "description" : "2-input OR.",
+      "doc_name": "OR2x",
+      "doc_ref" : 40
+   },
+   "or3" : {
+      "description" : "3-input OR.",
+      "doc_name": "OR3x",
+      "doc_ref" : 41
+   },
+   "or4" : {
+      "description" : "4-input OR.",
+      "doc_name": "OR4x",
+      "doc_ref" : 42
+   },
+   "sdfbbp" : {
+      "description" : "Scan delay flop, inverted set, inverted reset, non-inverted clock, complementary outputs.",
+      "doc_name": "SDFRRS",
+      "doc_ref" : 43
+   },
+   "sighold" : {
+      "description" : "Cross-coupled inverters.",
+      "doc_name": "KEEPSTATE",
+      "doc_ref" : 25
+   },
+   "slgcp" : {
+      "description" : "Scan gated clock.",
+      "doc_name": "SGCLK",
+      "doc_ref" : 44
+   },
+   "tiehi" : {
+      "description" : "Constant high output.",
+      "doc_name": "TIE1",
+      "doc_ref" : 46
+   },
+   "tielo" : {
+      "description" : "Constant low output.",
+      "doc_name": "TIE0",
+      "doc_ref" : 45
+   },
+   "xnor2" : {
+      "description" : "2-input exclusive NOR.",
+      "doc_name": "XNOR2_1",
+      "doc_ref" : 47
+   },
+   "xor2" : {
+      "description" : "2-input exclusive OR.",
+      "doc_name": "XOR2_1",
+      "doc_ref" : 48
+   }
+}

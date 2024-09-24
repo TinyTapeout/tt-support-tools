@@ -26,6 +26,13 @@ if __name__ == "__main__":
         const=True,
         default=False,
     )
+    parser.add_argument(
+        "--orfs",
+        help="use ORFS",
+        action="store_const",
+        const=True,
+        default=False,
+    )
 
     # reports & summaries
     parser.add_argument(

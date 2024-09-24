@@ -17,16 +17,21 @@ import yaml
 from git.repo import Repo
 
 import git_utils
-from cells import Cell, load_cells
+from cells import Sky130Cell, load_ihp_cells, load_sky130_cells
 from config_utils import read_config, write_config
 from markdown_utils import limit_markdown_headings
 from project_info import ProjectInfo, ProjectYamlError
 
-_CELL_URL_FMT = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/{name}/README.html"
+_SKY130_CELL_URL_FMT = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/{name}/README.html"
+_IHP_CELL_URL_FMT = "https://raw.githubusercontent.com/IHP-GmbH/IHP-Open-PDK/refs/heads/main/ihp-sg13g2/libs.ref/sg13g2_stdcell/doc/sg13g2_stdcell_typ_1p50V_25C.pdf#{ref}"
 
 
-def _cell_url(cell_name):
-    return _CELL_URL_FMT.format(name=cell_name)
+def _sky130_cell_url(cell_name):
+    return _SKY130_CELL_URL_FMT.format(name=cell_name)
+
+
+def _ihp_cell_url(doc_ref):
+    return _IHP_CELL_URL_FMT.format(ref=doc_ref)
 
 
 PINOUT_KEYS = [
@@ -65,6 +70,7 @@ with open(os.path.join(os.path.dirname(__file__), "tile_sizes.yaml"), "r") as st
 
 class Args:
     openlane2: bool
+    orfs: bool
     print_cell_summary: bool
     print_cell_category: bool
 
@@ -87,7 +93,7 @@ class Project:
         self.git_url = git_url
         self.args = args
         self.index = index
-        self.local_dir = local_dir
+        self.local_dir = os.path.realpath(local_dir)
         self.is_user_project = is_user_project
         self.src_dir = (
             os.path.join(self.local_dir, "src")
@@ -130,12 +136,16 @@ class Project:
     def load_metrics(self):
         try:
             if self.is_user_project:
+                orfs = self.args.orfs
                 openlane2 = self.args.openlane2
             else:
                 commit_data = json.load(open("commit_id.json"))
-                openlane2 = commit_data["openlane_version"].startswith("OpenLane2")
+                orfs = "orfs_version" in commit_data
+                openlane2 = commit_data.get("openlane_version", "").startswith(
+                    "OpenLane2"
+                )
             with open(self.get_metrics_path()) as fh:
-                if openlane2:
+                if orfs or openlane2:
                     self.metrics = dict(csv.reader(fh))
                 else:
                     self.metrics = next(csv.DictReader(fh))
@@ -355,7 +365,12 @@ class Project:
     # metrics
     def get_metrics_path(self):
         if self.is_user_project:
-            if self.args.openlane2:
+            if self.args.orfs:
+                return os.path.join(
+                    self.local_dir,
+                    "runs/ihp/results/ihp-sg13g2/tt-submission/base/metrics.csv",
+                )
+            elif self.args.openlane2:
                 return os.path.join(self.local_dir, "runs/wokwi/final/metrics.csv")
             else:
                 return os.path.join(self.local_dir, "runs/wokwi/reports/metrics.csv")
@@ -364,6 +379,11 @@ class Project:
 
     def get_gl_path(self):
         if self.is_user_project:
+            if self.args.orfs:
+                return os.path.join(
+                    self.local_dir,
+                    "runs/ihp/results/ihp-sg13g2/tt-submission/base/6_final.v",
+                )
             if self.args.openlane2:
                 return glob.glob(
                     os.path.join(self.local_dir, "runs/wokwi/final/nl/*.nl.v")
@@ -475,13 +495,24 @@ class Project:
         self.check_ports()
         logging.info("creating include file")
         tiles = self.info.tiles
-        die_area = tile_sizes[tiles]
-        config = {
-            "DESIGN_NAME": self.info.top_module,
-            "VERILOG_FILES": [f"dir::{src}" for src in self.sources],
-            "DIE_AREA": die_area,
-            "FP_DEF_TEMPLATE": f"dir::../tt/def/tt_block_{tiles}_pg.def",
-        }
+        if self.args.orfs:
+            config = {
+                "DESIGN_NICKNAME": "tt-submission",
+                "DESIGN_NAME": self.info.top_module,
+                "PLATFORM": "ihp-sg13g2",
+                "VERILOG_FILES": [f"dir::{src}" for src in self.sources],
+                "FLOORPLAN_DEF": f"dir::../tt/ihp/def/tt_block_{tiles}.def",
+                "SDC_FILE": f"dir::../tt/ihp/constraint.sdc",
+                "PDN_TCL": f"dir::../tt/ihp/pdn.tcl",
+            }
+        else:
+            die_area = tile_sizes[tiles]
+            config = {
+                "DESIGN_NAME": self.info.top_module,
+                "VERILOG_FILES": [f"dir::{src}" for src in self.sources],
+                "DIE_AREA": die_area,
+                "FP_DEF_TEMPLATE": f"dir::../tt/def/tt_block_{tiles}_pg.def",
+            }
         write_config(config, os.path.join(self.src_dir, "user_config"), ("json",))
 
     def golden_harden(self):
@@ -501,28 +532,63 @@ class Project:
         config = read_config("src/config", ("json", "tcl"))
         user_config = read_config("src/user_config", ("json",))
         config.update(user_config)
-        write_config(config, "src/config_merged", ("json",))
+        if self.args.orfs:
+            write_config(config, "src/config_merged", ("mk",))
+        else:
+            write_config(config, "src/config_merged", ("json",))
 
-        if self.args.openlane2:
+        if self.args.orfs:
+            shutil.rmtree("runs/ihp", ignore_errors=True)
+            os.makedirs("runs/ihp", exist_ok=True)
+            harden_cmd = f"make -B -C $ORFS_ROOT/flow all generate_abstract"
+            env = os.environ.copy()
+            if "ORFS_ROOT" not in env:
+                env["ORFS_ROOT"] = os.path.join(self.local_dir, "OpenROAD-flow-scripts")
+            if "OPENROAD_EXE" not in env:
+                openroad_exe = shutil.which("openroad")
+                if openroad_exe is None:
+                    raise FileNotFoundError("OpenROAD executable not found")
+                env["OPENROAD_EXE"] = openroad_exe
+            if "YOSYS_EXE" not in env:
+                yosys_exe = shutil.which("yosys")
+                if yosys_exe is None:
+                    raise FileNotFoundError("Yosys executable not found")
+                env["YOSYS_EXE"] = yosys_exe
+            if "IHP_PDK_ROOT" not in env:
+                env["IHP_PDK_ROOT"] = os.path.join(self.local_dir, "IHP-Open-PDK")
+            if "KLAYOUT_HOME" not in env:
+                env["KLAYOUT_HOME"] = os.path.join(
+                    env["IHP_PDK_ROOT"], "ihp-sg13g2/libs.tech/klayout"
+                )
+            env["WORK_HOME"] = os.path.join(self.local_dir, "runs/ihp")
+            env["DESIGN_HOME"] = self.src_dir
+            env["DESIGN_CONFIG"] = os.path.join(self.src_dir, "config_merged.mk")
+        elif self.args.openlane2:
             shutil.rmtree("runs/wokwi", ignore_errors=True)
             os.makedirs("runs/wokwi", exist_ok=True)
             arg_progress = "--hide-progress-bar" if "CI" in os.environ else ""
             arg_pdk_root = '--pdk-root "$PDK_ROOT"' if "PDK_ROOT" in os.environ else ""
             harden_cmd = f"python -m openlane {arg_pdk_root} --docker-no-tty --dockerized --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
+            env = os.environ.copy()
         else:
             # requires PDK, PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
             harden_cmd = "docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME ./flow.tcl -overwrite -design /work/src -run_path /work/runs -config_file /work/src/config_merged.json -tag wokwi"
+            env = os.environ.copy()
         logging.debug(harden_cmd)
-        env = os.environ.copy()
         p = subprocess.run(harden_cmd, shell=True, env=env)
         if p.returncode != 0:
             logging.error("harden failed")
             exit(1)
 
         # Write commit information
-        commit_id_json_path = "runs/wokwi/results/final/commit_id.json"
-        if self.args.openlane2:
+        if self.args.orfs:
+            commit_id_json_path = (
+                "runs/ihp/results/ihp-sg13g2/tt-submission/base/commit_id.json"
+            )
+        elif self.args.openlane2:
             commit_id_json_path = "runs/wokwi/final/commit_id.json"
+        else:
+            commit_id_json_path = "runs/wokwi/results/final/commit_id.json"
         with open(os.path.join(self.local_dir, commit_id_json_path), "w") as f:
             json.dump(
                 {
@@ -536,7 +602,47 @@ class Project:
             )
             f.write("\n")
 
-        if self.args.openlane2:
+        # Collect metrics
+        if self.args.orfs:
+            metrics = {}
+            metrics_inputs = glob.glob(
+                os.path.join(
+                    self.local_dir, "runs/ihp/logs/ihp-sg13g2/tt-submission/base/*.json"
+                )
+            )
+            for metrics_input in metrics_inputs:
+                with open(metrics_input) as mf:
+                    metrics.update(json.load(mf))
+            metrics_output = (
+                "runs/ihp/results/ihp-sg13g2/tt-submission/base/metrics.csv"
+            )
+            with open(metrics_output, "w") as mf:
+                wr = csv.writer(mf)
+                wr.writerow(("Metric", "Value"))
+                wr.writerows(metrics.items())
+
+        if self.args.orfs:
+            tool_queries = [
+                ("yosys", "shell", "yosys -V"),
+                ("openroad", "shell", "openroad -version"),
+                ("klayout", "shell", "klayout -v"),
+                ("orfs", "repo", env["ORFS_ROOT"]),
+                ("ihp_pdk", "repo", env["IHP_PDK_ROOT"]),
+            ]
+            tool_versions = {}
+            for tool_name, query_type, query_param in tool_queries:
+                if query_type == "shell":
+                    tool_versions[tool_name] = subprocess.run(
+                        query_param, shell=True, capture_output=True, text=True
+                    ).stdout.strip()
+                elif query_type == "repo":
+                    tool_versions[tool_name] = (
+                        Repo(os.path.join(self.local_dir, query_param)).commit().hexsha
+                    )
+            with open("runs/ihp/tool_versions.json", "w") as f:
+                json.dump(tool_versions, f, indent=2)
+
+        elif self.args.openlane2:
             resolved_json_path = "runs/wokwi/resolved.json"
             config = json.load(open(os.path.join(self.local_dir, resolved_json_path)))
             openlane_version = config["meta"]["openlane_version"]
@@ -676,6 +782,11 @@ class Project:
     def get_final_gds_top_cells(self):
         if "GDS_PATH" in os.environ:
             gds_path = os.environ["GDS_PATH"]
+        elif self.args.orfs:
+            gds_path = os.path.join(
+                self.local_dir,
+                "runs/ihp/results/ihp-sg13g2/tt-submission/base/6_final.gds",
+            )
         elif self.args.openlane2:
             gds_path = glob.glob(
                 os.path.join(self.local_dir, "runs/wokwi/final/gds/*.gds")
@@ -713,9 +824,20 @@ class Project:
             (70, 5),  # 70/5  - met3.label
             (71, 5),  # 71/5  - met4.label
         ]
-        top_cells.filter(sky130_label_layers)
+        ihp_label_layers = [
+            (8, 1),  # 8/1   - Metal1.label
+            (8, 25),  # 8/25  - Metal1.text
+            (67, 25),  # 67/25 - Metal5.text
+            (126, 25),  # 126/25 - TopMetal1.text
+        ]
+        if self.args.orfs:
+            label_layers = ihp_label_layers
+        else:
+            label_layers = sky130_label_layers
+
+        top_cells.filter(label_layers)
         for subcell in top_cells.dependencies(True):
-            subcell.filter(sky130_label_layers)
+            subcell.filter(label_layers)
         svg = "gds_render_preview.svg"
         logging.info("Rendering SVG without text label layers: {}".format(svg))
         top_cells.write_svg(svg, pad=0)
@@ -756,9 +878,21 @@ class Project:
                 # Less important, but keep for now:
                 # (69,20), # 69/20 - met2.drawing
             ]
-            top_cells.filter(sky130_buried_layers)
+            ihp_buried_layers = [
+                (6, 0),  # 6/0 - Cont.drawing
+                (8, 2),  # 8/2 - Metal1.pin
+                (19, 0),  # 19/0 - Via1.drawing
+                (51, 0),  # 51/0 - HeatTrans.drawing
+                (189, 4),  # 189/4 - prBoundary.boundary
+            ]
+            if self.args.orfs:
+                buried_layers = ihp_buried_layers
+            else:
+                buried_layers = sky130_buried_layers
+
+            top_cells.filter(buried_layers)
             for subcell in top_cells.dependencies(True):
-                subcell.filter(sky130_buried_layers)
+                subcell.filter(buried_layers)
             svg_alt = "gds_render_preview_alt.svg"
             logging.info("Rendering SVG with more layers removed: {}".format(svg_alt))
             top_cells.write_svg(svg_alt, pad=0)
@@ -814,10 +948,13 @@ class Project:
     def print_warnings(self):
         warnings: typing.List[str] = []
 
-        synth_log = "runs/wokwi/logs/synthesis/1-synthesis.log"
-        if self.args.openlane2:
+        if self.args.orfs:
+            synth_log = "runs/ihp/logs/ihp-sg13g2/tt-submission/base/1_1_yosys.log"
+        elif self.args.openlane2:
             synth_log_glob = "runs/wokwi/*-yosys-synthesis/yosys-synthesis.log"
             synth_log = glob.glob(os.path.join(self.local_dir, synth_log_glob))[0]
+        else:
+            synth_log = "runs/wokwi/logs/synthesis/1-synthesis.log"
         with open(os.path.join(self.local_dir, synth_log)) as f:
             for line in f.readlines():
                 if line.startswith("Warning:"):
@@ -825,19 +962,24 @@ class Project:
                     if "WIDTHLABEL" not in line:
                         warnings.append(line.strip())
 
-        sta_report_glob = (
-            "runs/wokwi/reports/signoff/*-sta-rcx_nom/multi_corner_sta.checks.rpt"
-        )
-
-        if self.args.openlane2:
-            sta_report_glob = (
-                "runs/wokwi/*-openroad-stapostpnr/nom_tt_025C_1v80/checks.rpt"
-            )
-        sta_report = glob.glob(os.path.join(self.local_dir, sta_report_glob))[0]
-        with open(os.path.join(self.local_dir, sta_report)) as f:
-            for line in f.readlines():
-                if line.startswith("Warning:") and "clock" in line:
-                    warnings.append(line.strip())
+        if self.args.orfs:
+            report = "runs/ihp/logs/ihp-sg13g2/tt-submission/base/6_report.log"
+            with open(os.path.join(self.local_dir, report)) as f:
+                for line in f.readlines():
+                    if line.startswith("Warning:"):
+                        warnings.append(line.strip())
+        else:
+            if self.args.openlane2:
+                sta_report_glob = (
+                    "runs/wokwi/*-openroad-stapostpnr/nom_tt_025C_1v80/checks.rpt"
+                )
+            else:
+                sta_report_glob = "runs/wokwi/reports/signoff/*-sta-rcx_nom/multi_corner_sta.checks.rpt"
+            sta_report = glob.glob(os.path.join(self.local_dir, sta_report_glob))[0]
+            with open(os.path.join(self.local_dir, sta_report)) as f:
+                for line in f.readlines():
+                    if line.startswith("Warning:") and "clock" in line:
+                        warnings.append(line.strip())
 
         if len(warnings):
             print("# Synthesis warnings")
@@ -846,18 +988,26 @@ class Project:
                 print(f"* {warning}")
 
     def print_stats(self):
-        if self.args.openlane2:
-            # openlane2 doesn't have the same util% in its metrics as openlane1
-            util_glob = (
-                "runs/wokwi/*-openroad-globalplacement/openroad-globalplacement.log"
-            )
-            util_log = glob.glob(os.path.join(self.local_dir, util_glob))[0]
+        if self.args.orfs or self.args.openlane2:
+            # ORFS & openlane2 don't have the same util% in its metrics as openlane1
+            if self.args.orfs:
+                util_log = (
+                    "runs/ihp/logs/ihp-sg13g2/tt-submission/base/3_3_place_gp.log"
+                )
+            else:
+                util_glob = (
+                    "runs/wokwi/*-openroad-globalplacement/openroad-globalplacement.log"
+                )
+                util_log = glob.glob(os.path.join(self.local_dir, util_glob))[0]
             util_label = "[INFO GPL-0019] Util:"
             util_line = next(
                 line for line in open(util_log) if line.startswith(util_label)
             )
             util = util_line.removeprefix(util_label).strip()
-            wire_length = self.metrics["route__wirelength"]
+            if self.args.orfs:
+                wire_length = self.metrics["detailedroute__route__wirelength"]
+            else:
+                wire_length = self.metrics["route__wirelength"]
         else:
             util = self.metrics["OpenDP_Util"]
             wire_length = self.metrics["wire_length"]
@@ -875,10 +1025,23 @@ class Project:
         Categories = typing.TypedDict(
             "Categories", {"categories": typing.List[str], "map": typing.Dict[str, int]}
         )
-        with open(os.path.join(SCRIPT_DIR, "categories.json")) as fh:
+        if self.args.orfs:
+            categories_file = "ihp/categories.json"
+        else:
+            categories_file = "categories.json"
+        with open(os.path.join(SCRIPT_DIR, categories_file)) as fh:
             categories: Categories = json.load(fh)
 
-        defs = load_cells()
+        if self.args.orfs:
+            ihp_defs = load_ihp_cells()
+        else:
+            sky130_defs = load_sky130_cells()
+
+        def _cell_url(name):
+            if self.args.orfs:
+                return _ihp_cell_url(ihp_defs[name]["doc_ref"])
+            else:
+                return _sky130_cell_url(name)
 
         # print all used cells, sorted by frequency
         total = 0
@@ -893,9 +1056,11 @@ class Project:
                 if count > 0:
                     total += count
                     cell_link = _cell_url(name)
-                    print(
-                        f'| [{name}]({cell_link}) | {defs[name]["description"]} |{count} |'
-                    )
+                    if self.args.orfs:
+                        description = ihp_defs[name]["description"]
+                    else:
+                        description = sky130_defs[name]["description"]
+                    print(f"| [{name}]({cell_link}) | {description} |{count} |")
 
             print(f"| | Total | {total} |")
 
@@ -956,12 +1121,16 @@ class Project:
         total = 0
         with open(self.get_gl_path()) as fh:
             for line in fh.readlines():
-                m = re.search(r"sky130_(\S+)__(\S+)_(\d+)", line)
+                if self.args.orfs:
+                    cell_re = r"sg13g2()_(\S+)_(\d+)"
+                else:
+                    cell_re = r"sky130_(\S+)__(\S+)_(\d+)"
+                m = re.search(cell_re, line)
                 if m is not None:
                     total += 1
                     cell_lib = m.group(1)
                     cell_name = m.group(2)
-                    assert cell_lib in ["fd_sc_hd", "ef_sc_hd"]
+                    assert cell_lib in ["fd_sc_hd", "ef_sc_hd", ""]
                     try:
                         cell_count[cell_name] += 1
                     except KeyError:
@@ -973,10 +1142,10 @@ class Project:
     def create_defs(self):
         # replace this with a find
         json_files = glob.glob("sky130_fd_sc_hd/latest/cells/*/definition.json")
-        definitions: typing.Dict[str, Cell] = {}
+        definitions: typing.Dict[str, Sky130Cell] = {}
         for json_file in json_files:
             with open(json_file) as fh:
-                definition: Cell = json.load(fh)
+                definition: Sky130Cell = json.load(fh)
                 definitions[definition["name"]] = definition
 
         with open("cells.json", "w") as fh:

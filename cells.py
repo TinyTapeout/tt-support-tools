@@ -10,7 +10,7 @@ class Port(TypedDict):
     description: str
 
 
-class Cell(TypedDict):
+class Sky130Cell(TypedDict):
     description: str
     file_prefix: str
     library: str
@@ -22,10 +22,23 @@ class Cell(TypedDict):
     equation: Optional[str]
 
 
-Cells = Dict[str, Cell]
+class IHPCell(TypedDict):
+    description: str
+    doc_name: str
+    doc_ref: int
 
 
-def load_cells() -> Cells:
+Sky130Cells = Dict[str, Sky130Cell]
+IHPCells = Dict[str, IHPCell]
+
+
+def load_sky130_cells() -> Sky130Cells:
     script_dir = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(script_dir, "cells.json")) as fh:
+        return json.load(fh)
+
+
+def load_ihp_cells() -> IHPCells:
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(script_dir, "ihp/cells.json")) as fh:
         return json.load(fh)
