@@ -110,6 +110,19 @@ if __name__ == "__main__":
         action="store_const",
         const=True,
     )
+    parser.add_argument(
+        "--run-drc",
+        help="run DRC on hardened project (ORFS only)",
+        action="store_const",
+        const=True,
+    )
+
+    parser.add_argument(
+        "--run-lvs",
+        help="run LVS on hardened project (ORFS only)",
+        action="store_const",
+        const=True,
+    )
 
     # FPGA
     parser.add_argument(
@@ -163,6 +176,12 @@ if __name__ == "__main__":
 
     if args.harden:
         project.harden()
+
+    if args.run_drc:
+        project.run_drc()
+
+    if args.run_lvs:
+        project.run_lvs()
 
     if args.create_pdf:
         project.create_pdf()

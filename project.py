@@ -562,7 +562,11 @@ class Project:
         if self.args.orfs:
             shutil.rmtree("runs/wokwi", ignore_errors=True)
             os.makedirs("runs/wokwi", exist_ok=True)
-            harden_cmd = f"make -B -C $ORFS_ROOT/flow all generate_abstract"
+            cdl = os.path.join(
+                self.local_dir,
+                "runs/wokwi/objects/ihp-sg13g2/tt-submission/base/6_final_concat.cdl",
+            )
+            harden_cmd = f"make -B -C $ORFS_ROOT/flow all generate_abstract {cdl}"
             env = os.environ.copy()
             if "ORFS_ROOT" not in env:
                 env["ORFS_ROOT"] = os.path.join(self.local_dir, "OpenROAD-flow-scripts")
@@ -684,6 +688,86 @@ class Project:
             )
 
         os.chdir(cwd)
+
+    def run_drc(self):
+        if self.args.orfs:
+            gds_path = os.path.join(
+                self.local_dir,
+                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/6_final.gds",
+            )
+            drc_script = os.path.join(
+                os.environ["IHP_PDK_ROOT"],
+                "ihp-sg13g2/libs.tech/klayout/tech/drc/sg13g2_maximal.lydrc",
+            )
+            drc_report = os.path.join(
+                self.local_dir,
+                "runs/wokwi/reports/ihp-sg13g2/tt-submission/base/6_drc.lyrdb",
+            )
+            drc_log = os.path.join(
+                self.local_dir,
+                "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/6_drc.log",
+            )
+            drc_cmd = f"klayout -b -rd in_gds={gds_path} -rd report_file={drc_report} -rd density=false -r {drc_script} | tee {drc_log}"
+            p = subprocess.run(drc_cmd, shell=True)
+            if p.returncode != 0:
+                logging.error("DRC job exited abnormally")
+                exit(1)
+            with open(drc_report) as f:
+                drc_ok = True
+                for line in f:
+                    line = line.strip()
+                    if m := re.match("<category>'([^']*)'</category>", line):
+                        if m[1] != "Pin.f.M5":
+                            drc_ok = False
+                            break
+                if drc_ok:
+                    logging.info("DRC passed")
+                else:
+                    logging.error("DRC failed")
+                    exit(1)
+        else:
+            logging.warning(
+                "DRC is already included in OpenLane hardening job, skipping"
+            )
+
+    def run_lvs(self):
+        if self.args.orfs:
+            gds_path = os.path.join(
+                self.local_dir,
+                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/6_final.gds",
+            )
+            cdl_path = os.path.join(
+                self.local_dir,
+                "runs/wokwi/objects/ihp-sg13g2/tt-submission/base/6_final_concat.cdl",
+            )
+            lvs_script = os.path.join(
+                os.environ["IHP_PDK_ROOT"],
+                "ihp-sg13g2/libs.tech/klayout/tech/lvs/sg13g2_full.lylvs",
+            )
+            lvs_report = os.path.join(
+                self.local_dir,
+                "runs/wokwi/reports/ihp-sg13g2/tt-submission/base/6_lvs.lvsdb",
+            )
+            lvs_log = os.path.join(
+                self.local_dir,
+                "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/6_lvs.log",
+            )
+            lvs_cmd = f"klayout -b -rd in_gds={gds_path} -rd cdl_file={cdl_path} -rd report_file={lvs_report} -rd run_mode=deep -r {lvs_script} | tee {lvs_log}"
+            p = subprocess.run(lvs_cmd, shell=True)
+            if p.returncode != 0:
+                logging.error("LVS job exited abnormally")
+                exit(1)
+            with open(lvs_log) as f:
+                ok_msg = "Congratulations! Netlists match."
+                if any(ok_msg in line for line in f):
+                    logging.info("LVS passed")
+                else:
+                    logging.error("LVS failed")
+                    exit(1)
+        else:
+            logging.warning(
+                "LVS is already included in OpenLane hardening job, skipping"
+            )
 
     def create_fpga_bitstream(self):
         logging.info(f"Creating FPGA bitstream for {self}")
