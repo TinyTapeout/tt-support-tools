@@ -721,10 +721,9 @@ class Project:
                 drc_ok = True
                 for line in f:
                     line = line.strip()
-                    if m := re.match("<category>'([^']*)'</category>", line):
-                        if m[1] != "Pin.f.M5":
-                            drc_ok = False
-                            break
+                    if re.match("<category>'([^']*)'</category>", line):
+                        drc_ok = False
+                        break
                 if drc_ok:
                     logging.info("DRC passed")
                 else:
