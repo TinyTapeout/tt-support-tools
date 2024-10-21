@@ -23,7 +23,7 @@ from markdown_utils import limit_markdown_headings
 from project_info import ProjectInfo, ProjectYamlError
 
 _SKY130_CELL_URL_FMT = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/{name}/README.html"
-_IHP_CELL_URL_FMT = "https://raw.githubusercontent.com/IHP-GmbH/IHP-Open-PDK/refs/heads/main/ihp-sg13g2/libs.ref/sg13g2_stdcell/doc/sg13g2_stdcell_typ_1p50V_25C.pdf#{ref}"
+_IHP_CELL_URL_FMT = "https://raw.githubusercontent.com/IHP-GmbH/IHP-Open-PDK/refs/heads/main/ihp-sg13g2/libs.ref/sg13g2_stdcell/doc/sg13g2_stdcell_typ_1p20V_25C.pdf#{ref}"
 
 
 def _sky130_cell_url(cell_name):
