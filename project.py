@@ -606,6 +606,32 @@ class Project:
             logging.error("harden failed")
             exit(1)
 
+        # Collect metrics
+        if self.args.orfs:
+            metrics = {}
+            metrics_inputs = glob.glob(
+                os.path.join(
+                    self.local_dir,
+                    "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/*.json",
+                )
+            )
+            for metrics_input in metrics_inputs:
+                with open(metrics_input) as mf:
+                    metrics.update(json.load(mf))
+            metrics_output = (
+                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/metrics.csv"
+            )
+            with open(metrics_output, "w") as mf:
+                wr = csv.writer(mf)
+                wr.writerow(("Metric", "Value"))
+                wr.writerows(metrics.items())
+
+        # Fail if violations remain after detailed routing
+        if self.args.orfs:
+            if metrics["detailedroute__route__drc_errors"] > 0:
+                logging.error("error: detailed routing couldn't resolve all violations")
+                exit(1)
+
         # DRC & LVS aren't included in the default ORFS flow
         if self.args.orfs:
             self.run_drc()
@@ -632,26 +658,6 @@ class Project:
                 indent=2,
             )
             f.write("\n")
-
-        # Collect metrics
-        if self.args.orfs:
-            metrics = {}
-            metrics_inputs = glob.glob(
-                os.path.join(
-                    self.local_dir,
-                    "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/*.json",
-                )
-            )
-            for metrics_input in metrics_inputs:
-                with open(metrics_input) as mf:
-                    metrics.update(json.load(mf))
-            metrics_output = (
-                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/metrics.csv"
-            )
-            with open(metrics_output, "w") as mf:
-                wr = csv.writer(mf)
-                wr.writerow(("Metric", "Value"))
-                wr.writerows(metrics.items())
 
         if self.args.orfs:
             tool_queries = [
