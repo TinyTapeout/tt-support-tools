@@ -82,7 +82,7 @@ class Projects:
                 project.golden_harden()
 
             if args.update_shuttle:
-                project.check_ports(True)
+                project.check_ports(bool(config.get("powered_netlists", True)))
                 project.check_num_cells()
 
             self.projects.append(project)
