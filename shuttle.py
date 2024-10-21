@@ -257,21 +257,26 @@ class ShuttleConfig:
                 f"verilog/gl/{macro}.v",
             )
 
-    def create_efabless_submission(self):
-        logging.info("creating efabless submission directory:")
+    def create_foundry_submission(self, foundry_name: str, copy_user_defines: bool):
+        logging.info(f"creating {foundry_name} submission directory:")
+        target_dir = foundry_name
         lastrun = self.find_last_run("tt_top")
-        copy_print("shuttle_index.md", "efabless/README.md")
-        copy_print("shuttle_index.json", "efabless/shuttle_index.json")
-        copy_print("verilog/rtl/user_defines.v", "efabless/verilog/rtl/user_defines.v")
+        copy_print("shuttle_index.md", f"{target_dir}/README.md")
+        copy_print("shuttle_index.json", f"{target_dir}/shuttle_index.json")
+        if copy_user_defines:
+            copy_print(
+                f"verilog/rtl/user_defines.v",
+                f"{target_dir}/verilog/rtl/user_defines.v",
+            )
         copy_print(
             f"{lastrun}/final/pnl/{self.tt_top_macro}.pnl.v",
-            f"efabless/verilog/gl/{self.tt_top_macro}.v",
+            f"{target_dir}/verilog/gl/{self.tt_top_macro}.v",
         )
         copy_print(
             f"{lastrun}/final/nl/{self.tt_top_macro}.nl.v",
-            f"efabless/verilog/gl/{self.tt_top_macro}.nl.v",
+            f"{target_dir}/verilog/gl/{self.tt_top_macro}.nl.v",
         )
         copy_print(
             f"{lastrun}/final/gds/{self.tt_top_macro}.gds",
-            f"efabless/gds/{self.tt_top_macro}.gds",
+            f"{target_dir}/gds/{self.tt_top_macro}.gds",
         )

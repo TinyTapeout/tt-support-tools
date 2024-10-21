@@ -231,7 +231,13 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--create-efabless-submission",
-        help="create efabless submission files",
+        help="create efabless submission directory",
+        action="store_const",
+        const=True,
+    )
+    parser.add_argument(
+        "--create-ihp-submission",
+        help="create ihp submission directory",
         action="store_const",
         const=True,
     )
@@ -319,7 +325,10 @@ if __name__ == "__main__":
         shuttle.copy_final_results()
 
     if args.create_efabless_submission:
-        shuttle.create_efabless_submission()
+        shuttle.create_foundry_submission("efabless", True)
+
+    if args.create_ihp_submission:
+        shuttle.create_foundry_submission("ihp", False)
 
     if args.update_image:
         docs.update_image()
