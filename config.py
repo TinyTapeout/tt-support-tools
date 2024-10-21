@@ -8,4 +8,4 @@ class Config(TypedDict):
     name: str
     project_dir: str
     end_date: str
-    openframe: bool
+    top_level_macro: str

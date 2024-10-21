@@ -31,10 +31,7 @@ class ShuttleConfig:
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
         self.modules_yaml_name = modules_yaml_name
         self.mux_config_yaml_name = os.environ.get("TT_CONFIG", "sky130.yaml")
-        if config.get("openframe", False):
-            self.tt_top_macro = "openframe_project_wrapper"
-        else:
-            self.tt_top_macro = "user_project_wrapper"
+        self.tt_top_macro = config.get("top_level_macro", "openframe_project_wrapper")
 
         self.read_mux_config_file()
         total_rows: int = self.mux_config["tt"]["grid"]["y"]
