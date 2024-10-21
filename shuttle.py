@@ -32,7 +32,6 @@ class ShuttleConfig:
         self.modules_yaml_name = modules_yaml_name
         self.mux_config_yaml_name = os.environ.get("TT_CONFIG", "sky130.yaml")
         self.tt_top_macro = config.get("top_level_macro", "openframe_project_wrapper")
-        self.netlist_type = "pnl" if self.config.get("powered_netlists", True) else "nl"
 
         self.read_mux_config_file()
         total_rows: int = self.mux_config["tt"]["grid"]["y"]
@@ -187,7 +186,6 @@ class ShuttleConfig:
         copy_print_glob("projects/*/*.gds", "tt-multiplexer/ol2/tt_top/gds")
         copy_print_glob("projects/*/*.lef", "tt-multiplexer/ol2/tt_top/lef")
         copy_print_glob("projects/*/*.v", "tt-multiplexer/ol2/tt_top/verilog")
-        netlist_type = self.netlist_type
         macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux"]
         for macro in macros:
             lastrun = self.find_last_run(macro)
@@ -200,8 +198,12 @@ class ShuttleConfig:
                 f"tt-multiplexer/ol2/tt_top/lef/{macro}.lef",
             )
             copy_print(
-                f"{lastrun}/final/{netlist_type}/{macro}.{netlist_type}.v",
+                f"{lastrun}/final/pnl/{macro}.pnl.v",
                 f"tt-multiplexer/ol2/tt_top/verilog/{macro}.v",
+            )
+            copy_print(
+                f"{lastrun}/final/nl/{macro}.nl.v",
+                f"tt-multiplexer/ol2/tt_top/verilog/{macro}.nl.v",
             )
             copy_print_glob(
                 f"{lastrun}/final/spef/*/*.spef", "tt-multiplexer/ol2/tt_top/spef"
@@ -257,14 +259,17 @@ class ShuttleConfig:
 
     def create_efabless_submission(self):
         logging.info("creating efabless submission directory:")
-        netlist_type = self.netlist_type
         lastrun = self.find_last_run("tt_top")
         copy_print("shuttle_index.md", "efabless/README.md")
         copy_print("shuttle_index.json", "efabless/shuttle_index.json")
         copy_print("verilog/rtl/user_defines.v", "efabless/verilog/rtl/user_defines.v")
         copy_print(
-            f"{lastrun}/final/{netlist_type}/{self.tt_top_macro}.{netlist_type}.v",
+            f"{lastrun}/final/pnl/{self.tt_top_macro}.pnl.v",
             f"efabless/verilog/gl/{self.tt_top_macro}.v",
+        )
+        copy_print(
+            f"{lastrun}/final/nl/{self.tt_top_macro}.nl.v",
+            f"efabless/verilog/gl/{self.tt_top_macro}.nl.v",
         )
         copy_print(
             f"{lastrun}/final/gds/{self.tt_top_macro}.gds",
