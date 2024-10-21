@@ -48,3 +48,5 @@ cp $IHP_PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_sram/cdl/RM_IHPSG13_1P_256x64_c2_bm_
 cp $IHP_PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_sram/cdl/RM_IHPSG13_1P_512x64_c2_bm_bist.cdl $ORFS_ROOT/flow/platforms/ihp-sg13g2/cdl/
 cp $IHP_PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_sram/cdl/RM_IHPSG13_1P_64x64_c2_bm_bist.cdl $ORFS_ROOT/flow/platforms/ihp-sg13g2/cdl/
 
+# Techmap
+cp $IHP_PDK_ROOT/ihp-sg13g2/libs.tech/openlane/sg13g2_stdcell/latch_map.v $ORFS_ROOT/flow/platforms/ihp-sg13g2/cells_latch.v
