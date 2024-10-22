@@ -77,6 +77,9 @@ class ShuttleConfig:
                         "pg_vaa": project.info.uses_3v3,
                     }
                     module_config["modules"].append(module_entry)
+            if self.config.get("no_power_gating", False):
+                for module in module_config["modules"]:
+                    module["pg_vdd"] = False
 
         with open("tt-multiplexer/cfg/modules.yaml", "w") as mux_modules_file:
             yaml.dump(module_config, mux_modules_file)
