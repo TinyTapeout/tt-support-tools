@@ -553,6 +553,8 @@ class Project:
 
         config = read_config("src/config", ("json", "tcl"))
         user_config = read_config("src/user_config", ("json",))
+        if self.args.orfs and "PDN_TCL" in config:
+            del user_config["PDN_TCL"]
         config.update(user_config)
         if self.args.orfs:
             write_config(config, "src/config_merged", ("mk",))
