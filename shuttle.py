@@ -5,6 +5,7 @@ import os
 import shutil
 from typing import List, Set
 
+import brotli  # type: ignore
 import git
 import yaml
 
@@ -17,6 +18,15 @@ def copy_print(src: str, dest: str):
     os.makedirs(os.path.dirname(dest), exist_ok=True)
     logging.info(f"  -> {dest}")
     shutil.copy2(src, dest)
+
+
+def copy_print_decompress(src: str, dest: str):
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    with open(src, "rb") as f:
+        data = f.read()
+    with open(dest, "wb") as f:
+        f.write(brotli.decompress(data))
+    logging.info(f"  -> {dest} (decompressed)")
 
 
 def copy_print_glob(pattern: str, dest_dir: str):
@@ -187,6 +197,12 @@ class ShuttleConfig:
     def copy_macros(self):
         logging.info("copying macros to tt_top:")
         copy_print_glob("projects/*/*.gds", "tt-multiplexer/ol2/tt_top/gds")
+        # Find all the ".gds.br" files, decompress them and copy them to the destination
+        for file in glob.glob("projects/*/*.gds.br"):
+            decompressed_name = os.path.splitext(os.path.basename(file))[0]
+            copy_print_decompress(
+                file, os.path.join("tt-multiplexer/ol2/tt_top/gds", decompressed_name)
+            )
         copy_print_glob("projects/*/*.lef", "tt-multiplexer/ol2/tt_top/lef")
         copy_print_glob("projects/*/*.v", "tt-multiplexer/ol2/tt_top/verilog")
         macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux"]

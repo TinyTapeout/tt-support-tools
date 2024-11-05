@@ -6,6 +6,8 @@
 #
 anyio==4.4.0
     # via httpx
+brotli==1.1.0
+    # via tt-support-tools (pyproject.toml)
 cairocffi==1.7.0
     # via cairosvg
 cairosvg==2.7.1
