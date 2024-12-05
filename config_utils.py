@@ -81,7 +81,7 @@ def write_mk_config(config: dict, file: str):
         for key, value in config.items():
             if type(value) in (list, tuple):
                 value = " ".join(value)
-            if type(value) == str:
+            if type(value) is str:
                 value = value.replace("dir::", "$(DESIGN_HOME)/")
             print(f"export {key} = {value}", file=f)
 
