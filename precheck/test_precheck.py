@@ -341,14 +341,14 @@ def test_klayout_beol_fail(gds_fail_met1_poly: str):
 
 
 def test_klayout_checks_pass(gds_valid: str):
-    precheck.klayout_checks(gds_valid)
+    precheck.klayout_checks(gds_valid, "TEST_valid")
 
 
 def test_klayout_checks_fail_metal5(gds_fail_metal5_poly: str):
     with pytest.raises(
         precheck.PrecheckFailure, match=r"Forbidden layer met5\.drawing found in .+"
     ):
-        precheck.klayout_checks(gds_fail_metal5_poly)
+        precheck.klayout_checks(gds_fail_metal5_poly, "TEST_met5_error")
 
 
 def test_klayout_checks_fail_pr_boundary(gds_no_pr_boundary: str):
@@ -356,7 +356,7 @@ def test_klayout_checks_fail_pr_boundary(gds_no_pr_boundary: str):
         precheck.PrecheckFailure,
         match=r"prBoundary.boundary \(235/4\) layer not found in .+",
     ):
-        precheck.klayout_checks(gds_no_pr_boundary)
+        precheck.klayout_checks(gds_no_pr_boundary, "TEST_no_prboundary")
 
 
 def test_klayout_top_module_name(gds_invalid_macro_name: str):
@@ -364,7 +364,7 @@ def test_klayout_top_module_name(gds_invalid_macro_name: str):
         precheck.PrecheckFailure,
         match="Top macro name mismatch: expected TEST_invalid_macro_name, got wrong_name",
     ):
-        precheck.klayout_checks(gds_invalid_macro_name)
+        precheck.klayout_checks(gds_invalid_macro_name, "TEST_invalid_macro_name")
 
 
 def test_klayout_zero_area_drc_pass(gds_valid: str):
