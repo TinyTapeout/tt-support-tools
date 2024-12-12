@@ -886,11 +886,11 @@ class Project:
             try:
                 doc = chevron.render(doc_template, template_args)
                 fh.write(doc)
-                fh.write("\n\\pagebreak\n")
+                fh.write("\n```{=latex}\n\\pagebreak\n```\n")
             except IndexError:
                 logging.warning("missing pins in info.yaml, skipping")
 
-        pdf_cmd = "pandoc --pdf-engine=xelatex --resource-path=docs -i datasheet.md -o datasheet.pdf"
+        pdf_cmd = "pandoc --pdf-engine=xelatex --resource-path=docs -i datasheet.md -o datasheet.pdf --from gfm+raw_attribute+smart"
         logging.info(pdf_cmd)
         p = subprocess.run(pdf_cmd, shell=True)
         if p.returncode != 0:
