@@ -3,10 +3,12 @@ import argparse
 import logging
 import os
 import subprocess
+import tempfile
 import time
 import traceback
 import xml.etree.ElementTree as ET
 
+import brotli
 import gdstk
 import klayout.db as pya
 import klayout.rdb as rdb
@@ -90,14 +92,13 @@ def klayout_zero_area(gds: str):
     return klayout_drc(gds, "zero_area", "zeroarea.rb.drc")
 
 
-def klayout_checks(gds: str):
+def klayout_checks(gds: str, expected_name: str):
     layout = pya.Layout()
     layout.read(gds)
     layers = parse_lyp_layers(LYP_FILE)
 
     logging.info("Running top macro name check...")
     top_cell = layout.top_cell()
-    expected_name = os.path.splitext(os.path.basename(gds))[0]
     if top_cell.name != expected_name:
         raise PrecheckFailure(
             f"Top macro name mismatch: expected {expected_name}, got {top_cell.name}"
@@ -137,15 +138,31 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     logging.info(f"PDK_ROOT: {PDK_ROOT}")
 
+    if args.gds.endswith(".gds"):
+        gds_stem = args.gds.removesuffix(".gds")
+        gds_temp = None
+        gds_file = args.gds
+    elif args.gds.endswith(".gds.br"):
+        gds_stem = args.gds.removesuffix(".gds.br")
+        gds_temp = tempfile.NamedTemporaryFile(suffix=".gds", delete=False)
+        gds_file = gds_temp.name
+        logging.info(f"decompressing {args.gds} to {gds_file}")
+        with open(args.gds, "rb") as f:
+            data = f.read()
+        with open(gds_file, "wb") as f:
+            f.write(brotli.decompress(data))
+    else:
+        raise PrecheckFailure("Layout file extension is neither .gds nor .gds.br")
+
     if args.top_module:
         top_module = args.top_module
     else:
-        top_module = os.path.splitext(os.path.basename(args.gds))[0]
+        top_module = os.path.basename(gds_stem)
 
     if args.lef:
         lef = args.lef
     else:
-        lef = os.path.splitext(args.gds)[0] + ".lef"
+        lef = gds_stem + ".lef"
 
     if args.template_def:
         template_def = args.template_def
@@ -175,23 +192,23 @@ def main():
         logging.info(f"using def template {template_def}")
 
     checks = [
-        ["Magic DRC", lambda: magic_drc(args.gds, top_module)],
-        ["KLayout FEOL", lambda: klayout_drc(args.gds, "feol")],
-        ["KLayout BEOL", lambda: klayout_drc(args.gds, "beol")],
-        ["KLayout offgrid", lambda: klayout_drc(args.gds, "offgrid")],
+        ["Magic DRC", lambda: magic_drc(gds_file, top_module)],
+        ["KLayout FEOL", lambda: klayout_drc(gds_file, "feol")],
+        ["KLayout BEOL", lambda: klayout_drc(gds_file, "beol")],
+        ["KLayout offgrid", lambda: klayout_drc(gds_file, "offgrid")],
         [
             "KLayout pin label overlapping drawing",
             lambda: klayout_drc(
-                args.gds,
+                gds_file,
                 "pin_label_purposes_overlapping_drawing",
                 "pin_label_purposes_overlapping_drawing.rb.drc",
             ),
         ],
-        ["KLayout zero area", lambda: klayout_zero_area(args.gds)],
-        ["KLayout Checks", lambda: klayout_checks(args.gds)],
+        ["KLayout zero area", lambda: klayout_zero_area(gds_file)],
+        ["KLayout Checks", lambda: klayout_checks(gds_file, top_module)],
         [
             "Pin check",
-            lambda: pin_check(args.gds, lef, template_def, top_module, uses_3v3),
+            lambda: pin_check(gds_file, lef, template_def, top_module, uses_3v3),
         ],
     ]
 
@@ -225,6 +242,10 @@ def main():
 
     with open(f"{REPORTS_PATH}/results.md", "w") as f:
         f.write(markdown_table)
+
+    if gds_temp is not None:
+        gds_temp.close()
+        os.unlink(gds_temp.name)
 
     if error_count > 0:
         logging.error(f"Precheck failed for {args.gds}! 😭")
