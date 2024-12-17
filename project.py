@@ -137,20 +137,8 @@ class Project:
 
     def load_metrics(self):
         try:
-            if self.is_user_project:
-                orfs = self.args.orfs
-                openlane2 = self.args.openlane2
-            else:
-                commit_data = json.load(open("commit_id.json"))
-                orfs = "orfs_version" in commit_data
-                openlane2 = commit_data.get("openlane_version", "").startswith(
-                    "OpenLane2"
-                )
             with open(self.get_metrics_path()) as fh:
-                if orfs or openlane2:
-                    self.metrics = dict(csv.reader(fh))
-                else:
-                    self.metrics = next(csv.DictReader(fh))
+                self.metrics = dict(csv.reader(fh))
         except FileNotFoundError:
             self.metrics = {}
 
@@ -372,10 +360,8 @@ class Project:
                     self.local_dir,
                     "runs/wokwi/results/ihp-sg13g2/tt-submission/base/metrics.csv",
                 )
-            elif self.args.openlane2:
-                return os.path.join(self.local_dir, "runs/wokwi/final/metrics.csv")
             else:
-                return os.path.join(self.local_dir, "runs/wokwi/reports/metrics.csv")
+                return os.path.join(self.local_dir, "runs/wokwi/final/metrics.csv")
         else:
             return os.path.join(self.local_dir, "stats/metrics.csv")
 
@@ -386,15 +372,9 @@ class Project:
                     self.local_dir,
                     "runs/wokwi/results/ihp-sg13g2/tt-submission/base/6_final.v",
                 )
-            if self.args.openlane2:
-                return glob.glob(
-                    os.path.join(self.local_dir, "runs/wokwi/final/nl/*.nl.v")
-                )[0]
             else:
                 return glob.glob(
-                    os.path.join(
-                        self.local_dir, "runs/wokwi/results/final/verilog/gl/*.nl.v"
-                    )
+                    os.path.join(self.local_dir, "runs/wokwi/final/nl/*.nl.v")
                 )[0]
         else:
             return os.path.join(self.local_dir, f"{self.info.top_module}.v")
@@ -591,16 +571,12 @@ class Project:
             env["WORK_HOME"] = os.path.join(self.local_dir, "runs/wokwi")
             env["DESIGN_HOME"] = self.src_dir
             env["DESIGN_CONFIG"] = os.path.join(self.src_dir, "config_merged.mk")
-        elif self.args.openlane2:
+        else:
             shutil.rmtree("runs/wokwi", ignore_errors=True)
             os.makedirs("runs/wokwi", exist_ok=True)
             arg_progress = "--hide-progress-bar" if "CI" in os.environ else ""
             arg_pdk_root = '--pdk-root "$PDK_ROOT"' if "PDK_ROOT" in os.environ else ""
             harden_cmd = f"python -m openlane {arg_pdk_root} --docker-no-tty --dockerized --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
-            env = os.environ.copy()
-        else:
-            # requires PDK, PDK_ROOT, OPENLANE_ROOT & OPENLANE_IMAGE_NAME to be set in local environment
-            harden_cmd = "docker run --rm -v $OPENLANE_ROOT:/openlane -v $PDK_ROOT:$PDK_ROOT -v $(pwd):/work -e PDK=$PDK -e PDK_ROOT=$PDK_ROOT -u $(id -u $USER):$(id -g $USER) $OPENLANE_IMAGE_NAME ./flow.tcl -overwrite -design /work/src -run_path /work/runs -config_file /work/src/config_merged.json -tag wokwi"
             env = os.environ.copy()
         logging.debug(harden_cmd)
         p = subprocess.run(harden_cmd, shell=True, env=env)
@@ -644,10 +620,8 @@ class Project:
             commit_id_json_path = (
                 "runs/wokwi/results/ihp-sg13g2/tt-submission/base/commit_id.json"
             )
-        elif self.args.openlane2:
-            commit_id_json_path = "runs/wokwi/final/commit_id.json"
         else:
-            commit_id_json_path = "runs/wokwi/results/final/commit_id.json"
+            commit_id_json_path = "runs/wokwi/final/commit_id.json"
         with open(os.path.join(self.local_dir, commit_id_json_path), "w") as f:
             json.dump(
                 {
@@ -682,7 +656,7 @@ class Project:
             with open("runs/wokwi/tool_versions.json", "w") as f:
                 json.dump(tool_versions, f, indent=2)
 
-        elif self.args.openlane2:
+        else:
             resolved_json_path = "runs/wokwi/resolved.json"
             config = json.load(open(os.path.join(self.local_dir, resolved_json_path)))
             openlane_version = config["meta"]["openlane_version"]
@@ -906,13 +880,9 @@ class Project:
                 self.local_dir,
                 "runs/wokwi/results/ihp-sg13g2/tt-submission/base/6_final.gds",
             )
-        elif self.args.openlane2:
-            gds_path = glob.glob(
-                os.path.join(self.local_dir, "runs/wokwi/final/gds/*.gds")
-            )[0]
         else:
             gds_path = glob.glob(
-                os.path.join(self.local_dir, "runs/wokwi/results/final/gds/*.gds")
+                os.path.join(self.local_dir, "runs/wokwi/final/gds/*.gds")
             )[0]
         library = gdstk.read_gds(gds_path)
         top_cells = library.top_level()
@@ -1069,11 +1039,9 @@ class Project:
 
         if self.args.orfs:
             synth_log = "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/1_1_yosys.log"
-        elif self.args.openlane2:
+        else:
             synth_log_glob = "runs/wokwi/*-yosys-synthesis/yosys-synthesis.log"
             synth_log = glob.glob(os.path.join(self.local_dir, synth_log_glob))[0]
-        else:
-            synth_log = "runs/wokwi/logs/synthesis/1-synthesis.log"
         with open(os.path.join(self.local_dir, synth_log)) as f:
             for line in f.readlines():
                 if line.startswith("Warning:"):
@@ -1088,12 +1056,9 @@ class Project:
                     if line.startswith("Warning:"):
                         warnings.append(line.strip())
         else:
-            if self.args.openlane2:
-                sta_report_glob = (
-                    "runs/wokwi/*-openroad-stapostpnr/nom_tt_025C_1v80/checks.rpt"
-                )
-            else:
-                sta_report_glob = "runs/wokwi/reports/signoff/*-sta-rcx_nom/multi_corner_sta.checks.rpt"
+            sta_report_glob = (
+                "runs/wokwi/*-openroad-stapostpnr/nom_tt_025C_1v80/checks.rpt"
+            )
             sta_report = glob.glob(os.path.join(self.local_dir, sta_report_glob))[0]
             with open(os.path.join(self.local_dir, sta_report)) as f:
                 for line in f.readlines():
@@ -1107,29 +1072,22 @@ class Project:
                 print(f"* {warning}")
 
     def print_stats(self):
-        if self.args.orfs or self.args.openlane2:
-            # ORFS & openlane2 don't have the same util% in its metrics as openlane1
-            if self.args.orfs:
-                util_log = (
-                    "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/3_3_place_gp.log"
-                )
-            else:
-                util_glob = (
-                    "runs/wokwi/*-openroad-globalplacement/openroad-globalplacement.log"
-                )
-                util_log = glob.glob(os.path.join(self.local_dir, util_glob))[0]
-            util_label = "[INFO GPL-0019] Util:"
-            util_line = next(
-                line for line in open(util_log) if line.startswith(util_label)
-            )
-            util = util_line.removeprefix(util_label).strip()
-            if self.args.orfs:
-                wire_length = self.metrics["detailedroute__route__wirelength"]
-            else:
-                wire_length = self.metrics["route__wirelength"]
+        # ORFS & openlane2 don't have the same util% in its metrics as openlane1
+        if self.args.orfs:
+            util_log = "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/3_3_place_gp.log"
         else:
-            util = self.metrics["OpenDP_Util"]
-            wire_length = self.metrics["wire_length"]
+            util_glob = (
+                "runs/wokwi/*-openroad-globalplacement/openroad-globalplacement.log"
+            )
+            util_log = glob.glob(os.path.join(self.local_dir, util_glob))[0]
+        util_label = "[INFO GPL-0019] Util:"
+        util_line = next(line for line in open(util_log) if line.startswith(util_label))
+        util = util_line.removeprefix(util_label).strip()
+
+        if self.args.orfs:
+            wire_length = self.metrics["detailedroute__route__wirelength"]
+        else:
+            wire_length = self.metrics["route__wirelength"]
 
         print("# Routing stats")
         print()
