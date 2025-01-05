@@ -864,7 +864,7 @@ class Project:
             except IndexError:
                 logging.warning("missing pins in info.yaml, skipping")
 
-        pdf_cmd = "pandoc --pdf-engine=xelatex --resource-path=docs -i datasheet.md -o datasheet.pdf --from gfm+raw_attribute+smart"
+        pdf_cmd = "pandoc --pdf-engine=xelatex --resource-path=docs -i datasheet.md -o datasheet.pdf --from gfm+raw_attribute+smart+attributes"
         logging.info(pdf_cmd)
         p = subprocess.run(pdf_cmd, shell=True)
         if p.returncode != 0:

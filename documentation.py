@@ -121,7 +121,7 @@ class Docs:
 
                 logging.info(f"building datasheet for {project}")
 
-                # ensure there are no LaTeX escape sequences in various fields, and that optional fields are set
+                # ensure that optional fields are set
                 for key in [
                     "author",
                     "description",
@@ -129,32 +129,28 @@ class Docs:
                     "git_url",
                     "doc_link",
                 ]:
-                    if key in yaml_data:
-                        yaml_data[key] = str(yaml_data[key]).replace(
-                            "\\", "\\mbox{\\textbackslash}"
-                        )
-                    else:
+                    if key not in yaml_data:
                         yaml_data[key] = ""
 
                 # now build the doc & print it
                 try:
                     doc = chevron.render(doc_template, yaml_data)
                     fh.write(doc)
-                    fh.write("\n\\clearpage\n")
+                    fh.write("\n```{=latex}\n\\clearpage\n```\n")
                 except IndexError:
                     logging.warning("missing pins in info.yaml, skipping")
 
             # ending
             fh.write(doc_pinout)
-            fh.write("\n\\clearpage\n")
+            fh.write("\n```{=latex}\n\\clearpage\n```\n")
             fh.write(doc_info)
-            fh.write("\n\\clearpage\n")
+            fh.write("\n```{=latex}\n\\clearpage\n```\n")
             fh.write(doc_credits)
 
         logging.info(f"wrote markdown to {markdown_file}")
 
         if pdf_file is not None:
-            pdf_cmd = f"pandoc --toc --toc-depth 2 --pdf-engine=xelatex -i {markdown_file} -o {pdf_file}"
+            pdf_cmd = f"pandoc --toc --toc-depth 2 --pdf-engine=xelatex -i {markdown_file} -o {pdf_file} --from gfm+raw_attribute+smart+attributes"
             logging.info(pdf_cmd)
             p = subprocess.run(pdf_cmd, shell=True)
             if p.returncode != 0:
