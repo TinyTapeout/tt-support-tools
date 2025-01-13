@@ -7,6 +7,7 @@ from typing import List, Set
 
 import brotli  # type: ignore
 import git
+import klayout.db as pya
 import yaml
 
 from config import Config
@@ -27,6 +28,14 @@ def copy_print_decompress(src: str, dest: str):
     with open(dest, "wb") as f:
         f.write(brotli.decompress(data))
     logging.info(f"  -> {dest} (decompressed)")
+
+
+def copy_print_convert(src: str, dest: str):
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    layout = pya.Layout()
+    layout.read(src)
+    layout.write(dest)
+    logging.info(f"  -> {dest} (converted)")
 
 
 def copy_print_glob(pattern: str, dest_dir: str):
@@ -202,6 +211,12 @@ class ShuttleConfig:
             decompressed_name = os.path.splitext(os.path.basename(file))[0]
             copy_print_decompress(
                 file, os.path.join("tt-multiplexer/ol2/tt_top/gds", decompressed_name)
+            )
+        # Convert .oas files to .gds
+        for file in glob.glob("projects/*/*.oas"):
+            converted_name = os.path.splitext(os.path.basename(file))[0] + ".gds"
+            copy_print_convert(
+                file, os.path.join("tt-multiplexer/ol2/tt_top/gds", converted_name)
             )
         copy_print_glob("projects/*/*.lef", "tt-multiplexer/ol2/tt_top/lef")
         copy_print_glob("projects/*/*.v", "tt-multiplexer/ol2/tt_top/verilog")
