@@ -203,6 +203,20 @@ class ShuttleConfig:
             f"tt-multiplexer/ol2/tt_top/verilog/{name}.v",
         )
 
+    def copy_logo_macro(self, name: str):
+        copy_print(
+            f"tt/logo/{name}.gds",
+            f"tt-multiplexer/ol2/tt_top/gds/{name}.gds",
+        )
+        copy_print(
+            f"tt/logo/{name}.lef",
+            f"tt-multiplexer/ol2/tt_top/lef/{name}.lef",
+        )
+        copy_print(
+            f"tt/logo/{name}.v",
+            f"tt-multiplexer/ol2/tt_top/verilog/{name}.v",
+        )
+
     def copy_macros(self):
         logging.info("copying macros to tt_top:")
         copy_print_glob("projects/*/*.gds", "tt-multiplexer/ol2/tt_top/gds")
@@ -249,6 +263,10 @@ class ShuttleConfig:
         self.copy_mux_macro("pg/tt_pg_1v8_4", "tt_pg_1v8_4")
         self.copy_mux_macro("pg/tt_pg_3v3_2", "tt_pg_3v3_2")
         self.copy_mux_macro("asw/tt_asw_3v3", "tt_asw_3v3")
+
+        # Copy logo & shuttle ID
+        self.copy_logo_macro("tt_logo_top")
+        self.copy_logo_macro("tt_logo_bottom")
 
     def copy_final_results(self):
         macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux", "tt_top"]

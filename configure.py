@@ -15,6 +15,7 @@ import yaml
 
 from config import Config
 from documentation import Docs
+from logo import LogoGenerator
 from project import Project
 from rom import ROMFile
 from shuttle import ShuttleConfig
@@ -305,6 +306,7 @@ if __name__ == "__main__":
     docs = Docs(config, projects.projects)
     shuttle = ShuttleConfig(config, projects.projects, modules_yaml_name)
     rom = ROMFile(config)
+    logo = LogoGenerator("tt", config)
 
     if args.list:
         shuttle.list()
@@ -315,6 +317,7 @@ if __name__ == "__main__":
     if args.update_shuttle:
         shuttle.configure_mux()
         rom.write_rom()
+        logo.gen_logo("bottom", "tt/logo/tt_logo_bottom.gds")
         if not args.test:
             docs.build_index()
 
