@@ -107,6 +107,114 @@ def gds_invalid_macro_name(tmp_path_factory: pytest.TempPathFactory):
     return str(gds_file)
 
 
+@pytest.fixture(scope="session")
+def gds_shapes_outside_area(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS with shapes outside the project area."""
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_shapes_outside_area.gds"
+    layout = pya.Layout()
+    met1_info = gds_layers["met1.drawing"]
+    met1 = layout.layer(met1_info.layer, met1_info.data_type)
+    top_cell = layout.create_cell("TEST_shapes_outside_area")
+    rect = pya.DBox(-1, 0, 0, 1)
+    top_cell.shapes(met1).insert(rect)
+    layout.write(str(gds_file))
+    return str(gds_file)
+
+
+@pytest.fixture(scope="session")
+def verilog_lef_wrong_power_pins(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a Verilog & LEF file with wrong power pins."""
+    verilog_file = tmp_path_factory.mktemp("verilog") / "TEST_wrong_power_pins.v"
+    verilog_data = """
+        `default_nettype none
+        module TEST_wrong_power_pins (
+            input wire VGND,
+            input wire VDPWR,
+            input wire VAPWR
+        );
+        endmodule
+    """
+    open(verilog_file, "w").write(textwrap.dedent(verilog_data))
+    lef_file = tmp_path_factory.mktemp("lef") / "TEST_wrong_power_pins.lef"
+    lef_data = """
+        VERSION 5.7 ;
+        NOWIREEXTENSIONATPIN ON ;
+        DIVIDERCHAR "/" ;
+        BUSBITCHARS "[]" ;
+        MACRO TEST_wrong_power_pins
+        CLASS BLOCK ;
+        FOREIGN TEST_wrong_power_pins ;
+        ORIGIN 0.000 0.000 ;
+        SIZE 161.000 BY 111.520 ;
+        PIN VGND
+            DIRECTION INOUT ;
+            USE GROUND ;
+            PORT
+            LAYER met4 ;
+                RECT 21.580 2.480 23.180 109.040 ;
+            END
+        END VGND
+        PIN VDPWR
+            DIRECTION INOUT ;
+            USE POWER ;
+            PORT
+            LAYER met4 ;
+                RECT 18.280 2.480 19.880 109.040 ;
+            END
+        END VDPWR
+    """
+    open(lef_file, "w").write(textwrap.dedent(lef_data))
+    return str(verilog_file), str(lef_file)
+
+
+@pytest.fixture(scope="session")
+def gds_invalid_layer(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS with a layer/datatype not defined in sky130."""
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_invalid_layer.gds"
+    layout = pya.Layout()
+    invalid_layer = layout.layer(255, 255)
+    top_cell = layout.create_cell("TEST_invalid_layer")
+    rect = pya.DBox(0, 0, 5, 5)
+    top_cell.shapes(invalid_layer).insert(rect)
+    layout.write(str(gds_file))
+    return str(gds_file)
+
+
+@pytest.fixture(scope="session")
+def gds_invalid_cell_name(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS with a subcell having a '#' in its name."""
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_invalid_cell_name.gds"
+    layout = pya.Layout()
+    top_cell = layout.create_cell("TEST_invalid_cell_name")
+    subcell = layout.create_cell("subcell#")
+    subcell_instance = pya.CellInstArray(subcell, pya.Trans())
+    top_cell.insert(subcell_instance)
+    layout.write(str(gds_file))
+    return str(gds_file)
+
+
+@pytest.fixture(scope="session")
+def gds_urpm_nwell_too_close(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS with a subcell having a '#' in its name."""
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_urpm_nwell_too_close.gds"
+    layout = pya.Layout()
+    nwell_info = gds_layers["nwell.drawing"]
+    nwell = layout.layer(nwell_info.layer, nwell_info.data_type)
+    urpm = layout.layer(79, 20)
+    # Hardcoding "urpm" layer/datatype because the .lyp file on the PDK version
+    # we use on GitHub Actions doesn't have it yet. Once we upgrade it, we can
+    # replace the line above with:
+    #   urpm_info = gds_layers["urpm"]
+    #   urpm = layout.layer(urpm_info.layer, urpm_info.data_type)
+    top_cell = layout.create_cell("TEST_urpm_nwell_too_close")
+    nwell_rect = pya.DBox(0, 0, 5, 5)
+    top_cell.shapes(nwell).insert(nwell_rect)
+    urpm_rect = pya.DBox(5, 0, 10, 5)
+    top_cell.shapes(urpm).insert(urpm_rect)
+    layout.write(str(gds_file))
+    return str(gds_file)
+
+
 class PortRect:
     def __init__(
         self, layer: str, bottom_left: tuple[int, int], top_right: tuple[int, int]
@@ -153,17 +261,23 @@ def generate_analog_example(
                     f"""
                     box {rect.lx} {rect.by} {rect.rx} {rect.ty}
                     paint {rect.layer}
-                    label {port.name} FreeSans {rect.layer}
                     """
                 )
-            tcl_append(
-                f"""
-                port {port.name} makeall n
-                port {port.name} use {port.port_use}
-                port {port.name} class {port.port_class}
-                port conn n s e w
-                """
-            )
+                if port.name:
+                    tcl_append(
+                        f"""
+                        label {port.name} FreeSans {rect.layer}
+                        """
+                    )
+            if port.name:
+                tcl_append(
+                    f"""
+                    port {port.name} makeall n
+                    port {port.name} use {port.port_use}
+                    port {port.name} class {port.port_class}
+                    port conn n s e w
+                    """
+                )
         tcl_append(
             f"""
             # Export
@@ -294,7 +408,7 @@ def gds_lef_analog_compound_vgnd(tmp_path_factory: pytest.TempPathFactory):
 
 @pytest.fixture(scope="session")
 def gds_lef_analog_example_3v3(tmp_path_factory: pytest.TempPathFactory):
-    """Creates a GDS and LEF using the 1x2 analog template."""
+    """Creates a GDS and LEF using the 1x2 analog template using 3v3 power."""
     tcl_file = tmp_path_factory.mktemp("tcl") / "TEST_analog_example_3v3.tcl"
     gds_file = tmp_path_factory.mktemp("gds") / "TEST_analog_example_3v3.gds"
     lef_file = tmp_path_factory.mktemp("lef") / "TEST_analog_example_3v3.lef"
@@ -308,6 +422,28 @@ def gds_lef_analog_example_3v3(tmp_path_factory: pytest.TempPathFactory):
             SimplePort("VDPWR", "met4", (100, 500), (250, 22076)),
             SimplePort("VAPWR", "met4", (2500, 500), (2650, 22076)),
             SimplePort("VGND", "met4", (4900, 500), (5050, 22076)),
+        ],
+    )
+    return str(gds_file), str(lef_file)
+
+
+@pytest.fixture(scope="session")
+def gds_lef_analog_pin_example(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS and LEF using the 1x2 analog template with 2 analog pins used."""
+    tcl_file = tmp_path_factory.mktemp("tcl") / "TEST_analog_pin_example.tcl"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_analog_pin_example.gds"
+    lef_file = tmp_path_factory.mktemp("lef") / "TEST_analog_pin_example.lef"
+
+    generate_analog_example(
+        str(tcl_file),
+        str(gds_file),
+        str(lef_file),
+        "TEST_analog_example",
+        [
+            SimplePort("VDPWR", "met4", (100, 500), (250, 22076)),
+            SimplePort("VGND", "met4", (4900, 500), (5050, 22076)),
+            SimplePort("", "via3", (15200, 30), (15250, 80)),
+            SimplePort("", "via3", (13270, 30), (13320, 80)),
         ],
     )
     return str(gds_file), str(lef_file)
@@ -374,6 +510,44 @@ def test_klayout_zero_area_drc_pass(gds_valid: str):
 def test_klayout_zero_area_drc_fail(gds_zero_area: str):
     with pytest.raises(precheck.PrecheckFailure, match="Klayout zero_area failed"):
         precheck.klayout_zero_area(gds_zero_area)
+
+
+def test_shapes_outside_area(gds_shapes_outside_area: str):
+    with pytest.raises(precheck.PrecheckFailure, match="Shapes outside project area"):
+        precheck.boundary_check(gds_shapes_outside_area)
+
+
+def test_wrong_power_pins_1(verilog_lef_wrong_power_pins: tuple[str, str]):
+    verilog_file, lef_file = verilog_lef_wrong_power_pins
+    with pytest.raises(precheck.PrecheckFailure, match="Verilog contains VAPWR"):
+        precheck.power_pin_check(verilog_file, lef_file, uses_3v3=False)
+
+
+def test_wrong_power_pins_2(verilog_lef_wrong_power_pins: tuple[str, str]):
+    verilog_file, lef_file = verilog_lef_wrong_power_pins
+    with pytest.raises(precheck.PrecheckFailure, match="LEF doesn't contain VAPWR"):
+        precheck.power_pin_check(verilog_file, lef_file, uses_3v3=True)
+
+
+def test_invalid_layer(gds_invalid_layer: str):
+    with pytest.raises(precheck.PrecheckFailure, match="Invalid layers in GDS"):
+        precheck.layer_check(gds_invalid_layer, "sky130")
+
+
+def test_invalid_cell_name(gds_invalid_cell_name: str):
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="Cell name subcell# contains invalid character '#'",
+    ):
+        precheck.cell_name_check(gds_invalid_cell_name)
+
+
+def test_urpm_nwell_too_close(gds_urpm_nwell_too_close: str):
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="Klayout nwell_urpm failed with 1 DRC violations",
+    ):
+        precheck.urpm_nwell_check(gds_urpm_nwell_too_close, "TEST_urpm_nwell_too_close")
 
 
 def test_pin_analog_example(gds_lef_analog_example: tuple[str, str]):
@@ -477,4 +651,57 @@ def test_pin_analog_3v3_mismatch2(gds_lef_analog_example_3v3: tuple[str, str]):
             "../def/analog/tt_analog_1x2.def",
             "TEST_analog_example_3v3",
             False,
+        )
+
+
+def test_analog_exact_pins(gds_lef_analog_pin_example: tuple[str, str]):
+    gds_file, lef_file = gds_lef_analog_pin_example
+    precheck.analog_pin_check(
+        gds_file, "sky130", True, False, 2, {"ua[0]": "x", "ua[1]": "x"}
+    )
+
+
+def test_analog_less_pins(gds_lef_analog_pin_example: tuple[str, str]):
+    gds_file, lef_file = gds_lef_analog_pin_example
+    with pytest.raises(
+        precheck.PrecheckFailure, match="Analog pin 1 connected but `analog_pins` is 1"
+    ):
+        precheck.analog_pin_check(
+            gds_file, "sky130", True, False, 1, {"ua[0]": "x", "ua[1]": "x"}
+        )
+
+
+def test_analog_more_pins(gds_lef_analog_pin_example: tuple[str, str]):
+    gds_file, lef_file = gds_lef_analog_pin_example
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="Analog pin 2 not connected but `analog_pins` is 3",
+    ):
+        precheck.analog_pin_check(
+            gds_file, "sky130", True, False, 3, {"ua[0]": "x", "ua[1]": "x"}
+        )
+
+
+def test_analog_less_ua_entries(gds_lef_analog_pin_example: tuple[str, str]):
+    gds_file, lef_file = gds_lef_analog_pin_example
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="Analog pin 1 connected but `pinout\\.ua\\[1\\]` is falsy",
+    ):
+        precheck.analog_pin_check(gds_file, "sky130", True, False, 2, {"ua[0]": "x"})
+
+
+def test_analog_more_ua_entries(gds_lef_analog_pin_example: tuple[str, str]):
+    gds_file, lef_file = gds_lef_analog_pin_example
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="Analog pin 2 not connected but `pinout\\.ua\\[2\\]` is truthy",
+    ):
+        precheck.analog_pin_check(
+            gds_file,
+            "sky130",
+            True,
+            False,
+            2,
+            {"ua[0]": "x", "ua[1]": "x", "ua[2]": "x"},
         )

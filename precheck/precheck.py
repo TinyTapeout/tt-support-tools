@@ -2,6 +2,7 @@
 import argparse
 import logging
 import os
+import re
 import subprocess
 import tempfile
 import time
@@ -16,6 +17,7 @@ import yaml
 from klayout_tools import parse_lyp_layers
 from pin_check import pin_check
 from precheck_failure import PrecheckFailure
+from tech_data import analog_pin_pos, layer_map, valid_layers
 
 PDK_ROOT = os.getenv("PDK_ROOT")
 PDK_NAME = os.getenv("PDK_NAME") or "sky130A"
@@ -59,23 +61,18 @@ def magic_drc(gds: str, toplevel: str):
         raise PrecheckFailure("Magic DRC failed")
 
 
-def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc"):
+def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc", extra_vars=[]):
     logging.info(f"Running klayout {check} on {gds}")
     report_file = f"{REPORTS_PATH}/drc_{check}.xml"
-    klayout = subprocess.run(
-        [
-            "klayout",
-            "-b",
-            "-r",
-            f"tech-files/{script}",
-            "-rd",
-            f"{check}=true",
-            "-rd",
-            f"input={gds}",
-            "-rd",
-            f"report={report_file}",
-        ],
-    )
+    script_vars = [
+        f"{check}=true",
+        f"input={gds}",
+        f"report={report_file}",
+    ]
+    klayout_args = ["klayout", "-b", "-r", f"tech-files/{script}"]
+    for v in script_vars + extra_vars:
+        klayout_args.extend(["-rd", v])
+    klayout = subprocess.run(klayout_args)
     if klayout.returncode != 0:
         raise PrecheckFailure(f"Klayout {check} failed")
 
@@ -128,12 +125,128 @@ def klayout_checks(gds: str, expected_name: str):
         )
 
 
+def boundary_check(gds: str):
+    """Ensure that there are no shapes outside the project area."""
+    lib = gdstk.read_gds(gds)
+    tops = lib.top_level()
+    if len(tops) != 1:
+        raise PrecheckFailure("GDS top level not unique")
+    top = tops[0]
+    boundary = top.copy("test_boundary")
+    boundary.filter([(235, 4)], False)
+    if top.bounding_box() != boundary.bounding_box():
+        raise PrecheckFailure("Shapes outside project area")
+
+
+def power_pin_check(verilog: str, lef: str, uses_3v3: bool):
+    """Ensure that VPWR / VGND are present,
+    and that VAPWR is present if and only if 'uses_3v3' is set."""
+    verilog_s = open(verilog).read().replace("VPWR", "VDPWR")
+    lef_s = open(lef).read().replace("VPWR", "VDPWR")
+
+    # naive but good enough way to ignore comments
+    verilog_s = re.sub("//.*", "", verilog_s)
+    verilog_s = re.sub("/\\*.*\\*/", "", verilog_s, flags=(re.DOTALL | re.MULTILINE))
+
+    for ft, s in (("Verilog", verilog_s), ("LEF", lef_s)):
+        for pwr, ex in (("VGND", True), ("VDPWR", True), ("VAPWR", uses_3v3)):
+            if (pwr in s) and not ex:
+                raise PrecheckFailure(f"{ft} contains {pwr}")
+            if not (pwr in s) and ex:
+                raise PrecheckFailure(f"{ft} doesn't contain {pwr}")
+
+
+def layer_check(gds: str, tech: str):
+    """Check that there are no invalid layers in the GDS file."""
+    lib = gdstk.read_gds(gds)
+    layers = lib.layers_and_datatypes().union(lib.layers_and_texttypes())
+    excess = layers - valid_layers[tech]
+    if excess:
+        raise PrecheckFailure(f"Invalid layers in GDS: {excess}")
+
+
+def cell_name_check(gds: str):
+    """Check that there are no cell names with '#' or '/' in them."""
+    for cell_name in gdstk.read_rawcells(gds):
+        if "#" in cell_name:
+            raise PrecheckFailure(
+                f"Cell name {cell_name} contains invalid character '#'"
+            )
+        if "/" in cell_name:
+            raise PrecheckFailure(
+                f"Cell_name {cell_name} contains invalid character '/'"
+            )
+
+
+def urpm_nwell_check(gds: str, top_module: str):
+    """Run a DRC check for urpm to nwell spacing."""
+    extra_vars = [f"thr={os.cpu_count()}", f"top_cell={top_module}"]
+    klayout_drc(
+        gds=gds, check="nwell_urpm", script="nwell_urpm.drc", extra_vars=extra_vars
+    )
+
+
+def analog_pin_check(
+    gds: str, tech: str, is_analog: bool, uses_3v3: bool, analog_pins: int, pinout: dict
+):
+    """Check that every analog pin connects to a piece of metal
+    if and only if the pin is used according to info.yaml."""
+    if is_analog:
+        lib = gdstk.read_gds(gds)
+        top = lib.top_level()[0]
+        met4 = top.copy("test_met4")
+        met4.flatten()
+        met4.filter([layer_map[tech]["met4"]], False)
+        via3 = top.copy("test_via3")
+        via3.flatten()
+        via3.filter([layer_map[tech]["via3"]], False)
+
+        for pin in range(8):
+            x = analog_pin_pos[tech](pin, uses_3v3)
+            x1, y1, x2, y2 = x, 0, x + 0.9, 1.0
+            pin_over = gdstk.rectangle((x1, y1), (x2, y2))
+            pin_above = gdstk.rectangle((x1, y2 + 0.1), (x2, y2 + 0.5))
+            pin_below = gdstk.rectangle((x1, y1 - 0.5), (x2, y1 - 0.1))
+            pin_left = gdstk.rectangle((x1 - 0.5, y1), (x1 - 0.1, y2))
+            pin_right = gdstk.rectangle((x2 + 0.1, y1), (x2 + 0.5, y2))
+
+            via3_over = gdstk.boolean(via3.polygons, pin_over, "and")
+            met4_above = gdstk.boolean(met4.polygons, pin_above, "and")
+            met4_below = gdstk.boolean(met4.polygons, pin_below, "and")
+            met4_left = gdstk.boolean(met4.polygons, pin_left, "and")
+            met4_right = gdstk.boolean(met4.polygons, pin_right, "and")
+
+            connected = (
+                bool(via3_over)
+                or bool(met4_above)
+                or bool(met4_below)
+                or bool(met4_left)
+                or bool(met4_right)
+            )
+            expected_pc = pin < analog_pins
+            expected_pd = bool(pinout.get(f"ua[{pin}]", ""))
+
+            if connected and not expected_pc:
+                raise PrecheckFailure(
+                    f"Analog pin {pin} connected but `analog_pins` is {analog_pins}"
+                )
+            elif connected and not expected_pd:
+                raise PrecheckFailure(
+                    f"Analog pin {pin} connected but `pinout.ua[{pin}]` is falsy"
+                )
+            elif not connected and expected_pc:
+                raise PrecheckFailure(
+                    f"Analog pin {pin} not connected but `analog_pins` is {analog_pins}"
+                )
+            elif not connected and expected_pd:
+                raise PrecheckFailure(
+                    f"Analog pin {pin} not connected but `pinout.ua[{pin}]` is truthy"
+                )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--gds", required=True)
-    parser.add_argument("--lef", required=False)
-    parser.add_argument("--template-def", required=False)
-    parser.add_argument("--top-module", required=False)
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     logging.info(f"PDK_ROOT: {PDK_ROOT}")
@@ -154,42 +267,38 @@ def main():
     else:
         raise PrecheckFailure("Layout file extension is neither .gds nor .gds.br")
 
-    if args.top_module:
-        top_module = args.top_module
-    else:
-        top_module = os.path.basename(gds_stem)
+    yaml_dir = os.path.dirname(args.gds)
+    while not os.path.exists(f"{yaml_dir}/info.yaml"):
+        yaml_dir = os.path.dirname(yaml_dir)
+        if yaml_dir == "/":
+            raise PrecheckFailure("info.yaml not found")
+    yaml_file = f"{yaml_dir}/info.yaml"
+    yaml_data = yaml.safe_load(open(yaml_file))
+    logging.info("info.yaml data:" + str(yaml_data))
 
-    if args.lef:
-        lef = args.lef
-    else:
-        lef = gds_stem + ".lef"
+    wokwi_id = yaml_data["project"].get("wokwi_id", 0)
+    top_module = yaml_data["project"].get("top_module", f"tt_um_wokwi_{wokwi_id}")
+    assert top_module == os.path.basename(gds_stem)
 
-    if args.template_def:
-        template_def = args.template_def
-    else:
-        yaml_dir = os.path.dirname(args.gds)
-        while not os.path.exists(f"{yaml_dir}/info.yaml"):
-            yaml_dir = os.path.dirname(yaml_dir)
-            if yaml_dir == "/":
-                raise PrecheckFailure("info.yaml not found")
-        yaml_file = f"{yaml_dir}/info.yaml"
-        yaml_data = yaml.safe_load(open(yaml_file))
-        logging.info("info.yaml data:" + str(yaml_data))
-        tiles = yaml_data.get("project", {}).get("tiles", "1x1")
-        is_analog = yaml_data.get("project", {}).get("analog_pins", 0) > 0
-        uses_3v3 = bool(yaml_data.get("project", {}).get("uses_3v3", False))
-        if uses_3v3 and not is_analog:
-            raise PrecheckFailure(
-                "Projects with 3v3 power need at least one analog pin"
-            )
-        if is_analog:
-            if uses_3v3:
-                template_def = f"../def/analog/tt_analog_{tiles}_3v3.def"
-            else:
-                template_def = f"../def/analog/tt_analog_{tiles}.def"
+    tiles = yaml_data.get("project", {}).get("tiles", "1x1")
+    analog_pins = yaml_data.get("project", {}).get("analog_pins", 0)
+    is_analog = analog_pins > 0
+    uses_3v3 = bool(yaml_data.get("project", {}).get("uses_3v3", False))
+    pinout = yaml_data.get("pinout", {})
+    if uses_3v3 and not is_analog:
+        raise PrecheckFailure("Projects with 3v3 power need at least one analog pin")
+    if is_analog:
+        if uses_3v3:
+            template_def = f"../def/analog/tt_analog_{tiles}_3v3.def"
         else:
-            template_def = f"../def/tt_block_{tiles}_pg.def"
-        logging.info(f"using def template {template_def}")
+            template_def = f"../def/analog/tt_analog_{tiles}.def"
+    else:
+        template_def = f"../def/tt_block_{tiles}_pg.def"
+    logging.info(f"using def template {template_def}")
+
+    lef_file = gds_stem + ".lef"
+    verilog_file = gds_stem + ".v"
+    tech = "sky130"
 
     checks = [
         ["Magic DRC", lambda: magic_drc(gds_file, top_module)],
@@ -208,7 +317,18 @@ def main():
         ["KLayout Checks", lambda: klayout_checks(gds_file, top_module)],
         [
             "Pin check",
-            lambda: pin_check(gds_file, lef, template_def, top_module, uses_3v3),
+            lambda: pin_check(gds_file, lef_file, template_def, top_module, uses_3v3),
+        ],
+        ["Boundary check", lambda: boundary_check(gds_file)],
+        ["Power pin check", lambda: power_pin_check(verilog_file, lef_file, uses_3v3)],
+        ["Layer check", lambda: layer_check(gds_file, tech)],
+        ["Cell name check", lambda: cell_name_check(gds_file)],
+        ["urpm/nwell check", lambda: urpm_nwell_check(gds_file, top_module)],
+        [
+            "Analog pin check",
+            lambda: analog_pin_check(
+                gds_file, tech, is_analog, uses_3v3, analog_pins, pinout
+            ),
         ],
     ]
 
