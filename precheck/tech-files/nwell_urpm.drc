@@ -1,0 +1,14 @@
+source($input, $top_cell)
+report("SKY130 DRC runset", $report)
+deep
+threads($thr)
+verbose(true)
+
+nwell = polygons(64, 20)
+urpm = polygons(79, 20)
+
+nwell.separation(urpm,0.7, euclidian).output(
+    "nwell space to urpm",
+    "nwell space to urpm: min. nwell spacing to urpm 0.7um"
+)
+
