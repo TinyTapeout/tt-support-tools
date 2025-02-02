@@ -30,8 +30,21 @@ module tt_um_chip_rom (
     $readmemh(`ROM_VMEM_PATH, rom_data);
   end
 
-  assign uo_out  = rom_data[ui_in];
+  // The address counter, only used when rst_n is low
+  reg  [7:0] addr_counter;
+  wire [7:0] selected_addr = rst_n ? ui_in : addr_counter;
+
+  assign uo_out  = rom_data[selected_addr];
   assign uio_out = 8'h00;
   assign uio_oe  = 8'h00;
+
+
+  always @(posedge clk or posedge rst_n) begin
+    if (rst_n) begin
+      addr_counter <= 0;
+    end else begin
+      addr_counter <= addr_counter + 1;
+    end
+  end
 
 endmodule  // tt_um_chip_rom
