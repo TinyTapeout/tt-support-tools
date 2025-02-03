@@ -2,3 +2,4 @@ klayout==0.29.0
 gdstk==0.9.50
 pytest==7.4.3
 PyYAML==6.0.1
+numpy==1.26.4
