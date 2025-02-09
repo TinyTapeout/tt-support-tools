@@ -1,6 +1,8 @@
-# Sponsored by
+# Funding
 
-[![efabless](pics/efabless.png)](https://efabless.com/)
+IHP PDK support for Tiny Tapeout was funded by The SwissChips Initiative.
+
+The manufacturing of Tiny Tapeout IHP 0p2 silicon was funded by the German BMBF project FMD-QNC (16ME0831).
 
 # Team
 
