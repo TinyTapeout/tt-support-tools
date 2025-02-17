@@ -664,7 +664,8 @@ def test_analog_exact_pins(gds_lef_analog_pin_example: tuple[str, str]):
 def test_analog_less_pins(gds_lef_analog_pin_example: tuple[str, str]):
     gds_file, lef_file = gds_lef_analog_pin_example
     with pytest.raises(
-        precheck.PrecheckFailure, match="Analog pin 1 connected but `analog_pins` is 1"
+        precheck.PrecheckFailure,
+        match="Analog pin `ua\\[1\\]` is connected to some metal but `analog_pins` is set to 1 .*",
     ):
         precheck.analog_pin_check(
             gds_file, "sky130", True, False, 1, {"ua[0]": "x", "ua[1]": "x"}
@@ -675,7 +676,7 @@ def test_analog_more_pins(gds_lef_analog_pin_example: tuple[str, str]):
     gds_file, lef_file = gds_lef_analog_pin_example
     with pytest.raises(
         precheck.PrecheckFailure,
-        match="Analog pin 2 not connected but `analog_pins` is 3",
+        match="Analog pin `ua\\[2\\]` is not connected to any adjacent metal but `analog_pins` is set to 3 .*",
     ):
         precheck.analog_pin_check(
             gds_file, "sky130", True, False, 3, {"ua[0]": "x", "ua[1]": "x"}
@@ -686,7 +687,7 @@ def test_analog_less_ua_entries(gds_lef_analog_pin_example: tuple[str, str]):
     gds_file, lef_file = gds_lef_analog_pin_example
     with pytest.raises(
         precheck.PrecheckFailure,
-        match="Analog pin 1 connected but `pinout\\.ua\\[1\\]` is falsy",
+        match="Analog pin `ua\\[1\\]` is connected to some metal but the description of `ua\\[1\\]` .*",
     ):
         precheck.analog_pin_check(gds_file, "sky130", True, False, 2, {"ua[0]": "x"})
 
@@ -695,7 +696,7 @@ def test_analog_more_ua_entries(gds_lef_analog_pin_example: tuple[str, str]):
     gds_file, lef_file = gds_lef_analog_pin_example
     with pytest.raises(
         precheck.PrecheckFailure,
-        match="Analog pin 2 not connected but `pinout\\.ua\\[2\\]` is truthy",
+        match="Analog pin `ua\\[2\\]` is not connected to any adjacent metal but the description of `ua\\[2\\]` .*",
     ):
         precheck.analog_pin_check(
             gds_file,
