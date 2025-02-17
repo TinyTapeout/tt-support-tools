@@ -228,19 +228,19 @@ def analog_pin_check(
 
             if connected and not expected_pc:
                 raise PrecheckFailure(
-                    f"Analog pin {pin} connected but `analog_pins` is {analog_pins}"
+                    f"Analog pin `ua[{pin}]` is connected to some metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either increase `analog_pins` to at least {pin+1}, or remove any metal4 or via3 adjacent to `ua[{pin}]`."
                 )
             elif connected and not expected_pd:
                 raise PrecheckFailure(
-                    f"Analog pin {pin} connected but `pinout.ua[{pin}]` is falsy"
+                    f"Analog pin `ua[{pin}]` is connected to some metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is empty. Either add a description or remove any metal4 or via3 adjacent to `ua[{pin}]`."
                 )
             elif not connected and expected_pc:
                 raise PrecheckFailure(
-                    f"Analog pin {pin} not connected but `analog_pins` is {analog_pins}"
+                    f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either wire up `ua[{pin}]` to your design using metal4 or via3, or decrease `analog_pins` to {pin}."
                 )
             elif not connected and expected_pd:
                 raise PrecheckFailure(
-                    f"Analog pin {pin} not connected but `pinout.ua[{pin}]` is truthy"
+                    f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is non-empty. Either wire up `ua[{pin}]` to your design using metal4 or via3, or remove the description for the disconnected pin."
                 )
 
 
