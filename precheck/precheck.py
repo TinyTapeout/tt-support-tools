@@ -203,26 +203,15 @@ def analog_pin_check(
 
         for pin in range(8):
             x = analog_pin_pos[tech](pin, uses_3v3)
-            x1, y1, x2, y2 = x, 0, x + 0.9, 1.0
-            pin_over = gdstk.rectangle((x1, y1), (x2, y2))
-            pin_above = gdstk.rectangle((x1, y2 + 0.1), (x2, y2 + 0.5))
-            pin_below = gdstk.rectangle((x1, y1 - 0.5), (x2, y1 - 0.1))
-            pin_left = gdstk.rectangle((x1 - 0.5, y1), (x1 - 0.1, y2))
-            pin_right = gdstk.rectangle((x2 + 0.1, y1), (x2 + 0.5, y2))
+            pin_over = gdstk.rectangle((x, 0), (x + 0.9, 1.0))
+            pin_around = gdstk.boolean(
+                gdstk.offset(pin_over, 0.5), gdstk.offset(pin_over, 0.1), "not"
+            )
 
             via3_over = gdstk.boolean(via3.polygons, pin_over, "and")
-            met4_above = gdstk.boolean(met4.polygons, pin_above, "and")
-            met4_below = gdstk.boolean(met4.polygons, pin_below, "and")
-            met4_left = gdstk.boolean(met4.polygons, pin_left, "and")
-            met4_right = gdstk.boolean(met4.polygons, pin_right, "and")
+            met4_around = gdstk.boolean(met4.polygons, pin_around, "and")
+            connected = bool(via3_over) or bool(met4_around)
 
-            connected = (
-                bool(via3_over)
-                or bool(met4_above)
-                or bool(met4_below)
-                or bool(met4_left)
-                or bool(met4_right)
-            )
             expected_pc = pin < analog_pins
             expected_pd = bool(pinout.get(f"ua[{pin}]", ""))
 
