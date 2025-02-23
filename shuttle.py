@@ -258,11 +258,14 @@ class ShuttleConfig:
             )
 
         # Copy power gate / analog switch macros:
-        self.copy_mux_macro("pg/tt_pg_1v8_1", "tt_pg_1v8_1")
-        self.copy_mux_macro("pg/tt_pg_1v8_2", "tt_pg_1v8_2")
-        self.copy_mux_macro("pg/tt_pg_1v8_4", "tt_pg_1v8_4")
-        self.copy_mux_macro("pg/tt_pg_3v3_2", "tt_pg_3v3_2")
-        self.copy_mux_macro("asw/tt_asw_3v3", "tt_asw_3v3")
+        self.copy_mux_macro("pg/sky130/tt_pg_1v8_1", "tt_pg_1v8_1")
+        self.copy_mux_macro("pg/sky130/tt_pg_1v8_2", "tt_pg_1v8_2")
+        self.copy_mux_macro("pg/sky130/tt_pg_1v8_4", "tt_pg_1v8_4")
+        self.copy_mux_macro("pg/sky130/tt_pg_1v8_ll_1", "tt_pg_1v8_ll_1")
+        self.copy_mux_macro("pg/sky130/tt_pg_1v8_ll_2", "tt_pg_1v8_ll_2")
+        self.copy_mux_macro("pg/sky130/tt_pg_1v8_ll_4", "tt_pg_1v8_ll_4")
+        self.copy_mux_macro("pg/sky130/tt_pg_3v3_2", "tt_pg_3v3_2")
+        self.copy_mux_macro("asw/sky130/tt_asw_3v3", "tt_asw_3v3")
 
         # Copy logo & shuttle ID
         self.copy_logo_macro("tt_logo_top")
