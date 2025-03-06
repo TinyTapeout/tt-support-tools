@@ -64,13 +64,9 @@ PINOUT_KEYS = [
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-with open(os.path.join(os.path.dirname(__file__), "tile_sizes.yaml"), "r") as stream:
-    tile_sizes = yaml.safe_load(stream)
-
-
 class Args:
     openlane2: bool
-    orfs: bool
+    ihp: bool
     print_cell_summary: bool
     print_cell_category: bool
 
@@ -355,29 +351,28 @@ class Project:
     # metrics
     def get_metrics_path(self):
         if self.is_user_project:
-            if self.args.orfs:
-                return os.path.join(
-                    self.local_dir,
-                    "runs/wokwi/results/ihp-sg13g2/tt-submission/base/metrics.csv",
-                )
-            else:
-                return os.path.join(self.local_dir, "runs/wokwi/final/metrics.csv")
+            return os.path.join(self.local_dir, "runs/wokwi/final/metrics.csv")
         else:
             return os.path.join(self.local_dir, "stats/metrics.csv")
 
     def get_gl_path(self):
         if self.is_user_project:
-            if self.args.orfs:
-                return os.path.join(
-                    self.local_dir,
-                    "runs/wokwi/results/ihp-sg13g2/tt-submission/base/6_final.v",
-                )
-            else:
-                return glob.glob(
-                    os.path.join(self.local_dir, "runs/wokwi/final/nl/*.nl.v")
-                )[0]
+            return glob.glob(
+                os.path.join(self.local_dir, "runs/wokwi/final/nl/*.nl.v")
+            )[0]
         else:
             return os.path.join(self.local_dir, f"{self.info.top_module}.v")
+
+    def get_tile_sizes(self):
+        if self.args.ihp:
+            tile_sizes_yaml = "ihp/tile_sizes.yaml"
+        else:
+            tile_sizes_yaml = "tile_sizes.yaml"
+        with open(
+            os.path.join(os.path.dirname(__file__), tile_sizes_yaml), "r"
+        ) as stream:
+            tile_sizes = yaml.safe_load(stream)
+        return tile_sizes
 
     # name of the gds file
     def get_macro_gds_filename(self):
@@ -497,24 +492,18 @@ class Project:
         self.check_ports()
         logging.info("creating include file")
         tiles = self.info.tiles
-        if self.args.orfs:
-            config = {
-                "DESIGN_NICKNAME": "tt-submission",
-                "DESIGN_NAME": self.info.top_module,
-                "PLATFORM": "ihp-sg13g2",
-                "VERILOG_FILES": [f"dir::{src}" for src in self.sources],
-                "FLOORPLAN_DEF": f"dir::../tt/ihp/def/tt_block_{tiles}.def",
-                "SDC_FILE": f"dir::../tt/ihp/constraint.sdc",
-                "PDN_TCL": f"dir::../tt/ihp/pdn.tcl",
-            }
+        tile_sizes = self.get_tile_sizes()
+        die_area = tile_sizes[tiles]
+        if self.args.ihp:
+            def_template = f"dir::../tt/ihp/def/tt_block_{tiles}_pgvdd.def"
         else:
-            die_area = tile_sizes[tiles]
-            config = {
-                "DESIGN_NAME": self.info.top_module,
-                "VERILOG_FILES": [f"dir::{src}" for src in self.sources],
-                "DIE_AREA": die_area,
-                "FP_DEF_TEMPLATE": f"dir::../tt/def/tt_block_{tiles}_pg.def",
-            }
+            def_template = f"dir::../tt/def/tt_block_{tiles}_pg.def"
+        config = {
+            "DESIGN_NAME": self.info.top_module,
+            "VERILOG_FILES": [f"dir::{src}" for src in self.sources],
+            "DIE_AREA": die_area,
+            "FP_DEF_TEMPLATE": def_template,
+        }
         write_config(config, os.path.join(self.src_dir, "user_config"), ("json",))
 
     def golden_harden(self):
@@ -533,95 +522,24 @@ class Project:
 
         config = read_config("src/config", ("json", "tcl"))
         user_config = read_config("src/user_config", ("json",))
-        if self.args.orfs and "PDN_TCL" in config:
-            del user_config["PDN_TCL"]
         config.update(user_config)
-        if self.args.orfs:
-            write_config(config, "src/config_merged", ("mk",))
-        else:
-            write_config(config, "src/config_merged", ("json",))
+        write_config(config, "src/config_merged", ("json",))
 
-        if self.args.orfs:
-            shutil.rmtree("runs/wokwi", ignore_errors=True)
-            os.makedirs("runs/wokwi", exist_ok=True)
-            cdl = os.path.join(
-                self.local_dir,
-                "runs/wokwi/objects/ihp-sg13g2/tt-submission/base/6_final_concat.cdl",
-            )
-            harden_cmd = f"make -B -C $ORFS_ROOT/flow all generate_abstract {cdl}"
-            env = os.environ.copy()
-            if "ORFS_ROOT" not in env:
-                env["ORFS_ROOT"] = os.path.join(self.local_dir, "OpenROAD-flow-scripts")
-            if "OPENROAD_EXE" not in env:
-                openroad_exe = shutil.which("openroad")
-                if openroad_exe is None:
-                    raise FileNotFoundError("OpenROAD executable not found")
-                env["OPENROAD_EXE"] = openroad_exe
-            if "YOSYS_EXE" not in env:
-                yosys_exe = shutil.which("yosys")
-                if yosys_exe is None:
-                    raise FileNotFoundError("Yosys executable not found")
-                env["YOSYS_EXE"] = yosys_exe
-            if "IHP_PDK_ROOT" not in env:
-                env["IHP_PDK_ROOT"] = os.path.join(self.local_dir, "IHP-Open-PDK")
-            if "KLAYOUT_HOME" not in env:
-                env["KLAYOUT_HOME"] = os.path.join(
-                    env["IHP_PDK_ROOT"], "ihp-sg13g2/libs.tech/klayout"
-                )
-            env["WORK_HOME"] = os.path.join(self.local_dir, "runs/wokwi")
-            env["DESIGN_HOME"] = self.src_dir
-            env["DESIGN_CONFIG"] = os.path.join(self.src_dir, "config_merged.mk")
-        else:
-            shutil.rmtree("runs/wokwi", ignore_errors=True)
-            os.makedirs("runs/wokwi", exist_ok=True)
-            arg_progress = "--hide-progress-bar" if "CI" in os.environ else ""
-            arg_pdk_root = '--pdk-root "$PDK_ROOT"' if "PDK_ROOT" in os.environ else ""
-            harden_cmd = f"python -m openlane {arg_pdk_root} --docker-no-tty --dockerized --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
-            env = os.environ.copy()
+        shutil.rmtree("runs/wokwi", ignore_errors=True)
+        os.makedirs("runs/wokwi", exist_ok=True)
+        arg_progress = "--hide-progress-bar" if "CI" in os.environ else ""
+        arg_pdk_root = '--pdk-root "$PDK_ROOT"' if "PDK_ROOT" in os.environ else ""
+        arg_pdk = "--manual-pdk --pdk ihp-sg13g2" if self.args.ihp else ""
+        harden_cmd = f"python -m openlane {arg_pdk_root} --docker-no-tty --dockerized {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
+        env = os.environ.copy()
         logging.debug(harden_cmd)
         p = subprocess.run(harden_cmd, shell=True, env=env)
         if p.returncode != 0:
             logging.error("harden failed")
             exit(1)
 
-        # Collect metrics
-        if self.args.orfs:
-            metrics = {}
-            metrics_inputs = glob.glob(
-                os.path.join(
-                    self.local_dir,
-                    "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/*.json",
-                )
-            )
-            for metrics_input in metrics_inputs:
-                with open(metrics_input) as mf:
-                    metrics.update(json.load(mf))
-            metrics_output = (
-                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/metrics.csv"
-            )
-            with open(metrics_output, "w") as mf:
-                wr = csv.writer(mf)
-                wr.writerow(("Metric", "Value"))
-                wr.writerows(metrics.items())
-
-        # Fail if violations remain after detailed routing
-        if self.args.orfs:
-            if metrics["detailedroute__route__drc_errors"] > 0:
-                logging.error("error: detailed routing couldn't resolve all violations")
-                exit(1)
-
-        # DRC & LVS aren't included in the default ORFS flow
-        if self.args.orfs:
-            self.run_drc()
-            self.run_lvs()
-
         # Write commit information
-        if self.args.orfs:
-            commit_id_json_path = (
-                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/commit_id.json"
-            )
-        else:
-            commit_id_json_path = "runs/wokwi/final/commit_id.json"
+        commit_id_json_path = "runs/wokwi/final/commit_id.json"
         with open(os.path.join(self.local_dir, commit_id_json_path), "w") as f:
             json.dump(
                 {
@@ -635,39 +553,24 @@ class Project:
             )
             f.write("\n")
 
-        if self.args.orfs:
-            tool_queries = [
-                ("yosys", "shell", "yosys -V"),
-                ("openroad", "shell", "openroad -version"),
-                ("klayout", "shell", "klayout -v"),
-                ("orfs", "repo", env["ORFS_ROOT"]),
-                ("ihp_pdk", "repo", env["IHP_PDK_ROOT"]),
-            ]
-            tool_versions = {}
-            for tool_name, query_type, query_param in tool_queries:
-                if query_type == "shell":
-                    tool_versions[tool_name] = subprocess.run(
-                        query_param, shell=True, capture_output=True, text=True
-                    ).stdout.strip()
-                elif query_type == "repo":
-                    tool_versions[tool_name] = (
-                        Repo(os.path.join(self.local_dir, query_param)).commit().hexsha
-                    )
-            with open("runs/wokwi/tool_versions.json", "w") as f:
-                json.dump(tool_versions, f, indent=2)
-
+        resolved_json_path = "runs/wokwi/resolved.json"
+        config = json.load(open(os.path.join(self.local_dir, resolved_json_path)))
+        openlane_version = config["meta"]["openlane_version"]
+        if self.args.ihp:
+            pdk_repo = Repo(env["PDK_ROOT"])
+            pdk_repo_name = list(pdk_repo.remotes[0].urls)[0].split("/")[-1]
+            pdk_commit = pdk_repo.commit().hexsha
+            pdk_sources = f"{pdk_repo_name} {pdk_commit}"
         else:
-            resolved_json_path = "runs/wokwi/resolved.json"
-            config = json.load(open(os.path.join(self.local_dir, resolved_json_path)))
-            openlane_version = config["meta"]["openlane_version"]
             pdk_sources_file = os.path.join(
                 config["PDK_ROOT"], config["PDK"], "SOURCES"
             )
             pdk_sources = open(pdk_sources_file).read()
-            open("runs/wokwi/OPENLANE_VERSION", "w").write(
-                f"OpenLane2 {openlane_version}\n"
-            )
-            open("runs/wokwi/PDK_SOURCES", "w").write(pdk_sources)
+        open("runs/wokwi/OPENLANE_VERSION", "w").write(
+            f"OpenLane2 {openlane_version}\n"
+        )
+        open("runs/wokwi/PDK_SOURCES", "w").write(pdk_sources)
+        if not self.args.ihp:
             volare.enable(
                 volare.get_volare_home(),  # uses PDK_ROOT if set, ~/.volare otherwise
                 {"sky130A": "sky130"}[config["PDK"]],
@@ -677,83 +580,10 @@ class Project:
         os.chdir(cwd)
 
     def run_drc(self):
-        if self.args.orfs:
-            gds_path = os.path.join(
-                self.local_dir,
-                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/6_final.gds",
-            )
-            drc_script = os.path.join(
-                os.environ["IHP_PDK_ROOT"],
-                "ihp-sg13g2/libs.tech/klayout/tech/drc/sg13g2_maximal.lydrc",
-            )
-            drc_report = os.path.join(
-                self.local_dir,
-                "runs/wokwi/reports/ihp-sg13g2/tt-submission/base/6_drc.lyrdb",
-            )
-            drc_log = os.path.join(
-                self.local_dir,
-                "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/6_drc.log",
-            )
-            drc_cmd = f"klayout -b -rd in_gds={gds_path} -rd report_file={drc_report} -rd density=false -r {drc_script} | tee {drc_log}"
-            p = subprocess.run(drc_cmd, shell=True)
-            if p.returncode != 0:
-                logging.error("DRC job exited abnormally")
-                exit(1)
-            with open(drc_report) as f:
-                drc_ok = True
-                for line in f:
-                    line = line.strip()
-                    if re.match("<category>'([^']*)'</category>", line):
-                        drc_ok = False
-                        break
-                if drc_ok:
-                    logging.info("DRC passed")
-                else:
-                    logging.error("DRC failed")
-                    exit(1)
-        else:
-            logging.warning(
-                "DRC is already included in OpenLane hardening job, skipping"
-            )
+        logging.warning("DRC is already included in OpenLane hardening job, skipping")
 
     def run_lvs(self):
-        if self.args.orfs:
-            gds_path = os.path.join(
-                self.local_dir,
-                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/6_final.gds",
-            )
-            cdl_path = os.path.join(
-                self.local_dir,
-                "runs/wokwi/objects/ihp-sg13g2/tt-submission/base/6_final_concat.cdl",
-            )
-            lvs_script = os.path.join(
-                os.environ["IHP_PDK_ROOT"],
-                "ihp-sg13g2/libs.tech/klayout/tech/lvs/sg13g2_full.lylvs",
-            )
-            lvs_report = os.path.join(
-                self.local_dir,
-                "runs/wokwi/reports/ihp-sg13g2/tt-submission/base/6_lvs.lvsdb",
-            )
-            lvs_log = os.path.join(
-                self.local_dir,
-                "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/6_lvs.log",
-            )
-            lvs_cmd = f"klayout -b -rd in_gds={gds_path} -rd cdl_file={cdl_path} -rd report_file={lvs_report} -rd run_mode=deep -r {lvs_script} | tee {lvs_log}"
-            p = subprocess.run(lvs_cmd, shell=True)
-            if p.returncode != 0:
-                logging.error("LVS job exited abnormally")
-                exit(1)
-            with open(lvs_log) as f:
-                ok_msg = "Congratulations! Netlists match."
-                if any(ok_msg in line for line in f):
-                    logging.info("LVS passed")
-                else:
-                    logging.error("LVS failed")
-                    exit(1)
-        else:
-            logging.warning(
-                "LVS is already included in OpenLane hardening job, skipping"
-            )
+        logging.warning("LVS is already included in OpenLane hardening job, skipping")
 
     def create_fpga_bitstream(self):
         logging.info(f"Creating FPGA bitstream for {self}")
@@ -875,11 +705,6 @@ class Project:
     def get_final_gds_top_cells(self):
         if "GDS_PATH" in os.environ:
             gds_path = os.environ["GDS_PATH"]
-        elif self.args.orfs:
-            gds_path = os.path.join(
-                self.local_dir,
-                "runs/wokwi/results/ihp-sg13g2/tt-submission/base/6_final.gds",
-            )
         else:
             gds_path = glob.glob(
                 os.path.join(self.local_dir, "runs/wokwi/final/gds/*.gds")
@@ -919,7 +744,7 @@ class Project:
             (67, 25),  # 67/25 - Metal5.text
             (126, 25),  # 126/25 - TopMetal1.text
         ]
-        if self.args.orfs:
+        if self.args.ihp:
             label_layers = ihp_label_layers
         else:
             label_layers = sky130_label_layers
@@ -974,7 +799,7 @@ class Project:
                 (51, 0),  # 51/0 - HeatTrans.drawing
                 (189, 4),  # 189/4 - prBoundary.boundary
             ]
-            if self.args.orfs:
+            if self.args.ihp:
                 buried_layers = ihp_buried_layers
             else:
                 buried_layers = sky130_buried_layers
@@ -1037,11 +862,8 @@ class Project:
     def print_warnings(self):
         warnings: typing.List[str] = []
 
-        if self.args.orfs:
-            synth_log = "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/1_1_yosys.log"
-        else:
-            synth_log_glob = "runs/wokwi/*-yosys-synthesis/yosys-synthesis.log"
-            synth_log = glob.glob(os.path.join(self.local_dir, synth_log_glob))[0]
+        synth_log_glob = "runs/wokwi/*-yosys-synthesis/yosys-synthesis.log"
+        synth_log = glob.glob(os.path.join(self.local_dir, synth_log_glob))[0]
         with open(os.path.join(self.local_dir, synth_log)) as f:
             for line in f.readlines():
                 if line.startswith("Warning:"):
@@ -1049,21 +871,16 @@ class Project:
                     if "WIDTHLABEL" not in line:
                         warnings.append(line.strip())
 
-        if self.args.orfs:
-            report = "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/6_report.log"
-            with open(os.path.join(self.local_dir, report)) as f:
-                for line in f.readlines():
-                    if line.startswith("Warning:"):
-                        warnings.append(line.strip())
+        if self.args.ihp:
+            tt_corner = "nom_typ_1p20V_25C"
         else:
-            sta_report_glob = (
-                "runs/wokwi/*-openroad-stapostpnr/nom_tt_025C_1v80/checks.rpt"
-            )
-            sta_report = glob.glob(os.path.join(self.local_dir, sta_report_glob))[0]
-            with open(os.path.join(self.local_dir, sta_report)) as f:
-                for line in f.readlines():
-                    if line.startswith("Warning:") and "clock" in line:
-                        warnings.append(line.strip())
+            tt_corner = "nom_tt_025C_1v80"
+        sta_report_glob = f"runs/wokwi/*-openroad-stapostpnr/{tt_corner}/checks.rpt"
+        sta_report = glob.glob(os.path.join(self.local_dir, sta_report_glob))[0]
+        with open(os.path.join(self.local_dir, sta_report)) as f:
+            for line in f.readlines():
+                if line.startswith("Warning:") and "clock" in line:
+                    warnings.append(line.strip())
 
         if len(warnings):
             print("# Synthesis warnings")
@@ -1072,22 +889,16 @@ class Project:
                 print(f"* {warning}")
 
     def print_stats(self):
-        # ORFS & openlane2 don't have the same util% in its metrics as openlane1
-        if self.args.orfs:
-            util_log = "runs/wokwi/logs/ihp-sg13g2/tt-submission/base/3_3_place_gp.log"
-        else:
-            util_glob = (
-                "runs/wokwi/*-openroad-globalplacement/openroad-globalplacement.log"
-            )
-            util_log = glob.glob(os.path.join(self.local_dir, util_glob))[0]
+        util_glob = "runs/wokwi/*-openroad-globalplacement/openroad-globalplacement.log"
+        util_log = glob.glob(os.path.join(self.local_dir, util_glob))[0]
         util_label = "[INFO GPL-0019] Util:"
         util_line = next(line for line in open(util_log) if line.startswith(util_label))
         util = util_line.removeprefix(util_label).strip()
 
-        if self.args.orfs:
+        try:
+            wire_length = self.metrics["route__wirelength"]  # OpenROAD #2047
+        except KeyError:
             wire_length = self.metrics["detailedroute__route__wirelength"]
-        else:
-            wire_length = self.metrics["route__wirelength"]
 
         print("# Routing stats")
         print()
@@ -1102,20 +913,20 @@ class Project:
         Categories = typing.TypedDict(
             "Categories", {"categories": typing.List[str], "map": typing.Dict[str, int]}
         )
-        if self.args.orfs:
+        if self.args.ihp:
             categories_file = "ihp/categories.json"
         else:
             categories_file = "categories.json"
         with open(os.path.join(SCRIPT_DIR, categories_file)) as fh:
             categories: Categories = json.load(fh)
 
-        if self.args.orfs:
+        if self.args.ihp:
             ihp_defs = load_ihp_cells()
         else:
             sky130_defs = load_sky130_cells()
 
         def _cell_url(name):
-            if self.args.orfs:
+            if self.args.ihp:
                 return _ihp_cell_url(ihp_defs[name]["doc_ref"])
             else:
                 return _sky130_cell_url(name)
@@ -1133,7 +944,7 @@ class Project:
                 if count > 0:
                     total += count
                     cell_link = _cell_url(name)
-                    if self.args.orfs:
+                    if self.args.ihp:
                         description = ihp_defs[name]["description"]
                     else:
                         description = sky130_defs[name]["description"]
@@ -1196,17 +1007,20 @@ class Project:
     def get_cell_counts_from_gl(self):
         cell_count: typing.Dict[str, int] = {}
         total = 0
+        if self.args.ihp:
+            cell_re = r"sg13g2_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+        else:
+            cell_re = (
+                r"sky130_(?P<cell_lib>\S+)__(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+            )
         with open(self.get_gl_path()) as fh:
             for line in fh.readlines():
-                if self.args.orfs:
-                    cell_re = r"sg13g2()_(\S+)_(\d+)"
-                else:
-                    cell_re = r"sky130_(\S+)__(\S+)_(\d+)"
                 m = re.search(cell_re, line)
                 if m is not None:
                     total += 1
-                    cell_lib = m.group(1)
-                    cell_name = m.group(2)
+                    gd = m.groupdict()
+                    cell_lib = gd.get("cell_lib", "")
+                    cell_name = gd["cell_name"]
                     assert cell_lib in ["fd_sc_hd", "ef_sc_hd", ""]
                     try:
                         cell_count[cell_name] += 1
