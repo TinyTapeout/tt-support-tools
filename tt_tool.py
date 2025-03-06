@@ -24,11 +24,11 @@ if __name__ == "__main__":
         help="use openlane 2",
         action="store_const",
         const=True,
-        default=False,
+        default=True,
     )
     parser.add_argument(
-        "--orfs",
-        help="use ORFS",
+        "--ihp",
+        help="use IHP PDK",
         action="store_const",
         const=True,
         default=False,
