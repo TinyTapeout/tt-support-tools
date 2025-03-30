@@ -212,13 +212,6 @@ class ShuttleConfig:
                 f"{lastrun}/final/spef/*/*.spef", "tt-multiplexer/ol2/tt_top/spef"
             )
 
-        # Copy power gate / analog switch macros:
-        self.copy_mux_macro("pg/tt_pg_1v8_1", "tt_pg_1v8_1")
-        self.copy_mux_macro("pg/tt_pg_1v8_2", "tt_pg_1v8_2")
-        self.copy_mux_macro("pg/tt_pg_1v8_4", "tt_pg_1v8_4")
-        self.copy_mux_macro("pg/tt_pg_3v3_2", "tt_pg_3v3_2")
-        self.copy_mux_macro("asw/tt_asw_3v3", "tt_asw_3v3")
-
     def copy_final_results(self):
         macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux", "tt_top"]
 
@@ -246,19 +239,20 @@ class ShuttleConfig:
                 dirs_exist_ok=True,
             )
         # Copy power gate macros:
-        for macro in ["tt_pg_1v8_1", "tt_pg_1v8_2", "tt_pg_1v8_4", "tt_pg_3v3_2"]:
-            copy_print(
-                f"tt-multiplexer/pg/{macro}/gds/{macro}.gds",
-                f"gds/{macro}.gds",
-            )
-            copy_print(
-                f"tt-multiplexer/pg/{macro}/lef/{macro}.lef",
-                f"lef/{macro}.lef",
-            )
-            copy_print(
-                f"tt-multiplexer/pg/{macro}/src/{macro}.v",
-                f"verilog/gl/{macro}.v",
-            )
+        if not self.config.get("no_power_gating", False):
+            for macro in ["tt_pg_1v8_1", "tt_pg_1v8_2", "tt_pg_1v8_4", "tt_pg_3v3_2"]:
+                copy_print(
+                    f"tt-multiplexer/pg/{macro}/gds/{macro}.gds",
+                    f"gds/{macro}.gds",
+                )
+                copy_print(
+                    f"tt-multiplexer/pg/{macro}/lef/{macro}.lef",
+                    f"lef/{macro}.lef",
+                )
+                copy_print(
+                    f"tt-multiplexer/pg/{macro}/src/{macro}.v",
+                    f"verilog/gl/{macro}.v",
+                )
 
     def create_foundry_submission(self, foundry_name: str, copy_user_defines: bool):
         logging.info(f"creating {foundry_name} submission directory:")
