@@ -1,4 +1,4 @@
-### Wokwi/TinyTapeout testing system ###
+### Wokwi/Tiny Tapeout testing system ###
 
 
 A system has been devised to allow for simplified verification and testing of wokwi projects.

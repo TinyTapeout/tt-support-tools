@@ -201,7 +201,7 @@ class Projects:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="TinyTapeout configuration and docs")
+    parser = argparse.ArgumentParser(description="Tiny Tapeout configuration and docs")
 
     with open("config.yaml") as fh:
         config = yaml.safe_load(fh)

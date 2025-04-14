@@ -1,6 +1,6 @@
 """
 
-Wokwi TinyTapeout truth-table based auto test sequence.
+Wokwi Tiny Tapeout truth-table based auto test sequence.
 
 SPDX-FileCopyrightText: © 2023 Pat Deegan, https://psychogenic.com
 SPDX-License-Identifier: Apache2.0

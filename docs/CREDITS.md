@@ -17,7 +17,7 @@ Tiny Tapeout would not be possible without a lot of people helping. We would esp
 * [Proppy](https://twitter.com/proppy) for help with GitHub actions
 * [Maximo Balestrini](https://twitter.com/maxiborga) for all the amazing renders and the interactive GDS viewer
 * James Rosenthal for coming up with digital design examples
-* All the people who took part in [TinyTapeout 01](/runs/tt01) and volunteered time to improve docs and test the flow
+* All the people who took part in [Tiny Tapeout 01](/runs/tt01) and volunteered time to improve docs and test the flow
 * The team at [YosysHQ](https://www.yosyshq.com/) and all the other open source EDA tool makers
 * Jeff and the [Efabless Team](https://efabless.com/) for running the shuttles and providing OpenLane and sponsorship
 * [Tim Ansell and Google](https://www.youtube.com/watch?v=EczW2IWdnOM) for supporting the open source silicon movement
