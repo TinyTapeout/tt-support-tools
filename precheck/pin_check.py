@@ -6,6 +6,7 @@ from numbers import Real
 
 import gdstk
 from precheck_failure import PrecheckFailure
+from tech_data import power_pins_layer, valid_lef_port_layers
 
 
 def canonicalize_rectangles(
@@ -98,7 +99,9 @@ def parsefp3(value: str):
     return int(mul)
 
 
-def pin_check(gds: str, lef: str, template_def: str, toplevel: str, uses_3v3: bool):
+def pin_check(
+    gds: str, lef: str, template_def: str, toplevel: str, uses_3v3: bool, tech: str
+):
     logging.info("Running pin check...")
     logging.info(f"* gds: {gds}")
     logging.info(f"* lef: {lef}")
@@ -307,7 +310,7 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str, uses_3v3: bo
         else:
             for layer, lx, by, rx, ty in lef_ports[current_pin]:
                 width = rx - lx
-                if layer != "met4":
+                if layer != power_pins_layer[tech]:
                     logging.error(
                         f"Port {current_pin} has wrong layer in {lef}: {layer} != met4"
                     )
@@ -358,13 +361,7 @@ def pin_check(gds: str, lef: str, template_def: str, toplevel: str, uses_3v3: bo
         raise PrecheckFailure("Wrong cell at GDS top-level")
     top = top[0]
 
-    gds_layers = {
-        "met1.pin": (68, 16),
-        "met2.pin": (69, 16),
-        "met3.pin": (70, 16),
-        "met4.pin": (71, 16),
-    }
-
+    gds_layers = valid_lef_port_layers[tech]
     gds_layer_lookup = {j: i for i, j in gds_layers.items()}
     polygon_list = {layer: [] for layer in gds_layers}
     for poly in top.polygons:

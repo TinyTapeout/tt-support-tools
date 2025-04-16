@@ -17,11 +17,18 @@ import yaml
 from klayout_tools import parse_lyp_layers
 from pin_check import pin_check
 from precheck_failure import PrecheckFailure
-from tech_data import analog_pin_pos, layer_map, valid_layers
+from tech_data import (
+    analog_pin_pos,
+    forbidden_layers,
+    layer_map,
+    lyp_filename,
+    tech_names,
+    valid_layers,
+)
 
 PDK_ROOT = os.getenv("PDK_ROOT")
 PDK_NAME = os.getenv("PDK_NAME") or "sky130A"
-LYP_FILE = f"{PDK_ROOT}/{PDK_NAME}/libs.tech/klayout/tech/{PDK_NAME}.lyp"
+LYP_DIR = f"{PDK_ROOT}/{PDK_NAME}/libs.tech/klayout/tech"
 REPORTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "reports")
 
 if not PDK_ROOT:
@@ -34,6 +41,12 @@ def has_sky130_devices(gds: str):
         if cell_name.startswith("sky130_fd_"):
             return True
     return False
+
+
+def load_layers(tech: str, only_valid: bool = True):
+    lyp_file = f"{LYP_DIR}/{lyp_filename[tech]}"
+    layers = parse_lyp_layers(lyp_file, only_valid)
+    return layers
 
 
 def magic_drc(gds: str, toplevel: str):
@@ -89,10 +102,10 @@ def klayout_zero_area(gds: str):
     return klayout_drc(gds, "zero_area", "zeroarea.rb.drc")
 
 
-def klayout_checks(gds: str, expected_name: str):
+def klayout_checks(gds: str, expected_name: str, tech: str):
     layout = pya.Layout()
     layout.read(gds)
-    layers = parse_lyp_layers(LYP_FILE)
+    layers = load_layers(tech)
 
     logging.info("Running top macro name check...")
     top_cell = layout.top_cell()
@@ -102,13 +115,7 @@ def klayout_checks(gds: str, expected_name: str):
         )
 
     logging.info("Running forbidden layer check...")
-    forbidden_layers = [
-        "met5.drawing",
-        "met5.pin",
-        "met5.label",
-    ]
-
-    for layer in forbidden_layers:
+    for layer in forbidden_layers[tech]:
         layer_info = layers[layer]
         logging.info(f"* Checking {layer_info.name}")
         layer_index = layout.find_layer(layer_info.layer, layer_info.data_type)
@@ -125,7 +132,7 @@ def klayout_checks(gds: str, expected_name: str):
         )
 
 
-def boundary_check(gds: str):
+def boundary_check(gds: str, tech: str):
     """Ensure that there are no shapes outside the project area."""
     lib = gdstk.read_gds(gds)
     tops = lib.top_level()
@@ -133,7 +140,10 @@ def boundary_check(gds: str):
         raise PrecheckFailure("GDS top level not unique")
     top = tops[0]
     boundary = top.copy("test_boundary")
-    boundary.filter([(235, 4)], False)
+
+    layers = load_layers(tech)
+    layer_info = layers["prBoundary.boundary"]
+    boundary.filter([(layer_info.layer, layer_info.data_type)], False)
     if top.bounding_box() != boundary.bounding_box():
         raise PrecheckFailure("Shapes outside project area")
 
@@ -158,9 +168,23 @@ def power_pin_check(verilog: str, lef: str, uses_3v3: bool):
 
 def layer_check(gds: str, tech: str):
     """Check that there are no invalid layers in the GDS file."""
+    layer_definition = load_layers(tech, only_valid=False)
     lib = gdstk.read_gds(gds)
-    layers = lib.layers_and_datatypes().union(lib.layers_and_texttypes())
-    excess = layers - valid_layers[tech]
+    valid_layer_list = set(
+        map(
+            lambda layer_name: (
+                (
+                    layer_definition[layer_name].layer,
+                    layer_definition[layer_name].data_type,
+                )
+                if type(layer_name) is str
+                else layer_name
+            ),
+            valid_layers[tech],
+        )
+    )
+    gds_layers = lib.layers_and_datatypes().union(lib.layers_and_texttypes())
+    excess = gds_layers - valid_layer_list
     if excess:
         raise PrecheckFailure(f"Invalid layers in GDS: {excess}")
 
@@ -234,11 +258,19 @@ def analog_pin_check(
 
 
 def main():
+    default_tech = PDK_NAME
+    if default_tech not in tech_names:
+        default_tech = tech_names[0]
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--gds", required=True)
+    parser.add_argument(
+        "--tech", required=False, default=default_tech, choices=tech_names
+    )
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     logging.info(f"PDK_ROOT: {PDK_ROOT}")
+    logging.info(f"Tech: {args.tech}")
 
     if args.gds.endswith(".gds"):
         gds_stem = args.gds.removesuffix(".gds")
@@ -255,6 +287,10 @@ def main():
             f.write(brotli.decompress(data))
     else:
         raise PrecheckFailure("Layout file extension is neither .gds nor .gds.br")
+
+    if args.tech not in tech_names:
+        raise PrecheckFailure(f"Invalid tech: {args.tech}")
+    tech = args.tech
 
     yaml_dir = os.path.dirname(args.gds)
     while not os.path.exists(f"{yaml_dir}/info.yaml"):
@@ -281,55 +317,86 @@ def main():
             template_def = f"../def/analog/tt_analog_{tiles}_3v3.def"
         else:
             template_def = f"../def/analog/tt_analog_{tiles}.def"
+    elif tech == "ihp-sg13g2":
+        template_def = f"../ihp/def/tt_block_{tiles}_pgvdd.def"
     else:
         template_def = f"../def/tt_block_{tiles}_pg.def"
     logging.info(f"using def template {template_def}")
 
     lef_file = gds_stem + ".lef"
     verilog_file = gds_stem + ".v"
-    tech = "sky130"
 
     checks = [
-        ["Magic DRC", lambda: magic_drc(gds_file, top_module)],
-        ["KLayout FEOL", lambda: klayout_drc(gds_file, "feol")],
-        ["KLayout BEOL", lambda: klayout_drc(gds_file, "beol")],
-        ["KLayout offgrid", lambda: klayout_drc(gds_file, "offgrid")],
-        [
-            "KLayout pin label overlapping drawing",
-            lambda: klayout_drc(
+        {
+            "name": "Magic DRC",
+            "check": lambda: magic_drc(gds_file, top_module),
+            "tech": "sky130",
+        },
+        {
+            "name": "KLayout FEOL",
+            "check": lambda: klayout_drc(gds_file, "feol"),
+            "tech": "sky130",
+        },
+        {
+            "name": "KLayout BEOL",
+            "check": lambda: klayout_drc(gds_file, "beol"),
+            "tech": "sky130",
+        },
+        {
+            "name": "KLayout offgrid",
+            "check": lambda: klayout_drc(gds_file, "offgrid"),
+            "tech": "sky130",
+        },
+        {
+            "name": "KLayout pin label overlapping drawing",
+            "check": lambda: klayout_drc(
                 gds_file,
                 "pin_label_purposes_overlapping_drawing",
                 "pin_label_purposes_overlapping_drawing.rb.drc",
             ),
-        ],
-        ["KLayout zero area", lambda: klayout_zero_area(gds_file)],
-        ["KLayout Checks", lambda: klayout_checks(gds_file, top_module)],
-        [
-            "Pin check",
-            lambda: pin_check(gds_file, lef_file, template_def, top_module, uses_3v3),
-        ],
-        ["Boundary check", lambda: boundary_check(gds_file)],
-        ["Power pin check", lambda: power_pin_check(verilog_file, lef_file, uses_3v3)],
-        ["Layer check", lambda: layer_check(gds_file, tech)],
-        ["Cell name check", lambda: cell_name_check(gds_file)],
-        ["urpm/nwell check", lambda: urpm_nwell_check(gds_file, top_module)],
-        [
-            "Analog pin check",
-            lambda: analog_pin_check(
+        },
+        {"name": "KLayout zero area", "check": lambda: klayout_zero_area(gds_file)},
+        {
+            "name": "KLayout Checks",
+            "check": lambda: klayout_checks(gds_file, top_module, tech),
+        },
+        {
+            "name": "Pin check",
+            "check": lambda: pin_check(
+                gds_file, lef_file, template_def, top_module, uses_3v3, tech
+            ),
+        },
+        {"name": "Boundary check", "check": lambda: boundary_check(gds_file, tech)},
+        {
+            "name": "Power pin check",
+            "check": lambda: power_pin_check(verilog_file, lef_file, uses_3v3),
+        },
+        {"name": "Layer check", "check": lambda: layer_check(gds_file, tech)},
+        {"name": "Cell name check", "check": lambda: cell_name_check(gds_file)},
+        {
+            "name": "urpm/nwell check",
+            "check": lambda: urpm_nwell_check(gds_file, top_module),
+        },
+        {
+            "name": "Analog pin check",
+            "check": lambda: analog_pin_check(
                 gds_file, tech, is_analog, uses_3v3, analog_pins, pinout
             ),
-        ],
+        },
     ]
 
     testsuite = ET.Element("testsuite", name="Tiny Tapeout Prechecks")
     error_count = 0
     markdown_table = "# Tiny Tapeout Precheck Results\n\n"
     markdown_table += "| Check | Result |\n|-----------|--------|\n"
-    for [name, check] in checks:
+    for check in checks:
+        name = check["name"]
+        if "tech" in check and check["tech"] != tech:
+            continue
         start_time = time.time()
         test_case = ET.SubElement(testsuite, "testcase", name=name)
         try:
-            check()
+            check["check"]()
             elapsed_time = time.time() - start_time
             markdown_table += f"| {name} | ✅ |\n"
             test_case.set("time", str(round(elapsed_time, 2)))
