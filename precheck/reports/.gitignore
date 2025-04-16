@@ -4,6 +4,7 @@ drc_offgrid.xml
 drc_pin_label_purposes_overlapping_drawing.xml
 drc_zero_area.xml
 drc_nwell_urpm.xml
+drc_sg13g2.xml
 magic_drc.mag
 magic_drc.txt
 results.md
