@@ -13,7 +13,7 @@ class LayerInfo:
         return f"LayerInfo(name={self.name}, source={self.source}, layer={self.layer}, data_type={self.data_type})"
 
 
-def parse_lyp_layers(lyp_file: str):
+def parse_lyp_layers(lyp_file: str, only_valid: bool = True):
     with open(lyp_file) as f:
         xml_content = f.read()
     root = ET.fromstring(xml_content)
@@ -25,7 +25,7 @@ def parse_lyp_layers(lyp_file: str):
         source = properties.find("source")
         valid = properties.find("valid")
 
-        if valid is not None and valid.text == "false":
+        if only_valid and valid is not None and valid.text == "false":
             continue
 
         if (
