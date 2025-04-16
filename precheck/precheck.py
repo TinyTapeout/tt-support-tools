@@ -370,6 +370,7 @@ def main():
         {
             "name": "Power pin check",
             "check": lambda: power_pin_check(verilog_file, lef_file, uses_3v3),
+            "tech": "sky130",
         },
         {"name": "Layer check", "check": lambda: layer_check(gds_file, tech)},
         {"name": "Cell name check", "check": lambda: cell_name_check(gds_file)},
