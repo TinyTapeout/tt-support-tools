@@ -81,6 +81,7 @@ def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc", extra_vars=[]
         f"{check}=true",
         f"input={gds}",
         f"report={report_file}",
+        f"report_file={report_file}",
     ]
     klayout_args = ["klayout", "-b", "-r", f"tech-files/{script}"]
     for v in script_vars + extra_vars:
@@ -100,6 +101,10 @@ def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc", extra_vars=[]
 
 def klayout_zero_area(gds: str):
     return klayout_drc(gds, "zero_area", "zeroarea.rb.drc")
+
+
+def klayout_sg13g2(gds: str):
+    return klayout_drc(gds, "sg13g2", "sg13g2_mr.lydrc", extra_vars=[f"in_gds={gds}"])
 
 
 def klayout_checks(gds: str, expected_name: str, tech: str):
@@ -354,6 +359,11 @@ def main():
                 "pin_label_purposes_overlapping_drawing",
                 "pin_label_purposes_overlapping_drawing.rb.drc",
             ),
+        },
+        {
+            "name": "KLayout SG13G2 DRC",
+            "check": lambda: klayout_sg13g2(gds_file),
+            "tech": "ihp-sg13g2",
         },
         {"name": "KLayout zero area", "check": lambda: klayout_zero_area(gds_file)},
         {
