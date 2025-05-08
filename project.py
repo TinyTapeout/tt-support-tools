@@ -214,7 +214,7 @@ class Project:
         ]
         if self.info.is_analog:
             required_ports += [
-                ["inout", "ua", 8],
+                ["inout", "ua", 4],
             ]
         if include_power_ports:
             required_ports += [
