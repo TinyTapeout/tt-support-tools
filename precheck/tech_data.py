@@ -144,6 +144,7 @@ valid_layers_ihp_sg13g2 = [
     "SRAM.label",
     "SRAM.boundary",
     "DigiSub.drawing",
+    "HeatRes.drawing",
     "NoRCX.drawing",
     "NoRCX.m2m3",
     "NoRCX.m2m4",
