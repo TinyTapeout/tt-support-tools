@@ -105,16 +105,7 @@ class Docs:
                             }
                             for i in range(8)
                         ],
-                        "analog_pins": [
-                            {
-                                "ua_index": str(i),
-                                "analog_index": str(project.analog_pins[i]),
-                                "desc": desc,
-                            }
-                            for i, desc in enumerate(
-                                project.info.pinout.ua[:analog_pins]
-                            )
-                        ],
+                        "analog_pins": [],
                         "is_analog": analog_pins > 0,
                     }
                 )
