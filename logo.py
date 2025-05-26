@@ -39,7 +39,13 @@ class LogoGenerator:
                 f.set_variation_by_axes([700])
                 return f
 
-            draw.text((2, -15), shuttle, fill=255, font=font(88))
+            shuttle_font_size = 88
+            shuttle_y_offset = -15
+            if len(shuttle) > 4:
+                shuttle = shuttle[:-1].upper() + shuttle[-1]
+                shuttle_font_size = 44
+                shuttle_y_offset = 10
+            draw.text((2, shuttle_y_offset), shuttle, fill=255, font=font(shuttle_font_size))
             draw.text((2, 68), commit[:8], fill=255, font=font(44))
             draw.text((2, 107), commit[8:18], fill=255, font=font(35))
             draw.text((1, 137), commit[18:29], fill=255, font=font(32))
