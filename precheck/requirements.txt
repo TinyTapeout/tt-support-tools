@@ -1,4 +1,4 @@
-klayout==0.29.0
+klayout==0.29.12
 gdstk==0.9.50
 pytest==7.4.3
 numpy==1.24.3
