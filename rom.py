@@ -37,8 +37,8 @@ segment_font = {
     "c": 0b00111001,
     "d": 0b01011110,
     "f": 0b01110001,
-    "h": 0b01110110, # Actually uppercase H
-    "i": 0b00110000, # Actually uppercase I
+    "h": 0b01110110,  # Actually uppercase H
+    "i": 0b00110000,  # Actually uppercase I
     "k": 0b01110101,
     "o": 0b01011100,
     "p": 0b01110011,
