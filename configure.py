@@ -231,14 +231,14 @@ if __name__ == "__main__":
         const=True,
     )
     parser.add_argument(
-        "--create-efabless-submission",
-        help="create efabless submission directory",
+        "--create-chipfoundry-submission",
+        help="create ChipFoundry submission directory",
         action="store_const",
         const=True,
     )
     parser.add_argument(
         "--create-ihp-submission",
-        help="create ihp submission directory",
+        help="create IHP submission directory",
         action="store_const",
         const=True,
     )
@@ -327,8 +327,8 @@ if __name__ == "__main__":
     if args.copy_final_results:
         shuttle.copy_final_results()
 
-    if args.create_efabless_submission:
-        shuttle.create_foundry_submission("efabless", True)
+    if args.create_chipfoundry_submission:
+        shuttle.create_foundry_submission("chipfoundry", True)
 
     if args.create_ihp_submission:
         shuttle.create_foundry_submission("ihp", False)
