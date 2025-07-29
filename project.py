@@ -817,6 +817,15 @@ class Project:
             logging.error("Missing 'How to test' section in docs/info.md")
             exit(1)
 
+        # These are TinyQV template specific but still shouldn't trigger on valid docs.
+        if "# Your project title" in info_md_content:
+            logging.error("Title not updated in docs/info.md")
+            exit(1)
+
+        if "Author: \n" in info_md_content:
+            logging.error("Missing 'Author' in docs/info.md")
+            exit(1)
+
     # use pandoc to create a single page PDF preview
     def create_pdf(self):
         template_args = copy.deepcopy(self.info.__dict__)
