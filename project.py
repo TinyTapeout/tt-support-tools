@@ -822,7 +822,7 @@ class Project:
             logging.error("Title not updated in docs/info.md")
             exit(1)
 
-        if "Author: \n" in info_md_content:
+        if "Author: Your Name" in info_md_content:
             logging.error("Missing 'Author' in docs/info.md")
             exit(1)
 
