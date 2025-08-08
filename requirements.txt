@@ -64,7 +64,7 @@ importlib-resources==6.4.5
     # via wasmtime
 iniconfig==2.0.0
     # via pytest
-klayout==0.29.10
+klayout==0.29.12
     # via tt-support-tools (pyproject.toml)
 markdown-it-py==3.0.0
     # via rich
