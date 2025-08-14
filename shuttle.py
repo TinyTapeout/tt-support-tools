@@ -43,6 +43,12 @@ def copy_print_glob(pattern: str, dest_dir: str):
         copy_print(file, os.path.join(dest_dir, os.path.basename(file)))
 
 
+def mux_id_to_xy(mux_id: int, total_mux_rows: int):
+    x = (mux_id >> 1) & 1
+    y = total_mux_rows // 2 - (2 * (mux_id & 1) - 1) * (mux_id >> 2) - (mux_id & 1)
+    return x, y
+
+
 class ShuttleConfig:
     def __init__(self, config: Config, projects: List[Project], modules_yaml_name: str):
         self.config = config
@@ -61,13 +67,11 @@ class ShuttleConfig:
         for item in self.mux_config["tt"]["analog"]:
             mux_id: int
             for mux_id in item["mux_id"]:
-                x = (mux_id >> 1) & 1
-                y = (
-                    total_mux_rows // 2
-                    - (2 * (mux_id & 1) - 1) * (mux_id >> 2)
-                    - (mux_id & 1)
-                )
+                x, y = mux_id_to_xy(mux_id, total_mux_rows)
                 self.layout["muxes"][x][y] = "analog"
+        for item in self.mux_config["tt"].get("huge_modules", {}).get("mux_id", []):
+            x, y = mux_id_to_xy(item, total_mux_rows)
+            self.layout["muxes"][x][y] = ""
 
     def read_mux_config_file(self):
         with open(
