@@ -24,10 +24,10 @@ class HeadingsRenderer(MarkdownRenderer):
 
 def limit_markdown_headings(source: str, min_level: int) -> str:
     markdown = mistune.create_markdown(renderer=HeadingsRenderer(min_level))
-    return markdown(source)
+    return str(markdown(source))
 
 
-def unescape_braces(text: str):
+def unescape_braces(text: str) -> str:
     return text.replace("%7B", "{").replace("%7D", "}")
 
 
@@ -52,7 +52,7 @@ class ImagePathRewriterRenderer(MarkdownRenderer):
 
 def rewrite_image_paths(source: str, prefix: str) -> str:
     markdown = mistune.create_markdown(renderer=ImagePathRewriterRenderer(prefix))
-    return unescape_braces(markdown(source))
+    return unescape_braces(str(markdown(source)))
 
 
 class WebsiteImagePathRewriterRenderer(MarkdownRenderer):
