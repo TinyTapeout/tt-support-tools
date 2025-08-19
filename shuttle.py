@@ -14,6 +14,27 @@ from config import Config
 from project import Project
 from shuttle_index import ShuttleIndex, ShuttleIndexLayout, ShuttleIndexProject
 
+# Power gate macros for each PDK. We need to copy them to the multiplexer directory:
+SHUTTLE_PG_MACROS = {
+    "sky130": [
+        "tt_pg_1v8_hp_1",
+        "tt_pg_1v8_hp_2",
+        "tt_pg_1v8_hp_4",
+        "tt_pg_1v8_ll_1",
+        "tt_pg_1v8_ll_2",
+        "tt_pg_1v8_ll_4",
+        "tt_pg_3v3_2",
+    ],
+    "ihp-sg13g2": [
+        "tt_pg_1v5_hp_1",
+        "tt_pg_1v5_hp_2",
+        "tt_pg_1v5_hp_4",
+        "tt_pg_1v5_ll_1",
+        "tt_pg_1v5_ll_2",
+        "tt_pg_1v5_ll_4",
+    ],
+}
+
 
 def copy_print(src: str, dest: str):
     os.makedirs(os.path.dirname(dest), exist_ok=True)
@@ -262,13 +283,10 @@ class ShuttleConfig:
             )
 
         # Copy power gate / analog switch macros:
-        self.copy_mux_macro("pg/sky130/tt_pg_1v8_1", "tt_pg_1v8_1")
-        self.copy_mux_macro("pg/sky130/tt_pg_1v8_2", "tt_pg_1v8_2")
-        self.copy_mux_macro("pg/sky130/tt_pg_1v8_4", "tt_pg_1v8_4")
-        self.copy_mux_macro("pg/sky130/tt_pg_1v8_ll_1", "tt_pg_1v8_ll_1")
-        self.copy_mux_macro("pg/sky130/tt_pg_1v8_ll_2", "tt_pg_1v8_ll_2")
-        self.copy_mux_macro("pg/sky130/tt_pg_1v8_ll_4", "tt_pg_1v8_ll_4")
-        self.copy_mux_macro("pg/sky130/tt_pg_3v3_2", "tt_pg_3v3_2")
+        for pdk, pg_macros in SHUTTLE_PG_MACROS.items():
+            for pg_macro in pg_macros:
+                self.copy_mux_macro(f"pg/{pdk}/{pg_macro}", pg_macro)
+
         self.copy_mux_macro("asw/sky130/tt_asw_3v3", "tt_asw_3v3")
 
         # Copy logo & shuttle ID
