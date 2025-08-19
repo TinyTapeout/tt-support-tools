@@ -319,28 +319,6 @@ class ShuttleConfig:
                 copy_function=copy_print,
                 dirs_exist_ok=True,
             )
-        # Copy power gate macros:
-        for macro in [
-            "tt_pg_1v8_1",
-            "tt_pg_1v8_2",
-            "tt_pg_1v8_4",
-            "tt_pg_1v8_ll_1",
-            "tt_pg_1v8_ll_2",
-            "tt_pg_1v8_ll_4",
-            "tt_pg_3v3_2",
-        ]:
-            copy_print(
-                f"tt-multiplexer/pg/sky130/{macro}/gds/{macro}.gds",
-                f"gds/{macro}.gds",
-            )
-            copy_print(
-                f"tt-multiplexer/pg/sky130/{macro}/lef/{macro}.lef",
-                f"lef/{macro}.lef",
-            )
-            copy_print(
-                f"tt-multiplexer/pg/sky130/{macro}/src/{macro}.v",
-                f"verilog/gl/{macro}.v",
-            )
 
     def create_foundry_submission(self, foundry_name: str, copy_user_defines: bool):
         logging.info(f"creating {foundry_name} submission directory:")
