@@ -11,3 +11,4 @@ class Config(TypedDict):
     top_level_macro: str
     powered_netlists: bool
     no_power_gating: bool
+    pdk: str

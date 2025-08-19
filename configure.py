@@ -306,7 +306,7 @@ if __name__ == "__main__":
     docs = Docs(config, projects.projects)
     shuttle = ShuttleConfig(config, projects.projects, modules_yaml_name)
     rom = ROMFile(config)
-    logo = LogoGenerator("tt", config)
+    logo = LogoGenerator("tt", pdk=config["pdk"], config=config)
 
     if args.list:
         shuttle.list()
@@ -317,7 +317,10 @@ if __name__ == "__main__":
     if args.update_shuttle:
         shuttle.configure_mux()
         rom.write_rom()
+        logo.gen_logo("top", "tt/logo/tt_logo_top.gds")
+        logo.gen_lef("top", "tt/logo/tt_logo_top.lef")
         logo.gen_logo("bottom", "tt/logo/tt_logo_bottom.gds")
+        logo.gen_lef("bottom", "tt/logo/tt_logo_bottom.lef")
         if not args.test:
             docs.build_index()
 
