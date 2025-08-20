@@ -228,17 +228,17 @@ class ShuttleConfig:
             f"tt-multiplexer/ol2/tt_top/verilog/{name}.v",
         )
 
-    def copy_logo_macro(self, name: str):
+    def copy_logo_macro(self, name: str, source_dir: str = "tt/logo"):
         copy_print(
-            f"tt/logo/{name}.gds",
+            f"{source_dir}/{name}.gds",
             f"tt-multiplexer/ol2/tt_top/gds/{name}.gds",
         )
         copy_print(
-            f"tt/logo/{name}.lef",
+            f"{source_dir}/{name}.lef",
             f"tt-multiplexer/ol2/tt_top/lef/{name}.lef",
         )
         copy_print(
-            f"tt/logo/{name}.v",
+            f"{source_dir}/{name}.v",
             f"tt-multiplexer/ol2/tt_top/verilog/{name}.v",
         )
 
@@ -292,6 +292,8 @@ class ShuttleConfig:
         # Copy logo & shuttle ID
         self.copy_logo_macro("tt_logo_top")
         self.copy_logo_macro("tt_logo_bottom")
+        if self.config.get("pdk") == "ihp-sg13g2":
+            self.copy_logo_macro("tt_logo_corner", source_dir="tt/ihp")
 
     def copy_final_results(self):
         macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux", "tt_top"]
