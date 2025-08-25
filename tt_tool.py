@@ -118,6 +118,17 @@ if __name__ == "__main__":
         action="store_const",
         const=True,
     )
+    parser.add_argument(
+        "--fpga-breakout-target",
+        help="Select target breakout: classic (TT04) or fabricfox (TT06+)",
+        choices=["classic", "fabricfox"],
+        default="classic",
+    )
+    parser.add_argument(
+        "--fpga-bitstream-name",
+        help="Set the bitstream name",
+        default="",
+    )
 
     args = parser.parse_args()
 
@@ -174,4 +185,4 @@ if __name__ == "__main__":
         project.create_svg()
 
     if args.create_fpga_bitstream:
-        project.create_fpga_bitstream()
+        project.create_fpga_bitstream(args)

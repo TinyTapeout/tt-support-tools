@@ -1,0 +1,40 @@
+# Pinmap for the FabricFox version (TT06+) of TT ASIC SIMULATOR version 1.0
+
+# clock (both project and SPI clock)
+set_io -nowarn clk   20
+
+# project reset
+set_io -nowarn rst_n 37
+
+# RGB LED
+set_io -nowarn rgb[0] 39
+set_io -nowarn rgb[1] 40
+set_io -nowarn rgb[2] 41
+
+# I/O
+set_io -nowarn ui_in[0] 18
+set_io -nowarn ui_in[1] 19
+set_io -nowarn ui_in[2] 25
+set_io -nowarn ui_in[3] 26
+set_io -nowarn ui_in[4] 27
+set_io -nowarn ui_in[5] 28
+set_io -nowarn ui_in[6] 23
+set_io -nowarn ui_in[7] 31
+
+set_io -nowarn uio[0] 38
+set_io -nowarn uio[1] 36
+set_io -nowarn uio[2] 42
+set_io -nowarn uio[3] 43
+set_io -nowarn uio[4] 44
+set_io -nowarn uio[5] 45
+set_io -nowarn uio[6] 47
+set_io -nowarn uio[7] 46
+
+set_io -nowarn uo_out[0] 2
+set_io -nowarn uo_out[1] 48
+set_io -nowarn uo_out[2] 4
+set_io -nowarn uo_out[3] 3
+set_io -nowarn uo_out[4] 9
+set_io -nowarn uo_out[5] 6
+set_io -nowarn uo_out[6] 11
+set_io -nowarn uo_out[7] 10

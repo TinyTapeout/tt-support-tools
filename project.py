@@ -585,8 +585,28 @@ class Project:
     def run_lvs(self):
         logging.warning("LVS is already included in OpenLane hardening job, skipping")
 
-    def create_fpga_bitstream(self):
+    def create_fpga_bitstream(self, args):
         logging.info(f"Creating FPGA bitstream for {self}")
+        
+        target_map = {
+            'classic': {
+                    'pcf': 'tt_fpga_top.pcf',
+                    'def_name': 'tt_fpga',
+            },
+            
+            'fabricfox': {
+            
+                    'pcf': 'tt_fpga_fabricfox.pcf',
+                    'def_name': 'tt_ff_fpga'
+            }
+        
+        }
+        pcf_file = target_map[args.fpga_breakout_target]['pcf']
+        
+        base_name = args.fpga_bitstream_name
+        if not len(base_name):
+            base_name = target_map[args.fpga_breakout_target]['def_name']
+        
 
         with open(os.path.join(SCRIPT_DIR, "fpga/tt_fpga_top.v"), "r") as f:
             top_module_template = f.read()
@@ -602,7 +622,7 @@ class Project:
         sources = [os.path.join(self.src_dir, src) for src in self.sources]
         source_list = " ".join(sources)
 
-        yosys_cmd = f"yosys -l {build_dir}/01-synth.log -DSYNTH -p 'synth_ice40 -top tt_fpga_top -json {build_dir}/tt_fpga.json' src/_tt_fpga_top.v {source_list}"
+        yosys_cmd = f"yosys -l {build_dir}/01-synth.log -DSYNTH -p 'synth_ice40 -top tt_fpga_top -json {build_dir}/{base_name}.json' src/_tt_fpga_top.v {source_list}"
         logging.debug(yosys_cmd)
         p = subprocess.run(yosys_cmd, shell=True)
         if p.returncode != 0:
@@ -612,21 +632,21 @@ class Project:
         seed = os.getenv("TT_FPGA_SEED", "10")
         freq = os.getenv("TT_FPGA_FREQ", "12")
 
-        nextpnr_cmd = f"nextpnr-ice40 -l {build_dir}/02-nextpnr.log --pcf-allow-unconstrained --seed {seed} --freq {freq} --package sg48 --up5k --asc {build_dir}/tt_fpga.asc --pcf {SCRIPT_DIR}/fpga/tt_fpga_top.pcf --json {build_dir}/tt_fpga.json"
+        nextpnr_cmd = f"nextpnr-ice40 -l {build_dir}/02-nextpnr.log --pcf-allow-unconstrained --seed {seed} --freq {freq} --package sg48 --up5k --asc {build_dir}/{base_name}.asc --pcf {SCRIPT_DIR}/fpga/{pcf_file} --json {build_dir}/{base_name}.json"
         logging.debug(nextpnr_cmd)
         p = subprocess.run(nextpnr_cmd, shell=True)
         if p.returncode != 0:
             logging.error("placement failed")
             exit(1)
 
-        icepack_cmd = f"icepack {build_dir}/tt_fpga.asc {build_dir}/tt_fpga.bin"
+        icepack_cmd = f"icepack {build_dir}/{base_name}.asc {build_dir}/{base_name}.bin"
         logging.debug(icepack_cmd)
         p = subprocess.run(icepack_cmd, shell=True)
         if p.returncode != 0:
             logging.error("bitstream creation failed failed")
             exit(1)
 
-        logging.info(f"Bitstream created successfully: {build_dir}/tt_fpga.bin")
+        logging.info(f"Bitstream created successfully: {build_dir}/{base_name}.bin")
 
     # doc check
     # makes sure that the basic info is present
