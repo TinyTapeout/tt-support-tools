@@ -161,7 +161,7 @@ def power_pin_check(verilog: str, lef: str, uses_3v3: bool):
 
     # naive but good enough way to ignore comments
     verilog_s = re.sub("//.*", "", verilog_s)
-    verilog_s = re.sub("/\\*.*\\*/", "", verilog_s, flags=(re.DOTALL | re.MULTILINE))
+    verilog_s = re.sub("/\\*.*?\\*/", "", verilog_s, flags=(re.DOTALL | re.MULTILINE))
 
     for ft, s in (("Verilog", verilog_s), ("LEF", lef_s)):
         for pwr, ex in (("VGND", True), ("VDPWR", True), ("VAPWR", uses_3v3)):
