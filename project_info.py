@@ -1,7 +1,5 @@
 from typing import Any, Dict, List, Optional
 
-from tile_sizes import tile_sizes
-
 YAML_VERSION = 6
 
 
@@ -46,7 +44,7 @@ class ProjectInfo:
     top_module: str
     source_files: List[str]
 
-    def __init__(self, yaml_data: Dict[str, Any]):
+    def __init__(self, yaml_data: Dict[str, Any], tile_sizes: Dict[str, str]):
         # Validate Version
         yaml_version = yaml_data.get("yaml_version")
         if yaml_version is None:

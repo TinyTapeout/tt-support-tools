@@ -105,7 +105,7 @@ class Project:
         yaml_path = os.path.join(self.local_dir, "info.yaml")
         try:
             with open(yaml_path) as fh:
-                self.info = ProjectInfo(yaml.safe_load(fh))
+                self.info = ProjectInfo(yaml.safe_load(fh), self.get_tile_sizes())
         except FileNotFoundError:
             logging.error(
                 f"yaml file not found for {self} - do you need to --clone the project repos?"
