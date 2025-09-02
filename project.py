@@ -587,26 +587,19 @@ class Project:
 
     def create_fpga_bitstream(self, args):
         logging.info(f"Creating FPGA bitstream for {self}")
-        
+
         target_map = {
-            'classic': {
-                    'pcf': 'tt_fpga_top.pcf',
-                    'def_name': 'tt_fpga',
+            "classic": {
+                "pcf": "tt_fpga_top.pcf",
+                "def_name": "tt_fpga",
             },
-            
-            'fabricfox': {
-            
-                    'pcf': 'tt_fpga_fabricfox.pcf',
-                    'def_name': 'tt_ff_fpga'
-            }
-        
+            "fabricfox": {"pcf": "tt_fpga_fabricfox.pcf", "def_name": "tt_ff_fpga"},
         }
-        pcf_file = target_map[args.fpga_breakout_target]['pcf']
-        
+        pcf_file = target_map[args.fpga_breakout_target]["pcf"]
+
         base_name = args.fpga_bitstream_name
         if not len(base_name):
-            base_name = target_map[args.fpga_breakout_target]['def_name']
-        
+            base_name = target_map[args.fpga_breakout_target]["def_name"]
 
         with open(os.path.join(SCRIPT_DIR, "fpga/tt_fpga_top.v"), "r") as f:
             top_module_template = f.read()
