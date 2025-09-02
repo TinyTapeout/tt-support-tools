@@ -147,7 +147,8 @@ if __name__ == "__main__":
     ch.setFormatter(log_format)
     log.addHandler(ch)
 
-    project = Project(0, "unknown", args.project_dir, args, is_user_project=True)
+    pdk = "ihp-sg13g2" if args.ihp else "sky130A"
+    project = Project(0, "unknown", args.project_dir, pdk, is_user_project=True)
     project.post_clone_setup()
 
     # handle the options
@@ -155,7 +156,10 @@ if __name__ == "__main__":
         project.check_docs()
 
     if args.print_cell_summary or args.print_cell_category:
-        project.summarize()
+        project.summarize(
+            print_cell_category=args.print_cell_category,
+            print_cell_summary=args.print_cell_summary,
+        )
 
     if args.print_stats:
         project.print_stats()

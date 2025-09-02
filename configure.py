@@ -66,7 +66,7 @@ class Projects:
                 index,
                 commit_id_data["repo"],
                 project_dir,
-                args,
+                pdk=config["pdk"],
                 is_user_project=False,
             )
             project.commit_id = commit_id_data["commit"]

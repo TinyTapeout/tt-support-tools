@@ -64,13 +64,6 @@ PINOUT_KEYS = [
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-class Args:
-    openlane2: bool
-    ihp: bool
-    print_cell_summary: bool
-    print_cell_category: bool
-
-
 class Project:
     top_verilog_filename: str
     mux_address: int
@@ -83,11 +76,11 @@ class Project:
         index: int,
         git_url: str,
         local_dir: str,
-        args: Args,
+        pdk: str,
         is_user_project: bool,
     ):
         self.git_url = git_url
-        self.args = args
+        self.ihp = pdk == "ihp-sg13g2"
         self.index = index
         self.local_dir = os.path.realpath(local_dir)
         self.is_user_project = is_user_project
@@ -364,7 +357,7 @@ class Project:
             return os.path.join(self.local_dir, f"{self.info.top_module}.v")
 
     def get_tile_sizes(self):
-        if self.args.ihp:
+        if self.ihp:
             tile_sizes_yaml = "ihp/tile_sizes.yaml"
         else:
             tile_sizes_yaml = "tile_sizes.yaml"
@@ -494,7 +487,7 @@ class Project:
         tiles = self.info.tiles
         tile_sizes = self.get_tile_sizes()
         die_area = tile_sizes[tiles]
-        if self.args.ihp:
+        if self.ihp:
             def_template = f"dir::../tt/ihp/def/tt_block_{tiles}_pgvdd.def"
         else:
             def_template = f"dir::../tt/def/tt_block_{tiles}_pg.def"
@@ -529,7 +522,7 @@ class Project:
         os.makedirs("runs/wokwi", exist_ok=True)
         arg_progress = "--hide-progress-bar" if "CI" in os.environ else ""
         arg_pdk_root = '--pdk-root "$PDK_ROOT"' if "PDK_ROOT" in os.environ else ""
-        arg_pdk = "--manual-pdk --pdk ihp-sg13g2" if self.args.ihp else ""
+        arg_pdk = "--manual-pdk --pdk ihp-sg13g2" if self.ihp else ""
         harden_cmd = f"python -m openlane {arg_pdk_root} --docker-no-tty --dockerized {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
         env = os.environ.copy()
         logging.debug(harden_cmd)
@@ -556,7 +549,7 @@ class Project:
         resolved_json_path = "runs/wokwi/resolved.json"
         config = json.load(open(os.path.join(self.local_dir, resolved_json_path)))
         openlane_version = config["meta"]["openlane_version"]
-        if self.args.ihp:
+        if self.ihp:
             pdk_repo = Repo(env["PDK_ROOT"])
             pdk_repo_name = list(pdk_repo.remotes[0].urls)[0].split("/")[-1]
             pdk_commit = pdk_repo.commit().hexsha
@@ -570,7 +563,7 @@ class Project:
             f"OpenLane2 {openlane_version}\n"
         )
         open("runs/wokwi/PDK_SOURCES", "w").write(pdk_sources)
-        if not self.args.ihp:
+        if not self.ihp:
             volare.enable(
                 volare.get_volare_home(),  # uses PDK_ROOT if set, ~/.volare otherwise
                 {"sky130A": "sky130"}[config["PDK"]],
@@ -757,7 +750,7 @@ class Project:
             (67, 25),  # 67/25 - Metal5.text
             (126, 25),  # 126/25 - TopMetal1.text
         ]
-        if self.args.ihp:
+        if self.ihp:
             label_layers = ihp_label_layers
         else:
             label_layers = sky130_label_layers
@@ -812,7 +805,7 @@ class Project:
                 (51, 0),  # 51/0 - HeatTrans.drawing
                 (189, 4),  # 189/4 - prBoundary.boundary
             ]
-            if self.args.ihp:
+            if self.ihp:
                 buried_layers = ihp_buried_layers
             else:
                 buried_layers = sky130_buried_layers
@@ -884,7 +877,7 @@ class Project:
                     if "WIDTHLABEL" not in line:
                         warnings.append(line.strip())
 
-        if self.args.ihp:
+        if self.ihp:
             tt_corner = "nom_typ_1p20V_25C"
         else:
             tt_corner = "nom_tt_025C_1v80"
@@ -920,33 +913,33 @@ class Project:
         print("| {} | {} |".format(util, wire_length))
 
     # Print the summaries
-    def summarize(self):
+    def summarize(self, print_cell_category: bool, print_cell_summary: bool):
         cell_count = self.get_cell_counts_from_gl()
 
         Categories = typing.TypedDict(
             "Categories", {"categories": typing.List[str], "map": typing.Dict[str, int]}
         )
-        if self.args.ihp:
+        if self.ihp:
             categories_file = "ihp/categories.json"
         else:
             categories_file = "categories.json"
         with open(os.path.join(SCRIPT_DIR, categories_file)) as fh:
             categories: Categories = json.load(fh)
 
-        if self.args.ihp:
+        if self.ihp:
             ihp_defs = load_ihp_cells()
         else:
             sky130_defs = load_sky130_cells()
 
         def _cell_url(name):
-            if self.args.ihp:
+            if self.ihp:
                 return _ihp_cell_url(ihp_defs[name]["doc_ref"])
             else:
                 return _sky130_cell_url(name)
 
         # print all used cells, sorted by frequency
         total = 0
-        if self.args.print_cell_summary:
+        if print_cell_summary:
             print("# Cell usage")
             print()
             print("| Cell Name | Description | Count |")
@@ -957,7 +950,7 @@ class Project:
                 if count > 0:
                     total += count
                     cell_link = _cell_url(name)
-                    if self.args.ihp:
+                    if self.ihp:
                         description = ihp_defs[name]["description"]
                     else:
                         description = sky130_defs[name]["description"]
@@ -965,7 +958,7 @@ class Project:
 
             print(f"| | Total | {total} |")
 
-        if self.args.print_cell_category:
+        if print_cell_category:
             CategoryInfo = typing.TypedDict(
                 "CategoryInfo", {"count": int, "examples": typing.List[str]}
             )
@@ -1020,7 +1013,7 @@ class Project:
     def get_cell_counts_from_gl(self):
         cell_count: typing.Dict[str, int] = {}
         total = 0
-        if self.args.ihp:
+        if self.ihp:
             cell_re = r"sg13g2_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
         else:
             cell_re = (
