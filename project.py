@@ -523,7 +523,7 @@ class Project:
         arg_progress = "--hide-progress-bar" if "CI" in os.environ else ""
         arg_pdk_root = '--pdk-root "$PDK_ROOT"' if "PDK_ROOT" in os.environ else ""
         arg_pdk = "--manual-pdk --pdk ihp-sg13g2" if self.ihp else ""
-        harden_cmd = f"python -m openlane {arg_pdk_root} --docker-no-tty --dockerized {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
+        harden_cmd = f"python -m librelane {arg_pdk_root} --docker-no-tty --dockerized {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
         env = os.environ.copy()
         logging.debug(harden_cmd)
         p = subprocess.run(harden_cmd, shell=True, env=env)
@@ -548,7 +548,7 @@ class Project:
 
         resolved_json_path = "runs/wokwi/resolved.json"
         config = json.load(open(os.path.join(self.local_dir, resolved_json_path)))
-        openlane_version = config["meta"]["openlane_version"]
+        librelane_version = config["meta"]["librelane_version"]
         if self.ihp:
             pdk_repo = Repo(env["PDK_ROOT"])
             pdk_repo_name = list(pdk_repo.remotes[0].urls)[0].split("/")[-1]
@@ -559,9 +559,7 @@ class Project:
                 config["PDK_ROOT"], config["PDK"], "SOURCES"
             )
             pdk_sources = open(pdk_sources_file).read()
-        open("runs/wokwi/OPENLANE_VERSION", "w").write(
-            f"OpenLane2 {openlane_version}\n"
-        )
+        open("runs/wokwi/FLOW_VERSION", "w").write(f"LibreLane {librelane_version}\n")
         open("runs/wokwi/PDK_SOURCES", "w").write(pdk_sources)
         if not self.ihp:
             volare.enable(
@@ -571,12 +569,6 @@ class Project:
             )
 
         os.chdir(cwd)
-
-    def run_drc(self):
-        logging.warning("DRC is already included in OpenLane hardening job, skipping")
-
-    def run_lvs(self):
-        logging.warning("LVS is already included in OpenLane hardening job, skipping")
 
     def create_fpga_bitstream(self, args):
         logging.info(f"Creating FPGA bitstream for {self}")
@@ -1009,7 +1001,7 @@ class Project:
 
         return num_cells
 
-    # Parse the lib, cell and drive strength an OpenLane gate-level Verilog file
+    # Parse the lib, cell and drive strength an LibreLane gate-level Verilog file
     def get_cell_counts_from_gl(self):
         cell_count: typing.Dict[str, int] = {}
         total = 0

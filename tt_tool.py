@@ -20,13 +20,6 @@ if __name__ == "__main__":
         default=logging.INFO,
     )
     parser.add_argument(
-        "--openlane2",
-        help="use openlane 2",
-        action="store_const",
-        const=True,
-        default=True,
-    )
-    parser.add_argument(
         "--ihp",
         help="use IHP PDK",
         action="store_const",
@@ -106,7 +99,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--harden",
-        help="use a local OpenLane install to harden the project",
+        help="use a local LibreLane install to harden the project",
         action="store_const",
         const=True,
     )
