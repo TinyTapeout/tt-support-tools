@@ -251,7 +251,7 @@ def generate_analog_example(
 
         tcl_append(
             f"""
-            def read ../def/analog/tt_analog_1x2.def
+            def read ../tech/sky130A/def/analog/tt_analog_1x2.def
             cellname rename tt_um_template {toplevel}
             """
         )
@@ -557,7 +557,7 @@ def test_pin_analog_example(gds_lef_analog_example: tuple[str, str]):
     precheck.pin_check(
         gds_file,
         lef_file,
-        "../def/analog/tt_analog_1x2.def",
+        "../tech/sky130A/def/analog/tt_analog_1x2.def",
         "TEST_analog_example",
         False,
         "sky130",
@@ -569,7 +569,7 @@ def test_pin_analog_power_compat(gds_lef_analog_power_compat: tuple[str, str]):
     precheck.pin_check(
         gds_file,
         lef_file,
-        "../def/analog/tt_analog_1x2.def",
+        "../tech/sky130A/def/analog/tt_analog_1x2.def",
         "TEST_analog_power_compat",
         False,
         "sky130",
@@ -585,7 +585,7 @@ def test_pin_analog_wrong_vgnd(gds_lef_analog_wrong_vgnd: tuple[str, str]):
         precheck.pin_check(
             gds_file,
             lef_file,
-            "../def/analog/tt_analog_1x2.def",
+            "../tech/sky130A/def/analog/tt_analog_1x2.def",
             "TEST_analog_wrong_vgnd",
             False,
             "sky130",
@@ -601,7 +601,7 @@ def test_pin_analog_overlapping_vgnd(gds_lef_analog_overlapping_vgnd: tuple[str,
         precheck.pin_check(
             gds_file,
             lef_file,
-            "../def/analog/tt_analog_1x2.def",
+            "../tech/sky130A/def/analog/tt_analog_1x2.def",
             "TEST_analog_overlapping_vgnd",
             False,
             "sky130",
@@ -613,7 +613,7 @@ def test_pin_analog_compound_vgnd(gds_lef_analog_compound_vgnd: tuple[str, str])
     precheck.pin_check(
         gds_file,
         lef_file,
-        "../def/analog/tt_analog_1x2.def",
+        "../tech/sky130A/def/analog/tt_analog_1x2.def",
         "TEST_analog_compound_vgnd",
         False,
         "sky130",
@@ -625,7 +625,7 @@ def test_pin_analog_example_3v3(gds_lef_analog_example_3v3: tuple[str, str]):
     precheck.pin_check(
         gds_file,
         lef_file,
-        "../def/analog/tt_analog_1x2.def",
+        "../tech/sky130A/def/analog/tt_analog_1x2.def",
         "TEST_analog_example_3v3",
         True,
         "sky130",
@@ -641,7 +641,7 @@ def test_pin_analog_3v3_mismatch1(gds_lef_analog_example: tuple[str, str]):
         precheck.pin_check(
             gds_file,
             lef_file,
-            "../def/analog/tt_analog_1x2.def",
+            "../tech/sky130A/def/analog/tt_analog_1x2.def",
             "TEST_analog_example",
             True,
             "sky130",
@@ -657,7 +657,7 @@ def test_pin_analog_3v3_mismatch2(gds_lef_analog_example_3v3: tuple[str, str]):
         precheck.pin_check(
             gds_file,
             lef_file,
-            "../def/analog/tt_analog_1x2.def",
+            "../tech/sky130A/def/analog/tt_analog_1x2.def",
             "TEST_analog_example_3v3",
             False,
             "sky130",

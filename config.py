@@ -1,5 +1,7 @@
 from typing import TypedDict
 
+from tech import TechName
+
 
 class Config(TypedDict):
     """TypedDict for Tiny Tapeout's config.yaml file."""
@@ -11,4 +13,4 @@ class Config(TypedDict):
     top_level_macro: str
     powered_netlists: bool
     no_power_gating: bool
-    pdk: str
+    pdk: TechName

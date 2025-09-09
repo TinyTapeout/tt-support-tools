@@ -317,15 +317,16 @@ def main():
     pinout = yaml_data.get("pinout", {})
     if uses_3v3 and not is_analog:
         raise PrecheckFailure("Projects with 3v3 power need at least one analog pin")
+    def_root = f"../tech/{tech}/def"
     if is_analog:
         if uses_3v3:
-            template_def = f"../def/analog/tt_analog_{tiles}_3v3.def"
+            template_def = f"{def_root}/analog/tt_analog_{tiles}_3v3.def"
         else:
-            template_def = f"../def/analog/tt_analog_{tiles}.def"
+            template_def = f"{def_root}/analog/tt_analog_{tiles}.def"
     elif tech == "ihp-sg13g2":
-        template_def = f"../ihp/def/tt_block_{tiles}_pgvdd.def"
+        template_def = f"{def_root}/tt_block_{tiles}_pgvdd.def"
     else:
-        template_def = f"../def/tt_block_{tiles}_pg.def"
+        template_def = f"{def_root}/tt_block_{tiles}_pg.def"
     logging.info(f"using def template {template_def}")
 
     lef_file = gds_stem + ".lef"

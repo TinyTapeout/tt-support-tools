@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2024 Tiny Tapeout LTD
+# Copyright (c) 2024-2025 Tiny Tapeout LTD
 # Author: Uri Shaked
 # Description: This script initializes a new Magic project for an analog design on Tiny Tapeout.
 
 # Important: before running this script, download the the .def file from
-# https://raw.githubusercontent.com/TinyTapeout/tt-support-tools/tt08/def/analog/tt_analog_1x2.def
+# https://raw.githubusercontent.com/TinyTapeout/tt-support-tools/main/tech/sky130A/def/analog/tt_analog_1x2.def
 
 # Change the settings below to match your design:
 # ------------------------------------------------

@@ -4,7 +4,7 @@
 
   "FP_SIZING": "absolute",
   "DIE_AREA": [0, 0, 202.08, 154.98],
-  "FP_DEF_TEMPLATE": "ref::$DESIGN_DIR/../ihp/def/tt_block_1x1_pgvdd.def",
+  "FP_DEF_TEMPLATE": "ref::$DESIGN_DIR/../tech/ihp-sg13g2/def/tt_block_1x1_pgvdd.def",
 
   "FP_IO_HLENGTH": 2,
   "FP_IO_VLENGTH": 2,
