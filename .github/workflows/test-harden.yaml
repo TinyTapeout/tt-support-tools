@@ -1,0 +1,94 @@
+name: GDS Hardening Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  harden:
+    strategy:
+      fail-fast: false
+      matrix:
+        pdk: [sky130A, ihp-sg13g2]
+        
+    runs-on: ubuntu-24.04
+
+    env:
+      PDK: ${{ matrix.pdk }}
+      PDK_ROOT: /home/runner/pdk
+      PROJECT_DIR: /home/runner/project
+      LIBRELANE_VERSION: '2.4.2'
+      LIBRELANE_VERSION_DEV: '3.0.0.dev38'
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install librelane
+        if: "${{ matrix.pdk != 'ihp-sg13g2' }}"
+        run: pip install librelane==${LIBRELANE_VERSION}
+
+      # LibreLane 2.4.2 does not support ihp-sg13g2. Remove once 3.0.0 is released.
+      - name: Install librelane 3 dev (IHP only)
+        if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
+        run: pip install librelane==${LIBRELANE_VERSION_DEV}
+
+      - name: Clone the factory test (sky130A)
+        if: "${{ matrix.pdk == 'sky130A' }}"
+        run: git clone https://github.com/tinytapeout/ttsky25a-factory-test ${PROJECT_DIR}
+
+      - name: Clone the factory test (ihp-sg13g2)
+        if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
+        run: git clone https://github.com/TinyTapeout/ttihp25b-factory-test ${PROJECT_DIR}
+
+      - name: Install IHP PDK
+        if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
+        run: git clone -b tt2025 --depth 1 https://github.com/TinyTapeout/IHP-Open-PDK ${PDK_ROOT}
+
+      - name: Configure tt_tool.py args
+        if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
+        run: echo "TT_TOOL_ARGS=--ihp" >> $GITHUB_ENV
+
+      - name: Copy tt-support-tools to the project directory
+        run: cp -r . ${PROJECT_DIR}/tt
+      
+      - name: Create user config
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: python ./tt/tt_tool.py $TT_TOOL_ARGS --create-user-config
+
+      - name: Harden
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: python ./tt/tt_tool.py $TT_TOOL_ARGS --harden
+
+      - name: Print stats
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          python ./tt/tt_tool.py $TT_TOOL_ARGS --print-stats --print-warnings --print-cell-summary --print-cell-category | tee $GITHUB_STEP_SUMMARY
+
+      - name: Create SVG render
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: python ./tt/tt_tool.py $TT_TOOL_ARGS --create-svg
+      
+      - name: Upload GDS logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: gds-${{ matrix.pdk }}
+          path: ${{ env.PROJECT_DIR }}/runs/wokwi
+      
+      - name: Upload SVG render
+        uses: actions/upload-artifact@v4
+        with:
+          name: svg-render-${{ matrix.pdk }}
+          path: ${{ env.PROJECT_DIR }}/gds_render.svg
+
+    
