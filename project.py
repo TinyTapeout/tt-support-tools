@@ -889,9 +889,9 @@ class Project:
     def print_stats(self):
         util_glob = "runs/wokwi/*-openroad-globalplacement/openroad-globalplacement.log"
         util_log = glob.glob(os.path.join(self.local_dir, util_glob))[0]
-        util_label = "[INFO GPL-0019] Util:"
-        util_line = next(line for line in open(util_log) if line.startswith(util_label))
-        util = util_line.removeprefix(util_label).strip()
+        util_regexp = r"^\[INFO GPL-0019\] (Util|Utilization):"
+        util_line = next(line for line in open(util_log) if re.match(util_regexp, line))
+        util = re.sub(util_regexp, "", util_line).strip()
 
         try:
             wire_length = self.metrics["route__wirelength"]  # OpenROAD #2047
