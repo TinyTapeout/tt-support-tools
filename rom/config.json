@@ -3,8 +3,6 @@
   "VERILOG_FILES": "dir::tt_um_chip_rom.v",
   
   "FP_SIZING": "absolute",
-  "DIE_AREA": [0, 0, 161.00, 111.52],
-  "FP_DEF_TEMPLATE": "ref::$DESIGN_DIR/../tech/sky130A/def/tt_block_1x1_pg.def",
 
   "FP_IO_HLENGTH": 2,
   "FP_IO_VLENGTH": 2,
@@ -13,9 +11,8 @@
   "CLOCK_PERIOD": 20,
   "CLOCK_PORT": "clk",
 
-  "//": "don't use power rings or met5",
+  "//": "don't use power rings",
   "DESIGN_IS_CORE": false,
-  "RT_MAX_LAYER": "met4",
 
   "//": "save some time",
   "RUN_KLAYOUT_XOR": false,
@@ -24,5 +21,17 @@
   "TOP_MARGIN_MULT": 1,
   "BOTTOM_MARGIN_MULT": 1,
   "LEFT_MARGIN_MULT": 6,
-  "RIGHT_MARGIN_MULT": 6
+  "RIGHT_MARGIN_MULT": 6,
+
+  "pdk::sky130A": {
+    "DIE_AREA": [0, 0, 161.0, 111.52],
+    "FP_DEF_TEMPLATE": "ref::$DESIGN_DIR/../tech/sky130A/def/tt_block_1x1_pg.def",
+    "RT_MAX_LAYER": "met4"
+  },
+
+  "pdk::ihp-sg13g2": {
+    "DIE_AREA": [0, 0, 202.08, 154.98],
+    "FP_DEF_TEMPLATE": "ref::$DESIGN_DIR/../tech/ihp-sg13g2/def/tt_block_1x1_pgvdd.def",
+    "RT_MAX_LAYER": "Metal5"
+  }
 }
