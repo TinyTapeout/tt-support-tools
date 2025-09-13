@@ -293,9 +293,9 @@ def main():
     else:
         raise PrecheckFailure("Layout file extension is neither .gds nor .gds.br")
 
-    if args.tech not in tech_names:
-        raise PrecheckFailure(f"Invalid tech: {args.tech}")
     tech = args.tech
+    if tech not in tech_names:
+        raise PrecheckFailure(f"Invalid tech: {tech}")
 
     yaml_dir = os.path.dirname(args.gds)
     while not os.path.exists(f"{yaml_dir}/info.yaml"):
@@ -336,22 +336,22 @@ def main():
         {
             "name": "Magic DRC",
             "check": lambda: magic_drc(gds_file, top_module),
-            "tech": "sky130",
+            "tech": "sky130A",
         },
         {
             "name": "KLayout FEOL",
             "check": lambda: klayout_drc(gds_file, "feol"),
-            "tech": "sky130",
+            "tech": "sky130A",
         },
         {
             "name": "KLayout BEOL",
             "check": lambda: klayout_drc(gds_file, "beol"),
-            "tech": "sky130",
+            "tech": "sky130A",
         },
         {
             "name": "KLayout offgrid",
             "check": lambda: klayout_drc(gds_file, "offgrid"),
-            "tech": "sky130",
+            "tech": "sky130A",
         },
         {
             "name": "KLayout pin label overlapping drawing",
@@ -381,7 +381,7 @@ def main():
         {
             "name": "Power pin check",
             "check": lambda: power_pin_check(verilog_file, lef_file, uses_3v3),
-            "tech": "sky130",
+            "tech": "sky130A",
         },
         {"name": "Layer check", "check": lambda: layer_check(gds_file, tech)},
         {"name": "Cell name check", "check": lambda: cell_name_check(gds_file)},
