@@ -34,4 +34,4 @@ jobs:
 
     - name: Run mypy
       run: |
-        mypy cells.py config.py configure.py documentation.py git_utils.py markdown_utils.py project.py project_info.py rom.py shuttle.py --check-untyped-defs
+        mypy *.py --check-untyped-defs

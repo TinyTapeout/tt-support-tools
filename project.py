@@ -12,27 +12,14 @@ import typing
 import cairosvg  # type: ignore
 import chevron
 import gdstk  # type: ignore
-import volare
 import yaml
 from git.repo import Repo
 
 import git_utils
-from cells import Sky130Cell, load_ihp_cells, load_sky130_cells
 from config_utils import read_config, write_config
 from markdown_utils import limit_markdown_headings
 from project_info import ProjectInfo, ProjectYamlError
-
-_SKY130_CELL_URL_FMT = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/{name}/README.html"
-_IHP_CELL_URL_FMT = "https://raw.githubusercontent.com/IHP-GmbH/IHP-Open-PDK/refs/heads/main/ihp-sg13g2/libs.ref/sg13g2_stdcell/doc/sg13g2_stdcell_typ_1p20V_25C.pdf#{ref}"
-
-
-def _sky130_cell_url(cell_name):
-    return _SKY130_CELL_URL_FMT.format(name=cell_name)
-
-
-def _ihp_cell_url(doc_ref):
-    return _IHP_CELL_URL_FMT.format(ref=doc_ref)
-
+from tech import TechName, tech_map
 
 PINOUT_KEYS = [
     "ui[0]",
@@ -76,11 +63,12 @@ class Project:
         index: int,
         git_url: str,
         local_dir: str,
-        pdk: str,
+        pdk: TechName,
         is_user_project: bool,
     ):
         self.git_url = git_url
-        self.ihp = pdk == "ihp-sg13g2"
+        self.pdk = pdk
+        self.tech = tech_map[pdk]
         self.index = index
         self.local_dir = os.path.realpath(local_dir)
         self.is_user_project = is_user_project
@@ -357,10 +345,7 @@ class Project:
             return os.path.join(self.local_dir, f"{self.info.top_module}.v")
 
     def get_tile_sizes(self):
-        if self.ihp:
-            tile_sizes_yaml = "ihp/tile_sizes.yaml"
-        else:
-            tile_sizes_yaml = "tile_sizes.yaml"
+        tile_sizes_yaml = f"tech/{self.pdk}/tile_sizes.yaml"
         with open(
             os.path.join(os.path.dirname(__file__), tile_sizes_yaml), "r"
         ) as stream:
@@ -487,10 +472,10 @@ class Project:
         tiles = self.info.tiles
         tile_sizes = self.get_tile_sizes()
         die_area = tile_sizes[tiles]
-        if self.ihp:
-            def_template = f"dir::../tt/ihp/def/tt_block_{tiles}_pgvdd.def"
-        else:
-            def_template = f"dir::../tt/def/tt_block_{tiles}_pg.def"
+        def_suffix = self.tech.def_suffix
+        def_template = (
+            f"dir::../tt/tech/{self.pdk}/def/tt_block_{tiles}_{def_suffix}.def"
+        )
         config = {
             "DESIGN_NAME": self.info.top_module,
             "VERILOG_FILES": [f"dir::{src}" for src in self.sources],
@@ -522,7 +507,7 @@ class Project:
         os.makedirs("runs/wokwi", exist_ok=True)
         arg_progress = "--hide-progress-bar" if "CI" in os.environ else ""
         arg_pdk_root = '--pdk-root "$PDK_ROOT"' if "PDK_ROOT" in os.environ else ""
-        arg_pdk = "--manual-pdk --pdk ihp-sg13g2" if self.ihp else ""
+        arg_pdk = self.tech.librelane_pdk_args
         harden_cmd = f"python -m librelane {arg_pdk_root} --docker-no-tty --dockerized {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
         env = os.environ.copy()
         logging.debug(harden_cmd)
@@ -546,27 +531,13 @@ class Project:
             )
             f.write("\n")
 
-        resolved_json_path = "runs/wokwi/resolved.json"
-        config = json.load(open(os.path.join(self.local_dir, resolved_json_path)))
-        librelane_version = config["meta"]["librelane_version"]
-        if self.ihp:
-            pdk_repo = Repo(env["PDK_ROOT"])
-            pdk_repo_name = list(pdk_repo.remotes[0].urls)[0].split("/")[-1]
-            pdk_commit = pdk_repo.commit().hexsha
-            pdk_sources = f"{pdk_repo_name} {pdk_commit}"
-        else:
-            pdk_sources_file = os.path.join(
-                config["PDK_ROOT"], config["PDK"], "SOURCES"
-            )
-            pdk_sources = open(pdk_sources_file).read()
-        open("runs/wokwi/FLOW_VERSION", "w").write(f"LibreLane {librelane_version}\n")
-        open("runs/wokwi/PDK_SOURCES", "w").write(pdk_sources)
-        if not self.ihp:
-            volare.enable(
-                volare.get_volare_home(),  # uses PDK_ROOT if set, ~/.volare otherwise
-                {"sky130A": "sky130"}[config["PDK"]],
-                pdk_sources.split()[1],
-            )
+        with open("runs/wokwi/FLOW_VERSION", "w") as f:
+            resolved_json_path = "runs/wokwi/resolved.json"
+            config = json.load(open(os.path.join(self.local_dir, resolved_json_path)))
+            librelane_version = config["meta"]["librelane_version"]
+            f.write(f"LibreLane {librelane_version}\n")
+        with open("runs/wokwi/PDK_SOURCES", "w") as f:
+            f.write(self.tech.read_pdk_version(config["PDK_ROOT"]))
 
         os.chdir(cwd)
 
@@ -727,26 +698,7 @@ class Project:
         top_cells = self.get_final_gds_top_cells()
 
         # Remove label layers (i.e. delete text), then generate SVG:
-        sky130_label_layers = [
-            (64, 59),  # 64/59 - pwell.label
-            (64, 5),  # 64/5  - nwell.label
-            (67, 5),  # 67/5  - li1.label
-            (68, 5),  # 68/5  - met1.label
-            (69, 5),  # 69/5  - met2.label
-            (70, 5),  # 70/5  - met3.label
-            (71, 5),  # 71/5  - met4.label
-        ]
-        ihp_label_layers = [
-            (8, 1),  # 8/1   - Metal1.label
-            (8, 25),  # 8/25  - Metal1.text
-            (67, 25),  # 67/25 - Metal5.text
-            (126, 25),  # 126/25 - TopMetal1.text
-        ]
-        if self.ihp:
-            label_layers = ihp_label_layers
-        else:
-            label_layers = sky130_label_layers
-
+        label_layers = self.tech.label_layers
         top_cells.filter(label_layers)
         for subcell in top_cells.dependencies(True):
             subcell.filter(label_layers)
@@ -777,31 +729,9 @@ class Project:
                     p.stderr.decode().strip()
                 )
             )
-            # Remove more layers that are hardly visible anyway:
-            sky130_buried_layers = [
-                (64, 16),  # 64/16 - nwell.pin
-                (65, 44),  # 65/44 - tap.drawing
-                (68, 16),  # 68/16 - met1.pin
-                (68, 44),  # 68/44 - via.drawing
-                (81, 4),  # 81/4  - areaid.standardc
-                (70, 20),  # 70/20 - met3.drawing
-                # Important:
-                # (68,20), # 68/20 - met1.drawing
-                # Less important, but keep for now:
-                # (69,20), # 69/20 - met2.drawing
-            ]
-            ihp_buried_layers = [
-                (6, 0),  # 6/0 - Cont.drawing
-                (8, 2),  # 8/2 - Metal1.pin
-                (19, 0),  # 19/0 - Via1.drawing
-                (51, 0),  # 51/0 - HeatTrans.drawing
-                (189, 4),  # 189/4 - prBoundary.boundary
-            ]
-            if self.ihp:
-                buried_layers = ihp_buried_layers
-            else:
-                buried_layers = sky130_buried_layers
 
+            # Remove more layers that are hardly visible anyway:
+            buried_layers = self.tech.buried_layers
             top_cells.filter(buried_layers)
             for subcell in top_cells.dependencies(True):
                 subcell.filter(buried_layers)
@@ -822,6 +752,7 @@ class Project:
                         p.stderr.decode().strip()
                     )
                 )
+
                 # Fall back to cairosvg, and since we're doing that, might as well use the original full-detail SVG anyway:
                 cairosvg.svg2png(url=svg, write_to=png)
 
@@ -869,10 +800,7 @@ class Project:
                     if "WIDTHLABEL" not in line:
                         warnings.append(line.strip())
 
-        if self.ihp:
-            tt_corner = "nom_typ_1p20V_25C"
-        else:
-            tt_corner = "nom_tt_025C_1v80"
+        tt_corner = self.tech.tt_corner
         sta_report_glob = f"runs/wokwi/*-openroad-stapostpnr/{tt_corner}/checks.rpt"
         sta_report = glob.glob(os.path.join(self.local_dir, sta_report_glob))[0]
         with open(os.path.join(self.local_dir, sta_report)) as f:
@@ -911,23 +839,11 @@ class Project:
         Categories = typing.TypedDict(
             "Categories", {"categories": typing.List[str], "map": typing.Dict[str, int]}
         )
-        if self.ihp:
-            categories_file = "ihp/categories.json"
-        else:
-            categories_file = "categories.json"
+        categories_file = f"tech/{self.pdk}/categories.json"
         with open(os.path.join(SCRIPT_DIR, categories_file)) as fh:
             categories: Categories = json.load(fh)
 
-        if self.ihp:
-            ihp_defs = load_ihp_cells()
-        else:
-            sky130_defs = load_sky130_cells()
-
-        def _cell_url(name):
-            if self.ihp:
-                return _ihp_cell_url(ihp_defs[name]["doc_ref"])
-            else:
-                return _sky130_cell_url(name)
+        cell_defs = self.tech.load_cell_definitions()
 
         # print all used cells, sorted by frequency
         total = 0
@@ -941,12 +857,13 @@ class Project:
             ):
                 if count > 0:
                     total += count
-                    cell_link = _cell_url(name)
-                    if self.ihp:
-                        description = ihp_defs[name]["description"]
+                    cell_def = cell_defs.get(name)
+                    if cell_def is not None:
+                        cell_link = cell_def["url"]
+                        description = cell_def["description"]
+                        print(f"| [{name}]({cell_link}) | {description} |{count} |")
                     else:
-                        description = sky130_defs[name]["description"]
-                    print(f"| [{name}]({cell_link}) | {description} |{count} |")
+                        print(f"| {name} | (unknown) | {count} |")
 
             print(f"| | Total | {total} |")
 
@@ -978,9 +895,14 @@ class Project:
             for cat_name, cat_dict in sorted(
                 by_category.items(), key=lambda x: x[1]["count"], reverse=True
             ):
-                cell_links = [
-                    f"[{name}]({_cell_url(name)})" for name in cat_dict["examples"]
-                ]
+                cell_links = []
+                for name in cat_dict["examples"]:
+                    cell_def = cell_defs.get(name)
+                    if cell_def is not None:
+                        cell_links.append(f"[{name}]({cell_def['url']})")
+                    else:
+                        cell_links.append(name)
+
                 print(f'|{cat_name} | {" ".join(cell_links)} | {cat_dict["count"]}|')
 
             print(f"## {total} total cells (excluding fill and tap cells)")
@@ -1005,15 +927,9 @@ class Project:
     def get_cell_counts_from_gl(self):
         cell_count: typing.Dict[str, int] = {}
         total = 0
-        if self.ihp:
-            cell_re = r"sg13g2_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
-        else:
-            cell_re = (
-                r"sky130_(?P<cell_lib>\S+)__(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
-            )
         with open(self.get_gl_path()) as fh:
             for line in fh.readlines():
-                m = re.search(cell_re, line)
+                m = re.search(self.tech.cell_regexp, line)
                 if m is not None:
                     total += 1
                     gd = m.groupdict()
@@ -1025,17 +941,3 @@ class Project:
                     except KeyError:
                         cell_count[cell_name] = 1
         return cell_count
-
-    # Load all the json defs and combine into one big dict, keyed by cellname
-    # Needs access to the PDK
-    def create_defs(self):
-        # replace this with a find
-        json_files = glob.glob("sky130_fd_sc_hd/latest/cells/*/definition.json")
-        definitions: typing.Dict[str, Sky130Cell] = {}
-        for json_file in json_files:
-            with open(json_file) as fh:
-                definition: Sky130Cell = json.load(fh)
-                definitions[definition["name"]] = definition
-
-        with open("cells.json", "w") as fh:
-            json.dump(definitions, fh)

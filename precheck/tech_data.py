@@ -1,5 +1,5 @@
 # fmt: off
-valid_layers_sky130 = {
+valid_layers_sky130A = {
     (10, 0), (11, 0), (11, 20), (11, 44), (17, 0), (18, 20), (20, 0), (21, 0),
     (22, 0), (22, 20), (22, 21), (22, 22), (22, 23), (22, 24), (23, 0), (23, 28),
     (25, 0), (25, 42), (25, 43), (25, 44), (26, 20), (26, 21), (26, 22), (27, 0),
@@ -176,24 +176,24 @@ valid_layers_ihp_sg13g2 = [
 ]
 
 # layers used for the analog pin check
-layer_map_sky130 = {
+layer_map_sky130A = {
     "met4": (71, 20),
     "via3": (70, 44),
 }
 
 
-def analog_pin_pos_sky130(pin_number: int, uses_3v3: bool):
+def analog_pin_pos_sky130A(pin_number: int, uses_3v3: bool):
     return 151.81 - 19.32 * pin_number - (15.64 if uses_3v3 else 0)
 
 
-valid_layers = {"sky130": valid_layers_sky130, "ihp-sg13g2": valid_layers_ihp_sg13g2}
-layer_map = {"sky130": layer_map_sky130}
-analog_pin_pos = {"sky130": analog_pin_pos_sky130}
-lyp_filename = {"sky130": "sky130A.lyp", "ihp-sg13g2": "sg13g2.lyp"}
+valid_layers = {"sky130A": valid_layers_sky130A, "ihp-sg13g2": valid_layers_ihp_sg13g2}
+layer_map = {"sky130A": layer_map_sky130A}
+analog_pin_pos = {"sky130A": analog_pin_pos_sky130A}
+lyp_filename = {"sky130A": "sky130A.lyp", "ihp-sg13g2": "sg13g2.lyp"}
 
 # TODO: read layer numbers from lyp file
 valid_lef_port_layers = {
-    "sky130": {
+    "sky130A": {
         "met1.pin": (68, 16),
         "met2.pin": (69, 16),
         "met3.pin": (70, 16),
@@ -208,7 +208,7 @@ valid_lef_port_layers = {
     },
 }
 forbidden_layers = {
-    "sky130": ["met5.drawing", "met5.pin", "met5.label"],
+    "sky130A": ["met5.drawing", "met5.pin", "met5.label"],
     "ihp-sg13g2": [
         "TopMetal1.drawing",
         "TopMetal1.pin",
@@ -219,8 +219,8 @@ forbidden_layers = {
     ],
 }
 power_pins_layer = {
-    "sky130": "met4",
+    "sky130A": "met4",
     "ihp-sg13g2": "Metal5",
 }
 
-tech_names = ["sky130", "ihp-sg13g2"]
+tech_names = ["sky130A", "ihp-sg13g2"]

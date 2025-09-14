@@ -4,6 +4,7 @@ import logging
 import sys
 
 from project import Project
+from tech import TechName
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="TT setup")
@@ -140,7 +141,7 @@ if __name__ == "__main__":
     ch.setFormatter(log_format)
     log.addHandler(ch)
 
-    pdk = "ihp-sg13g2" if args.ihp else "sky130A"
+    pdk: TechName = "ihp-sg13g2" if args.ihp else "sky130A"
     project = Project(0, "unknown", args.project_dir, pdk, is_user_project=True)
     project.post_clone_setup()
 

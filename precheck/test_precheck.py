@@ -251,7 +251,7 @@ def generate_analog_example(
 
         tcl_append(
             f"""
-            def read ../def/analog/tt_analog_1x2.def
+            def read ../tech/sky130A/def/analog/tt_analog_1x2.def
             cellname rename tt_um_template {toplevel}
             """
         )
@@ -477,14 +477,14 @@ def test_klayout_beol_fail(gds_fail_met1_poly: str):
 
 
 def test_klayout_checks_pass(gds_valid: str):
-    precheck.klayout_checks(gds_valid, "TEST_valid", "sky130")
+    precheck.klayout_checks(gds_valid, "TEST_valid", "sky130A")
 
 
 def test_klayout_checks_fail_metal5(gds_fail_metal5_poly: str):
     with pytest.raises(
         precheck.PrecheckFailure, match=r"Forbidden layer met5\.drawing found in .+"
     ):
-        precheck.klayout_checks(gds_fail_metal5_poly, "TEST_met5_error", "sky130")
+        precheck.klayout_checks(gds_fail_metal5_poly, "TEST_met5_error", "sky130A")
 
 
 def test_klayout_checks_fail_pr_boundary(gds_no_pr_boundary: str):
@@ -492,7 +492,7 @@ def test_klayout_checks_fail_pr_boundary(gds_no_pr_boundary: str):
         precheck.PrecheckFailure,
         match=r"prBoundary.boundary \(235/4\) layer not found in .+",
     ):
-        precheck.klayout_checks(gds_no_pr_boundary, "TEST_no_prboundary", "sky130")
+        precheck.klayout_checks(gds_no_pr_boundary, "TEST_no_prboundary", "sky130A")
 
 
 def test_klayout_top_module_name(gds_invalid_macro_name: str):
@@ -501,7 +501,7 @@ def test_klayout_top_module_name(gds_invalid_macro_name: str):
         match="Top macro name mismatch: expected TEST_invalid_macro_name, got wrong_name",
     ):
         precheck.klayout_checks(
-            gds_invalid_macro_name, "TEST_invalid_macro_name", "sky130"
+            gds_invalid_macro_name, "TEST_invalid_macro_name", "sky130A"
         )
 
 
@@ -516,7 +516,7 @@ def test_klayout_zero_area_drc_fail(gds_zero_area: str):
 
 def test_shapes_outside_area(gds_shapes_outside_area: str):
     with pytest.raises(precheck.PrecheckFailure, match="Shapes outside project area"):
-        precheck.boundary_check(gds_shapes_outside_area, "sky130")
+        precheck.boundary_check(gds_shapes_outside_area, "sky130A")
 
 
 def test_wrong_power_pins_1(verilog_lef_wrong_power_pins: tuple[str, str]):
@@ -533,7 +533,7 @@ def test_wrong_power_pins_2(verilog_lef_wrong_power_pins: tuple[str, str]):
 
 def test_invalid_layer(gds_invalid_layer: str):
     with pytest.raises(precheck.PrecheckFailure, match="Invalid layers in GDS"):
-        precheck.layer_check(gds_invalid_layer, "sky130")
+        precheck.layer_check(gds_invalid_layer, "sky130A")
 
 
 def test_invalid_cell_name(gds_invalid_cell_name: str):
@@ -557,10 +557,10 @@ def test_pin_analog_example(gds_lef_analog_example: tuple[str, str]):
     precheck.pin_check(
         gds_file,
         lef_file,
-        "../def/analog/tt_analog_1x2.def",
+        "../tech/sky130A/def/analog/tt_analog_1x2.def",
         "TEST_analog_example",
         False,
-        "sky130",
+        "sky130A",
     )
 
 
@@ -569,10 +569,10 @@ def test_pin_analog_power_compat(gds_lef_analog_power_compat: tuple[str, str]):
     precheck.pin_check(
         gds_file,
         lef_file,
-        "../def/analog/tt_analog_1x2.def",
+        "../tech/sky130A/def/analog/tt_analog_1x2.def",
         "TEST_analog_power_compat",
         False,
-        "sky130",
+        "sky130A",
     )
 
 
@@ -585,10 +585,10 @@ def test_pin_analog_wrong_vgnd(gds_lef_analog_wrong_vgnd: tuple[str, str]):
         precheck.pin_check(
             gds_file,
             lef_file,
-            "../def/analog/tt_analog_1x2.def",
+            "../tech/sky130A/def/analog/tt_analog_1x2.def",
             "TEST_analog_wrong_vgnd",
             False,
-            "sky130",
+            "sky130A",
         )
 
 
@@ -601,10 +601,10 @@ def test_pin_analog_overlapping_vgnd(gds_lef_analog_overlapping_vgnd: tuple[str,
         precheck.pin_check(
             gds_file,
             lef_file,
-            "../def/analog/tt_analog_1x2.def",
+            "../tech/sky130A/def/analog/tt_analog_1x2.def",
             "TEST_analog_overlapping_vgnd",
             False,
-            "sky130",
+            "sky130A",
         )
 
 
@@ -613,10 +613,10 @@ def test_pin_analog_compound_vgnd(gds_lef_analog_compound_vgnd: tuple[str, str])
     precheck.pin_check(
         gds_file,
         lef_file,
-        "../def/analog/tt_analog_1x2.def",
+        "../tech/sky130A/def/analog/tt_analog_1x2.def",
         "TEST_analog_compound_vgnd",
         False,
-        "sky130",
+        "sky130A",
     )
 
 
@@ -625,10 +625,10 @@ def test_pin_analog_example_3v3(gds_lef_analog_example_3v3: tuple[str, str]):
     precheck.pin_check(
         gds_file,
         lef_file,
-        "../def/analog/tt_analog_1x2.def",
+        "../tech/sky130A/def/analog/tt_analog_1x2.def",
         "TEST_analog_example_3v3",
         True,
-        "sky130",
+        "sky130A",
     )
 
 
@@ -641,10 +641,10 @@ def test_pin_analog_3v3_mismatch1(gds_lef_analog_example: tuple[str, str]):
         precheck.pin_check(
             gds_file,
             lef_file,
-            "../def/analog/tt_analog_1x2.def",
+            "../tech/sky130A/def/analog/tt_analog_1x2.def",
             "TEST_analog_example",
             True,
-            "sky130",
+            "sky130A",
         )
 
 
@@ -657,17 +657,17 @@ def test_pin_analog_3v3_mismatch2(gds_lef_analog_example_3v3: tuple[str, str]):
         precheck.pin_check(
             gds_file,
             lef_file,
-            "../def/analog/tt_analog_1x2.def",
+            "../tech/sky130A/def/analog/tt_analog_1x2.def",
             "TEST_analog_example_3v3",
             False,
-            "sky130",
+            "sky130A",
         )
 
 
 def test_analog_exact_pins(gds_lef_analog_pin_example: tuple[str, str]):
     gds_file, lef_file = gds_lef_analog_pin_example
     precheck.analog_pin_check(
-        gds_file, "sky130", True, False, 2, {"ua[0]": "x", "ua[1]": "x"}
+        gds_file, "sky130A", True, False, 2, {"ua[0]": "x", "ua[1]": "x"}
     )
 
 
@@ -678,7 +678,7 @@ def test_analog_less_pins(gds_lef_analog_pin_example: tuple[str, str]):
         match="Analog pin `ua\\[1\\]` is connected to some metal but `analog_pins` is set to 1 .*",
     ):
         precheck.analog_pin_check(
-            gds_file, "sky130", True, False, 1, {"ua[0]": "x", "ua[1]": "x"}
+            gds_file, "sky130A", True, False, 1, {"ua[0]": "x", "ua[1]": "x"}
         )
 
 
@@ -689,7 +689,7 @@ def test_analog_more_pins(gds_lef_analog_pin_example: tuple[str, str]):
         match="Analog pin `ua\\[2\\]` is not connected to any adjacent metal but `analog_pins` is set to 3 .*",
     ):
         precheck.analog_pin_check(
-            gds_file, "sky130", True, False, 3, {"ua[0]": "x", "ua[1]": "x"}
+            gds_file, "sky130A", True, False, 3, {"ua[0]": "x", "ua[1]": "x"}
         )
 
 
@@ -699,7 +699,7 @@ def test_analog_less_ua_entries(gds_lef_analog_pin_example: tuple[str, str]):
         precheck.PrecheckFailure,
         match="Analog pin `ua\\[1\\]` is connected to some metal but the description of `ua\\[1\\]` .*",
     ):
-        precheck.analog_pin_check(gds_file, "sky130", True, False, 2, {"ua[0]": "x"})
+        precheck.analog_pin_check(gds_file, "sky130A", True, False, 2, {"ua[0]": "x"})
 
 
 def test_analog_more_ua_entries(gds_lef_analog_pin_example: tuple[str, str]):
@@ -710,7 +710,7 @@ def test_analog_more_ua_entries(gds_lef_analog_pin_example: tuple[str, str]):
     ):
         precheck.analog_pin_check(
             gds_file,
-            "sky130",
+            "sky130A",
             True,
             False,
             2,

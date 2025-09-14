@@ -13,27 +13,7 @@ import yaml
 from config import Config
 from project import Project
 from shuttle_index import ShuttleIndex, ShuttleIndexLayout, ShuttleIndexProject
-
-# Power gate macros for each PDK. We need to copy them to the multiplexer directory:
-SHUTTLE_PG_MACROS = {
-    "sky130": [
-        "tt_pg_1v8_hp_1",
-        "tt_pg_1v8_hp_2",
-        "tt_pg_1v8_hp_4",
-        "tt_pg_1v8_ll_1",
-        "tt_pg_1v8_ll_2",
-        "tt_pg_1v8_ll_4",
-        "tt_pg_3v3_2",
-    ],
-    "ihp-sg13g2": [
-        "tt_pg_1v5_hp_1",
-        "tt_pg_1v5_hp_2",
-        "tt_pg_1v5_hp_4",
-        "tt_pg_1v5_ll_1",
-        "tt_pg_1v5_ll_2",
-        "tt_pg_1v5_ll_4",
-    ],
-}
+from tech import tech_map
 
 
 def copy_print(src: str, dest: str):
@@ -76,7 +56,13 @@ class ShuttleConfig:
         self.projects = projects
         self.script_dir = os.path.dirname(os.path.realpath(__file__))
         self.modules_yaml_name = modules_yaml_name
-        self.mux_config_yaml_name = os.environ.get("TT_CONFIG", "sky130.yaml")
+        pdk = config.get("pdk")
+        if pdk is None:
+            raise ValueError("PDK is not specified in the configuration.")
+        self.tech = tech_map[pdk]
+        self.mux_config_yaml_name = os.environ.get(
+            "TT_CONFIG", self.tech.mux_config_yaml_name
+        )
         self.tt_top_macro = config.get("top_level_macro", "openframe_project_wrapper")
 
         self.read_mux_config_file()
@@ -283,17 +269,17 @@ class ShuttleConfig:
             )
 
         # Copy power gate / analog switch macros:
-        for pdk, pg_macros in SHUTTLE_PG_MACROS.items():
-            for pg_macro in pg_macros:
-                self.copy_mux_macro(f"pg/{pdk}/{pg_macro}", pg_macro)
-
-        self.copy_mux_macro("asw/sky130/tt_asw_3v3", "tt_asw_3v3")
+        for mux_macro in self.tech.mux_macros:
+            self.copy_mux_macro(mux_macro, os.path.basename(mux_macro))
 
         # Copy logo & shuttle ID
         self.copy_logo_macro("tt_logo_top")
         self.copy_logo_macro("tt_logo_bottom")
-        if self.config.get("pdk") == "ihp-sg13g2":
-            self.copy_logo_macro("tt_logo_corner", source_dir="tt/ihp")
+        for logo_macro in self.tech.extra_logo_macros:
+            self.copy_logo_macro(
+                os.path.basename(logo_macro),
+                source_dir=os.path.join("tt", os.path.dirname(logo_macro)),
+            )
 
     def copy_final_results(self):
         macros = ["tt_um_chip_rom", "tt_ctrl", "tt_mux", "tt_top"]

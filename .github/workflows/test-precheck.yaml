@@ -27,7 +27,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Install Sky130 PDK
-        uses: TinyTapeout/volare-action@v2
+        uses: TinyTapeout/ciel-action@v1
         with:
           pdk_name: sky130
           pdk_version: ${{ env.PDK_VERSION }}

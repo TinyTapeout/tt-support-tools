@@ -21,7 +21,7 @@ class TechDef(TypedDict):
 
 
 tech: Dict[str, TechDef] = {
-    "sky130": {
+    "sky130A": {
         "PRBOUNDARY_LAYER": 235,  # prBoundary
         "PRBOUNDARY_DATATYPE": 4,  # .boundary
         "LOGO_LAYER": 71,  # Metal4
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="TT logo generator")
     parser.add_argument(
-        "--pdk", type=str, default="sky130", choices=["sky130", "ihp-sg13g2"]
+        "--pdk", type=str, default="sky130A", choices=["sky130A", "ihp-sg13g2"]
     )
     parser.add_argument("--top", action="store_true")
     parser.add_argument("--bottom", action="store_true")
