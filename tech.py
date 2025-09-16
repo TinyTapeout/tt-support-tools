@@ -4,7 +4,7 @@ from typing import Dict, List, Literal, Protocol, Tuple, TypedDict
 
 from git.repo import Repo
 
-TechName = Literal["sky130A", "ihp-sg13g2"]
+TechName = Literal["sky130A", "ihp-sg13g2", "gf180mcuD"]
 
 
 class CellDefinition(TypedDict):
@@ -150,7 +150,46 @@ class IHPTech(Tech):
         return cells
 
 
+class GF180MCUDTech(Tech):
+    def_suffix = "pgvdd"
+    librelane_pdk_args = "--pdk gf180mcuD"
+    tt_corner = "nom_tt_025C_5v00"
+    cell_regexp = r"gf180mcu_(?P<cell_lib>\S+)__(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+    netlist_type = "pnl"
+    project_top_metal_layer = "Metal4"
+    label_layers = [
+        # TODO: add label layers
+    ]
+    buried_layers = [
+        # TODO: add buried layers
+    ]
+    mux_config_yaml_name = "gf180mcuD.yaml"
+    mux_macros = [
+        "pg/gf180mcuD/tt_pg_1v8_hp_1",
+        "pg/gf180mcuD/tt_pg_1v8_hp_2",
+        "pg/gf180mcuD/tt_pg_1v8_hp_4",
+        "pg/gf180mcuD/tt_pg_1v8_ll_1",
+        "pg/gf180mcuD/tt_pg_1v8_ll_2",
+        "pg/gf180mcuD/tt_pg_1v8_ll_4",
+    ]
+    extra_logo_macros = []
+
+    def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
+        pdk_sources_file = os.path.join(pdk_root, "gf180mcuD", "SOURCES")
+        return parse_openpdks_pdk_version(pdk_sources_file)
+
+    def load_cell_definitions(self) -> Dict[str, CellDefinition]:
+        URL_FORMAT = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/{name}/README.html"
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(script_dir, "tech/sky130A/cells.json")) as fh:
+            cells = json.load(fh)
+        for name, cell in cells.items():
+            cell["url"] = URL_FORMAT.format(name=name)
+        return cells
+
+
 tech_map: dict[TechName, Tech] = {
-    "sky130A": Sky130Tech(),
     "ihp-sg13g2": IHPTech(),
+    "gf180mcuD": GF180MCUDTech(),
+    "sky130A": Sky130Tech(),
 }
