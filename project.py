@@ -482,6 +482,8 @@ class Project:
             "VERILOG_FILES": [f"dir::{src}" for src in self.sources],
             "DIE_AREA": die_area,
             "FP_DEF_TEMPLATE": def_template,
+            "VDD_PIN": "VDPWR",
+            "GND_PIN": "VGND",
             "RT_MAX_LAYER": self.tech.project_top_metal_layer,
         }
         write_config(config, os.path.join(self.src_dir, "user_config"), ("json",))
