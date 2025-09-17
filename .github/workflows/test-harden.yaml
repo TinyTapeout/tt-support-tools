@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pdk: [sky130A, ihp-sg13g2]
+        pdk: [sky130A, ihp-sg13g2, gf180mcuD]
         
     runs-on: ubuntu-24.04
 
@@ -43,8 +43,8 @@ jobs:
         if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
         run: pip install librelane==${LIBRELANE_VERSION_DEV}
 
-      - name: Clone the factory test (sky130A)
-        if: "${{ matrix.pdk == 'sky130A' }}"
+      - name: Clone the factory test
+        if: "${{ matrix.pdk != 'ihp-sg13g2' }}"
         run: git clone https://github.com/tinytapeout/ttsky25a-factory-test ${PROJECT_DIR}
 
       - name: Clone the factory test (ihp-sg13g2)
@@ -55,9 +55,13 @@ jobs:
         if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
         run: git clone -b tt2025 --depth 1 https://github.com/TinyTapeout/IHP-Open-PDK ${PDK_ROOT}
 
-      - name: Configure tt_tool.py args
+      - name: Configure tt_tool.py args (IHP)
         if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
         run: echo "TT_TOOL_ARGS=--ihp" >> $GITHUB_ENV
+
+      - name: Configure tt_tool.py args (gf180mcuD)
+        if: "${{ matrix.pdk == 'gf180mcuD' }}"
+        run: echo "TT_TOOL_ARGS=--gf" >> $GITHUB_ENV
 
       - name: Copy tt-support-tools to the project directory
         run: cp -r . ${PROJECT_DIR}/tt
@@ -77,6 +81,7 @@ jobs:
       - name: Print stats
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
+          set -e
           python ./tt/tt_tool.py $TT_TOOL_ARGS --print-stats --print-warnings --print-cell-summary --print-cell-category | tee $GITHUB_STEP_SUMMARY
 
       - name: Create SVG render
