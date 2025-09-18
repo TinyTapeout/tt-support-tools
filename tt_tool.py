@@ -91,7 +91,7 @@ if __name__ == "__main__":
         const=True,
     )
 
-    # configure
+    # Hardening and submission
     parser.add_argument(
         "--create-user-config",
         help="create the user_config.json file with top module and source files",
@@ -101,6 +101,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--harden",
         help="use a local LibreLane install to harden the project",
+        action="store_const",
+        const=True,
+    )
+    parser.add_argument(
+        "--create-tt-submission",
+        help="Copy the hardened design to the tt_submission directory",
         action="store_const",
         const=True,
     )
@@ -172,6 +178,9 @@ if __name__ == "__main__":
 
     if args.harden:
         project.harden()
+
+    if args.create_tt_submission:
+        project.create_tt_submission()
 
     if args.create_pdf:
         project.create_pdf()

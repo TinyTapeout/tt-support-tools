@@ -17,6 +17,7 @@ class Tech(Protocol):
     librelane_pdk_args: str
     tt_corner: str
     cell_regexp: str
+    netlist_type: Literal["pnl", "nl"]
 
     """ These layers will be removed from the SVG render of the layout """
     label_layers: List[Tuple[int, int]]
@@ -41,6 +42,7 @@ class Sky130Tech(Tech):
     librelane_pdk_args = ""
     tt_corner = "nom_tt_025C_1v80"
     cell_regexp = r"sky130_(?P<cell_lib>\S+)__(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+    netlist_type = "pnl"
     label_layers = [
         (64, 59),  # pwell.label
         (64, 5),  # nwell.label
@@ -91,6 +93,7 @@ class IHPTech(Tech):
     librelane_pdk_args = "--manual-pdk --pdk ihp-sg13g2"
     tt_corner = "nom_typ_1p20V_25C"
     cell_regexp = r"sg13g2_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+    netlist_type = "nl"
     label_layers = [
         (8, 1),  # Metal1.label
         (8, 25),  # Metal1.text

@@ -12,6 +12,7 @@ import typing
 import cairosvg  # type: ignore
 import chevron
 import gdstk  # type: ignore
+import klayout.db as pya
 import yaml
 from git.repo import Repo
 
@@ -540,6 +541,54 @@ class Project:
             f.write(self.tech.read_pdk_version(config["PDK_ROOT"]))
 
         os.chdir(cwd)
+
+    def create_tt_submission(self):
+        top_module = self.get_macro_name()
+        logging.info(f"Creating TT submission for {top_module}")
+        tt_submission_dir = os.path.join(self.local_dir, "tt_submission")
+        shutil.rmtree(tt_submission_dir, ignore_errors=True)
+        stats_dir = os.path.join(tt_submission_dir, "stats")
+        os.makedirs(stats_dir, exist_ok=True)
+        run_dir = os.path.join(self.local_dir, "runs/wokwi")
+        final_dir = os.path.join(run_dir, "final")
+
+        # Convert to OAS:
+        # strm2oas tt_submission/${TOP_MODULE}.gds tt_submission/${TOP_MODULE}.oas
+        oas_file = os.path.join("tt_submission", f"{top_module}.oas")
+        gds_file = os.path.join(final_dir, "gds", f"{top_module}.gds")
+        layout = pya.Layout()
+        layout.read(gds_file)
+        layout.write(oas_file)
+
+        files_to_copy = [
+            os.path.join(run_dir, "FLOW_VERSION"),
+            os.path.join(run_dir, "PDK_SOURCES"),
+            os.path.join(run_dir, "resolved.json"),
+            os.path.join(final_dir, "commit_id.json"),
+            os.path.join(final_dir, "gds", f"{top_module}.gds"),
+            os.path.join(final_dir, "lef", f"{top_module}.lef"),
+            *glob.glob(os.path.join(final_dir, "spef/*/*.spef")),
+        ]
+        for file in files_to_copy:
+            shutil.copyfile(
+                file, os.path.join(tt_submission_dir, os.path.basename(file))
+            )
+
+        # GL netlist
+        gl_type = self.tech.netlist_type
+        gl_file = os.path.join(final_dir, gl_type, f"{top_module}.{gl_type}.v")
+        shutil.copyfile(gl_file, os.path.join(tt_submission_dir, f"{top_module}.v"))
+
+        # Stats:
+        shutil.copyfile(
+            os.path.join(final_dir, "metrics.csv"),
+            os.path.join(stats_dir, "metrics.csv"),
+        )
+        (yosys_synth_dir,) = glob.glob(os.path.join(run_dir, "*yosys-synthesis"))
+        shutil.copyfile(
+            os.path.join(yosys_synth_dir, "reports", "stat.rpt"),
+            os.path.join(stats_dir, "synthesis-stats.txt"),
+        )
 
     def create_fpga_bitstream(self, args):
         logging.info(f"Creating FPGA bitstream for {self}")
