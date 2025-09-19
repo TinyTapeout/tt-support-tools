@@ -755,6 +755,25 @@ class Project:
                 "LVS is already included in OpenLane hardening job, skipping"
             )
 
+    # resolve_arguments_to_list('ONE', 'TWO=2', None, THREE='3', FOUR=4, FIVE=None) = ["ONE", "TWO=2", "THREE=3", "FOUR=4", "FIVE"]
+    # resolve_arguments_to_list('--one', '--two=2', None, three=3, four=4, five=None, kwargs_prefix='--') = ["--one", "--two=2", "--three=3", "--four=4", "--five"]
+    def resolve_arguments_to_list(self, *args, **kwargs):
+        list = []
+        args_prefix = kwargs.get('args_prefix', '')
+        for kv in [x for x in args if x is not None]:
+            words = re.split(r'[ \t\n]', str(kv))  # shell $IFS style
+            for w in words:
+                if len(w) == 0:
+                    continue
+                list.append(args_prefix + w)
+        kwargs_prefix = kwargs.get('kwargs_prefix', '')
+        for k, v in kwargs.items():
+            if k == 'kwargs_prefix' or k == 'args_prefix':
+                continue
+            vv = "" if v is None else "=" + str(v)
+            list.append(kwargs_prefix + k + vv)
+        return list
+
     def create_fpga_bitstream(self):
         logging.info(f"Creating FPGA bitstream for {self}")
 
@@ -772,7 +791,10 @@ class Project:
         sources = [os.path.join(self.src_dir, src) for src in self.sources]
         source_list = " ".join(sources)
 
-        yosys_cmd = f"yosys -l {build_dir}/01-synth.log -DSYNTH -p 'synth_ice40 -top tt_fpga_top -json {build_dir}/tt_fpga.json' src/_tt_fpga_top.v {source_list}"
+        verilog_defines = self.resolve_arguments_to_list("SYNTH", os.getenv("VERILOG_DEFINES"), args_prefix='-D', kwargs_prefix='-D')  # why is this not SYNTHESIS
+        yosys_args = self.resolve_arguments_to_list(os.getenv("YOSYS_ARGS"), kwargs_prefix='--')
+
+        yosys_cmd = f"yosys -l {build_dir}/01-synth.log {' '.join(verilog_defines)} -p 'synth_ice40 -top tt_fpga_top -json {build_dir}/tt_fpga.json' src/_tt_fpga_top.v {' '.join(yosys_args)} {source_list}"
         logging.debug(yosys_cmd)
         p = subprocess.run(yosys_cmd, shell=True)
         if p.returncode != 0:
