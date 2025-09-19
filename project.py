@@ -160,10 +160,29 @@ class Project:
                 logging.error(f"{filename} doesn't exist in the repo")
                 exit(1)
 
+    def load_config_json(self):
+        config_json_path = os.path.join(self.src_dir, 'config.json')
+        if not os.path.exists(config_json_path):
+            return None
+        try:
+            with open(config_json_path, 'r') as f:
+                data = json.load(f)
+            return data
+        except Exception as e:
+            logging.error(f"config.json exists but could not be loaded: {type(e)}: {e}")
+            exit(1)
+
     def run_yosys(self, command: str, no_output: bool = False):
         env = os.environ.copy()
         env["YOSYS_CMD"] = command
-        yosys_cmd = 'yowasp-yosys -qp "$YOSYS_CMD"'
+        # Need to load config.json to get access to project VERILOG_DEFINES as the verilog won't parse if it has the wrong source view of the project
+        verilog_defines = os.getenv("VERILOG_DEFINES")  # highest precedence
+        if verilog_defines is None:
+            config_json = self.load_config_json()
+            if config_json and config_json["VERILOG_DEFINES"]:
+                verilog_defines = config_json["VERILOG_DEFINES"]
+        verilog_defines_list = self.resolve_arguments_to_list(verilog_defines, args_prefix='-D', kwargs_prefix='-D')
+        yosys_cmd = 'yowasp-yosys {} -qp "$YOSYS_CMD"'.format(' '.join(verilog_defines_list))
         return subprocess.run(yosys_cmd, shell=True, env=env, capture_output=no_output)
 
     def check_ports(self, include_power_ports: bool = False):
@@ -755,6 +774,25 @@ class Project:
                 "LVS is already included in OpenLane hardening job, skipping"
             )
 
+    # resolve_arguments_to_list('ONE', 'TWO=2', None, THREE='3', FOUR=4, FIVE=None) = ["ONE", "TWO=2", "THREE=3", "FOUR=4", "FIVE"]
+    # resolve_arguments_to_list('--one', '--two=2', None, three=3, four=4, five=None, kwargs_prefix='--') = ["--one", "--two=2", "--three=3", "--four=4", "--five"]
+    def resolve_arguments_to_list(self, *args, **kwargs):
+        list = []
+        args_prefix = kwargs.get('args_prefix', '')
+        for kv in [x for x in args if x is not None]:
+            words = re.split(r'[ \t\n]', str(kv))  # shell $IFS style
+            for w in words:
+                if len(w) == 0:
+                    continue
+                list.append(args_prefix + w)
+        kwargs_prefix = kwargs.get('kwargs_prefix', '')
+        for k, v in kwargs.items():
+            if k == 'kwargs_prefix' or k == 'args_prefix':
+                continue
+            vv = "" if v is None else "=" + str(v)
+            list.append(kwargs_prefix + k + vv)
+        return list
+
     def create_fpga_bitstream(self):
         logging.info(f"Creating FPGA bitstream for {self}")
 
@@ -772,7 +810,10 @@ class Project:
         sources = [os.path.join(self.src_dir, src) for src in self.sources]
         source_list = " ".join(sources)
 
-        yosys_cmd = f"yosys -l {build_dir}/01-synth.log -DSYNTH -p 'synth_ice40 -top tt_fpga_top -json {build_dir}/tt_fpga.json' src/_tt_fpga_top.v {source_list}"
+        verilog_defines = self.resolve_arguments_to_list("SYNTH", os.getenv("VERILOG_DEFINES"), args_prefix='-D', kwargs_prefix='-D')  # why is this not SYNTHESIS
+        yosys_args = self.resolve_arguments_to_list(os.getenv("YOSYS_ARGS"), kwargs_prefix='--')
+
+        yosys_cmd = f"yosys -l {build_dir}/01-synth.log {' '.join(verilog_defines)} -p 'synth_ice40 -top tt_fpga_top -json {build_dir}/tt_fpga.json' src/_tt_fpga_top.v {' '.join(yosys_args)} {source_list}"
         logging.debug(yosys_cmd)
         p = subprocess.run(yosys_cmd, shell=True)
         if p.returncode != 0:
