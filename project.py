@@ -500,10 +500,10 @@ class Project:
         tt_version = self.get_tt_tools_version()
         workflow_url = self.get_workflow_url()
 
-        config = read_config("src/config", ("json", "tcl"))
-        user_config = read_config("src/user_config", ("json",))
+        config = read_config("src/config")
+        user_config = read_config("src/user_config")
         config.update(user_config)
-        write_config(config, "src/config_merged", ("json",))
+        write_config(config, "src/config_merged")
 
         shutil.rmtree("runs/wokwi", ignore_errors=True)
         os.makedirs("runs/wokwi", exist_ok=True)
