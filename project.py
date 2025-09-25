@@ -559,6 +559,7 @@ class Project:
         gds_file = os.path.join(final_dir, "gds", f"{top_module}.gds")
         layout = pya.Layout()
         layout.read(gds_file)
+        layout.set_property("TT_PDK", self.pdk)
         layout.write(oas_file)
 
         files_to_copy = [
