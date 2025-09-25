@@ -465,6 +465,12 @@ class Project:
                 new_sources.append(s)
         self.sources = new_sources
 
+    def create_merged_config(self):
+        config = read_config("src/config")
+        user_config = read_config("src/user_config")
+        config.update(user_config)
+        write_config(config, "src/config_merged")
+
     def create_user_config(self):
         if self.is_wokwi():
             self.fetch_wokwi_files()
@@ -485,6 +491,7 @@ class Project:
             "RT_MAX_LAYER": self.tech.project_top_metal_layer,
         }
         write_config(config, os.path.join(self.src_dir, "user_config"), ("json",))
+        self.create_merged_config()
 
     def golden_harden(self):
         logging.info(f"hardening {self}")
@@ -500,11 +507,7 @@ class Project:
         tt_version = self.get_tt_tools_version()
         workflow_url = self.get_workflow_url()
 
-        config = read_config("src/config")
-        user_config = read_config("src/user_config")
-        config.update(user_config)
-        write_config(config, "src/config_merged")
-
+        self.create_merged_config()
         shutil.rmtree("runs/wokwi", ignore_errors=True)
         os.makedirs("runs/wokwi", exist_ok=True)
         arg_progress = "--hide-progress-bar" if "CI" in os.environ else ""
