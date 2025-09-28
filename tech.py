@@ -179,12 +179,13 @@ class GF180MCUDTech(Tech):
         return parse_openpdks_pdk_version(pdk_sources_file)
 
     def load_cell_definitions(self) -> Dict[str, CellDefinition]:
-        URL_FORMAT = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/{name}/README.html"
+        URL_FORMAT = "https://gf180mcu-pdk.readthedocs.io/en/latest/digital/standard_cells/gf180mcu_fd_sc_mcu7t5v0/cells/{name}/gf180mcu_fd_sc_mcu7t5v0__{name}{variant}.html"
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(script_dir, "tech/sky130A/cells.json")) as fh:
+        with open(os.path.join(script_dir, "tech/gf180mcuD/cells.json")) as fh:
             cells = json.load(fh)
         for name, cell in cells.items():
-            cell["url"] = URL_FORMAT.format(name=name)
+            variant = cell["variants"][0] if cell["variants"] else ""
+            cell["url"] = URL_FORMAT.format(name=name, variant=variant)
         return cells
 
 

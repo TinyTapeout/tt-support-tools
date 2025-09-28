@@ -994,9 +994,7 @@ class Project:
                 if m is not None:
                     total += 1
                     gd = m.groupdict()
-                    cell_lib = gd.get("cell_lib", "")
                     cell_name = gd["cell_name"]
-                    assert cell_lib in ["fd_sc_hd", "ef_sc_hd", ""]
                     try:
                         cell_count[cell_name] += 1
                     except KeyError:
