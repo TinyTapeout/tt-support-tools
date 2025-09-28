@@ -535,14 +535,20 @@ class Project:
                 indent=2,
             )
             f.write("\n")
-
-        with open("runs/wokwi/FLOW_VERSION", "w") as f:
-            resolved_json_path = "runs/wokwi/resolved.json"
-            config = json.load(open(os.path.join(self.local_dir, resolved_json_path)))
-            librelane_version = config["meta"]["librelane_version"]
-            f.write(f"LibreLane {librelane_version}\n")
-        with open("runs/wokwi/PDK_SOURCES", "w") as f:
-            f.write(self.tech.read_pdk_version(config["PDK_ROOT"]))
+        run_dir = os.path.join(self.local_dir, "runs/wokwi")
+        with open(os.path.join(run_dir, "resolved.json"), "r") as f:
+            ll_config = json.load(f)
+        librelane_version = ll_config["meta"]["librelane_version"]
+        with open(os.path.join(run_dir, "pdk.json"), "w") as f:
+            pdk_version_info = self.tech.read_pdk_version(ll_config["PDK_ROOT"])
+            pdk_json = {
+                "FLOW_NAME": "LibreLane",
+                "FLOW_VERSION": librelane_version,
+                "PDK": ll_config["PDK"],
+                "PDK_SOURCE": pdk_version_info["source"],
+                "PDK_VERSION": pdk_version_info["version"],
+            }
+            json.dump(pdk_json, f, indent=2)
 
         os.chdir(cwd)
 
@@ -566,8 +572,7 @@ class Project:
         layout.write(oas_file)
 
         files_to_copy = [
-            os.path.join(run_dir, "FLOW_VERSION"),
-            os.path.join(run_dir, "PDK_SOURCES"),
+            os.path.join(run_dir, "pdk.json"),
             os.path.join(run_dir, "resolved.json"),
             os.path.join(final_dir, "commit_id.json"),
             os.path.join(final_dir, "gds", f"{top_module}.gds"),

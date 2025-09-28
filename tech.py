@@ -12,6 +12,11 @@ class CellDefinition(TypedDict):
     description: str
 
 
+class PDKVersionInfo(TypedDict):
+    source: str
+    version: str
+
+
 class Tech(Protocol):
     def_suffix: str
     librelane_pdk_args: str
@@ -31,11 +36,18 @@ class Tech(Protocol):
     """ Lists all of the extra logo macros that need to be copied to the tt_top directory. """
     extra_logo_macros: List[str]
 
-    def read_pdk_version(self, pdk_root: str) -> str:
+    def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
         raise NotImplementedError()
 
     def load_cell_definitions(self) -> Dict[str, CellDefinition]:
         raise NotImplementedError()
+
+
+def parse_openpdks_pdk_version(sources_file: str) -> PDKVersionInfo:
+    with open(sources_file) as f:
+        pdk_source, pdk_version = f.read().strip().split(" ")
+        assert pdk_source == "open_pdks"
+        return PDKVersionInfo(source=pdk_source, version=pdk_version)
 
 
 class Sky130Tech(Tech):
@@ -75,10 +87,9 @@ class Sky130Tech(Tech):
     ]
     extra_logo_macros = []
 
-    def read_pdk_version(self, pdk_root: str) -> str:
+    def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
         pdk_sources_file = os.path.join(pdk_root, "sky130A", "SOURCES")
-        with open(pdk_sources_file) as f:
-            return f.read()
+        return parse_openpdks_pdk_version(pdk_sources_file)
 
     def load_cell_definitions(self) -> Dict[str, CellDefinition]:
         URL_FORMAT = "https://skywater-pdk.readthedocs.io/en/main/contents/libraries/sky130_fd_sc_hd/cells/{name}/README.html"
@@ -123,11 +134,11 @@ class IHPTech(Tech):
         "tech/ihp-sg13g2/tt_logo_corner",
     ]
 
-    def read_pdk_version(self, pdk_root: str) -> str:
+    def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
         pdk_repo = Repo(pdk_root)
         pdk_repo_name = list(pdk_repo.remotes[0].urls)[0].split("/")[-1]
         pdk_commit = pdk_repo.commit().hexsha
-        return f"{pdk_repo_name} {pdk_commit}"
+        return PDKVersionInfo(source=pdk_repo_name, version=pdk_commit)
 
     def load_cell_definitions(self) -> Dict[str, CellDefinition]:
         URL_FORMAT = "https://raw.githubusercontent.com/IHP-GmbH/IHP-Open-PDK/refs/heads/main/ihp-sg13g2/libs.ref/sg13g2_stdcell/doc/sg13g2_stdcell_typ_1p20V_25C.pdf#{ref}"
