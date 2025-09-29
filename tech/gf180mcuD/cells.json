@@ -1,0 +1,3510 @@
+{
+  "aoi22": {
+    "description": "two 2-input AND into 2-input NOR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__aoi22",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "aoi22",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__aoi22",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "addf": {
+    "description": "Full Adder",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__addf",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "addf",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "CI",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "CO",
+        "output",
+        ""
+      ],
+      [
+        "signal",
+        "S",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__addf",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "xnor3": {
+    "description": "3-input exclusive NOR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__xnor3",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "xnor3",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__xnor3",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "and3": {
+    "description": "3-input AND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__and3",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "and3",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__and3",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "and2": {
+    "description": "2-input AND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__and2",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "and2",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__and2",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "or2": {
+    "description": "2-input OR(A1",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__or2",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "or2",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__or2",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "xnor2": {
+    "description": "2-input exclusive NOR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__xnor2",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "xnor2",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__xnor2",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "sdffrnq": {
+    "description": "positive edge triggered scan D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__sdffrnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "sdffrnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLK",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "RN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SE",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SI",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__sdffrnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "and4": {
+    "description": "4-input AND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__and4",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "and4",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A4",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__and4",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "sdffsnq": {
+    "description": "positive edge triggered scan D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__sdffsnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "sdffsnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLK",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SE",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SETN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SI",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__sdffsnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "latrnq": {
+    "description": "positive D-latch",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__latrnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "latrnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "E",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "RN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__latrnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "nand2": {
+    "description": "2-input NAND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__nand2",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "nand2",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__nand2",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "sdffq": {
+    "description": "positive edge triggered scan D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__sdffq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "sdffq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLK",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SE",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SI",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__sdffq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "latsnq": {
+    "description": "positive D-latch",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__latsnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "latsnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "E",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SETN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__latsnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "aoi21": {
+    "description": "2-input AND into 2-input NOR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__aoi21",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "aoi21",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__aoi21",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "dffsnq": {
+    "description": "positive edge triggered D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dffsnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dffsnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLK",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SETN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dffsnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "dlya": {
+    "description": "2 buffer delay cell",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dlya",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dlya",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "I",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dlya",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "clkinv": {
+    "description": "clock inverter",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__clkinv",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "clkinv",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "I",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__clkinv",
+    "variants": [
+      "_1",
+      "_12",
+      "_16",
+      "_2",
+      "_20",
+      "_3",
+      "_4",
+      "_8"
+    ]
+  },
+  "dffrsnq": {
+    "description": "positive edge triggered D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dffrsnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dffrsnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLK",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "RN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SETN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dffrsnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "or4": {
+    "description": "4-input OR(A1",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__or4",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "or4",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A4",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__or4",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "tiel": {
+    "description": "low level generator",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__tiel",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "tiel",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__tiel",
+    "variants": [
+      ""
+    ]
+  },
+  "fillcap": {
+    "description": "filler whose cell width is 35.84um",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__fillcap",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "fillcap",
+    "parameters": [],
+    "ports": [
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__fillcap",
+    "variants": [
+      "_16",
+      "_32",
+      "_4",
+      "_64",
+      "_8"
+    ]
+  },
+  "nor4": {
+    "description": "4-input NOR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__nor4",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "nor4",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A4",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__nor4",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "dlyc": {
+    "description": "8 buffer delay cell",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dlyc",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dlyc",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "I",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dlyc",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "icgtn": {
+    "description": "negative-edge triggered clock-gating latch",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__icgtn",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "icgtn",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLKN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "E",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "TE",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__icgtn",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "fill": {
+    "description": "filler whose cell width is 0.56um",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__fill",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "fill",
+    "parameters": [],
+    "ports": [
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__fill",
+    "variants": [
+      "_1",
+      "_16",
+      "_2",
+      "_32",
+      "_4",
+      "_64",
+      "_8"
+    ]
+  },
+  "oai32": {
+    "description": "3-input OR and a 2-input OR into 2-input NAND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__oai32",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "oai32",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__oai32",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "aoi222": {
+    "description": "three 2-input AND into 3-input NOR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__aoi222",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "aoi222",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "C1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "C2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__aoi222",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "bufz": {
+    "description": "tri-state buffer",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__bufz",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "bufz",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "EN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "I",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__bufz",
+    "variants": [
+      "_1",
+      "_12",
+      "_16",
+      "_2",
+      "_3",
+      "_4",
+      "_8"
+    ]
+  },
+  "dffrnq": {
+    "description": "positive edge triggered D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dffrnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dffrnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLK",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "RN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dffrnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "dffnrnq": {
+    "description": "negative edge triggered D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dffnrnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dffnrnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLKN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "RN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dffnrnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "xor3": {
+    "description": "3-input exclusive OR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__xor3",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "xor3",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__xor3",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "hold": {
+    "description": "state holder cell",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__hold",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "hold",
+    "parameters": [],
+    "ports": [
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__hold",
+    "variants": [
+      ""
+    ]
+  },
+  "clkbuf": {
+    "description": "clock buffer",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__clkbuf",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "clkbuf",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "I",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__clkbuf",
+    "variants": [
+      "_1",
+      "_12",
+      "_16",
+      "_2",
+      "_20",
+      "_3",
+      "_4",
+      "_8"
+    ]
+  },
+  "oai221": {
+    "description": "two 2-input OR into 3-input NAND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__oai221",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "oai221",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "C",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__oai221",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "dffq": {
+    "description": "poistive edge triggered D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dffq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dffq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLK",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dffq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "buf": {
+    "description": "buffer",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__buf",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "buf",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "I",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__buf",
+    "variants": [
+      "_1",
+      "_12",
+      "_16",
+      "_2",
+      "_20",
+      "_3",
+      "_4",
+      "_8"
+    ]
+  },
+  "dffnrsnq": {
+    "description": "negative edge triggered D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dffnrsnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dffnrsnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLKN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "RN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SETN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dffnrsnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "endcap": {
+    "description": "row end closure cell",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__endcap",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "endcap",
+    "parameters": [],
+    "ports": [
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__endcap",
+    "variants": [
+      ""
+    ]
+  },
+  "nand4": {
+    "description": "4-input NAND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__nand4",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "nand4",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A4",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__nand4",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "nand3": {
+    "description": "3-input NAND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__nand3",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "nand3",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__nand3",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "icgtp": {
+    "description": "positive-edge triggered clock-gating latch",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__icgtp",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "icgtp",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLK",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "E",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "TE",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__icgtp",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "dlyd": {
+    "description": "16 buffer delay cell",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dlyd",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dlyd",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "I",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dlyd",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "oai211": {
+    "description": "2-input OR into 3-input NAND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__oai211",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "oai211",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "C",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__oai211",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "sdffrsnq": {
+    "description": "positive edge triggered scan D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__sdffrsnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "sdffrsnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLK",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "RN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SE",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SETN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SI",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__sdffrsnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "filltie": {
+    "description": "filler",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__filltie",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "filltie",
+    "parameters": [],
+    "ports": [
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__filltie",
+    "variants": [
+      ""
+    ]
+  },
+  "mux4": {
+    "description": "4-to-1 multiplexer",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__mux4",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "mux4",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "I0",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "I1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "I2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "I3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "S0",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "S1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__mux4",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "oai31": {
+    "description": "3-input OR into 2-input NAND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__oai31",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "oai31",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__oai31",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "oai222": {
+    "description": "three 2-input OR into 3-input NAND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__oai222",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "oai222",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "C1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "C2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__oai222",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "aoi211": {
+    "description": "2-input AND into 3-input NOR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__aoi211",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "aoi211",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "C",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__aoi211",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "xor2": {
+    "description": "2-input exclusive OR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__xor2",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "xor2",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__xor2",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "oai22": {
+    "description": "two 2-input OR into 2-input NAND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__oai22",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "oai22",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__oai22",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "inv": {
+    "description": "inverter",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__inv",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "inv",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "I",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__inv",
+    "variants": [
+      "_1",
+      "_12",
+      "_16",
+      "_2",
+      "_20",
+      "_3",
+      "_4",
+      "_8"
+    ]
+  },
+  "oai33": {
+    "description": "two 3-input OR into 2-input NAND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__oai33",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "oai33",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__oai33",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "dffnsnq": {
+    "description": "negative edge triggered D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dffnsnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dffnsnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLKN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SETN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dffnsnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "nor3": {
+    "description": "3-input NOR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__nor3",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "nor3",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__nor3",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "dffnq": {
+    "description": "negative edge triggered D-type flip flop",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dffnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dffnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "CLKN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dffnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "latq": {
+    "description": "positive D-latch",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__latq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "latq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "E",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__latq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "oai21": {
+    "description": "2-input OR into 2-input NAND",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__oai21",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "oai21",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__oai21",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "tieh": {
+    "description": "high level generator",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__tieh",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "tieh",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__tieh",
+    "variants": [
+      ""
+    ]
+  },
+  "antenna": {
+    "description": "antenna cell",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__antenna",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "antenna",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "I",
+        "input",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__antenna",
+    "variants": [
+      ""
+    ]
+  },
+  "or3": {
+    "description": "3-input OR(A1",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__or3",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "or3",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A3",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__or3",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "invz": {
+    "description": "tri-state inverter",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__invz",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "invz",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "EN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "I",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__invz",
+    "variants": [
+      "_1",
+      "_12",
+      "_16",
+      "_2",
+      "_3",
+      "_4",
+      "_8"
+    ]
+  },
+  "addh": {
+    "description": "Half Adder",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__addh",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "addh",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "CO",
+        "output",
+        ""
+      ],
+      [
+        "signal",
+        "S",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__addh",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "aoi221": {
+    "description": "two 2-input AND into 3-input NOR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__aoi221",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "aoi221",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "B2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "C",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__aoi221",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "nor2": {
+    "description": "2-input NOR",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__nor2",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "nor2",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "A1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "A2",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "ZN",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__nor2",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "mux2": {
+    "description": "2-to-1 multiplexer",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__mux2",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "mux2",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "I0",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "I1",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "S",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__mux2",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "latrsnq": {
+    "description": "positive D-latch",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__latrsnq",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "latrsnq",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "D",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "E",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "RN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "SETN",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Q",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__latrsnq",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  },
+  "dlyb": {
+    "description": "4 buffer delay cell",
+    "file_prefix": "gf180mcu_fd_sc_mcu7t5v0__dlyb",
+    "library": "gf180mcu_fd_sc_mcu7t5v0",
+    "name": "dlyb",
+    "parameters": [],
+    "ports": [
+      [
+        "signal",
+        "I",
+        "input",
+        ""
+      ],
+      [
+        "signal",
+        "Z",
+        "output",
+        ""
+      ],
+      [
+        "power",
+        "VDD",
+        "input",
+        "supply1"
+      ],
+      [
+        "power",
+        "VSS",
+        "input",
+        "supply0"
+      ]
+    ],
+    "type": "cell",
+    "verilog_name": "gf180mcu_fd_sc_mcu7t5v0__dlyb",
+    "variants": [
+      "_1",
+      "_2",
+      "_4"
+    ]
+  }
+}

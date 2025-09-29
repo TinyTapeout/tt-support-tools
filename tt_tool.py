@@ -27,6 +27,13 @@ if __name__ == "__main__":
         const=True,
         default=False,
     )
+    parser.add_argument(
+        "--gf",
+        help="use gf180mcuD PDK",
+        action="store_const",
+        const=True,
+        default=False,
+    )
 
     # reports & summaries
     parser.add_argument(
@@ -147,7 +154,7 @@ if __name__ == "__main__":
     ch.setFormatter(log_format)
     log.addHandler(ch)
 
-    pdk: TechName = "ihp-sg13g2" if args.ihp else "sky130A"
+    pdk: TechName = "ihp-sg13g2" if args.ihp else "gf180mcuD" if args.gf else "sky130A"
     project = Project(0, "unknown", args.project_dir, pdk, is_user_project=True)
     project.post_clone_setup()
 
