@@ -27,7 +27,7 @@ from tech_data import (
 )
 
 PDK_ROOT = os.getenv("PDK_ROOT")
-PDK_NAME = os.getenv("PDK_NAME") or "sky130A"
+PDK_NAME = os.getenv("PDK") or "sky130A"
 LYP_DIR = f"{PDK_ROOT}/{PDK_NAME}/libs.tech/klayout/tech"
 REPORTS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "reports")
 
