@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List, Literal, Protocol, Tuple, TypedDict
+from typing import Dict, List, Literal, Protocol, Tuple, TypedDict, Union
 
 from git.repo import Repo
 
@@ -25,6 +25,8 @@ class Tech(Protocol):
     netlist_type: Literal["pnl", "nl"]
     project_top_metal_layer: str
 
+    """ Extra PDK-specific configuration for LibreLane """
+    librelane_config: Dict[str, Union[bool, int, float, str]]
     """ These layers will be removed from the SVG render of the layout """
     label_layers: List[Tuple[int, int]]
     """ These layers are hardly visible and will also be removed from the SVG render of the layout """
@@ -57,6 +59,7 @@ class Sky130Tech(Tech):
     cell_regexp = r"sky130_(?P<cell_lib>\S+)__(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
     netlist_type = "pnl"
     project_top_metal_layer = "met4"
+    librelane_config = {}
     label_layers = [
         (64, 59),  # pwell.label
         (64, 5),  # nwell.label
@@ -108,6 +111,7 @@ class IHPTech(Tech):
     cell_regexp = r"sg13g2_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
     netlist_type = "nl"
     project_top_metal_layer = "Metal5"
+    librelane_config = {}
     label_layers = [
         (8, 1),  # Metal1.label
         (8, 25),  # Metal1.text
@@ -157,6 +161,14 @@ class GF180MCUDTech(Tech):
     cell_regexp = r"gf180mcu_(?P<cell_lib>\S+)__(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
     netlist_type = "pnl"
     project_top_metal_layer = "Metal4"
+    librelane_config = {
+        # The default configuration is for a 5V supply, but TT targets a 3.3V supply,
+        # so we need to adjust the library paths to use the 3.3V libraries.
+        "VDD_PIN_VOLTAGE": 3.3,
+        "LIB_SYNTH": "pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_3v30.lib",
+        "LIB_FASTEST": "pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__ff_n40C_3v60.lib",
+        "LIB_SLOWEST": "pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__ss_125C_3v00.lib",
+    }
     label_layers = [
         # TODO: add label layers
     ]

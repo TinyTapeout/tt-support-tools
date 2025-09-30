@@ -492,6 +492,7 @@ class Project:
             "GND_PIN": "VGND",
             "RT_MAX_LAYER": self.tech.project_top_metal_layer,
         }
+        config.update(self.tech.librelane_config)
         write_config(config, os.path.join(self.src_dir, "user_config"), ("json",))
         self.create_merged_config()
 
