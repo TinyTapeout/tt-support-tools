@@ -26,7 +26,9 @@ class Tech(Protocol):
     project_top_metal_layer: str
 
     """ Extra PDK-specific configuration for LibreLane """
-    librelane_config: Dict[str, Union[bool, int, float, str]]
+    librelane_config: Dict[
+        str, Union[bool, int, float, str, List[str], Dict[str, List[str]]]
+    ]
     """ These layers will be removed from the SVG render of the layout """
     label_layers: List[Tuple[int, int]]
     """ These layers are hardly visible and will also be removed from the SVG render of the layout """
@@ -157,7 +159,7 @@ class IHPTech(Tech):
 class GF180MCUDTech(Tech):
     def_suffix = "pgvdd"
     librelane_pdk_args = "--pdk gf180mcuD"
-    tt_corner = "nom_tt_025C_5v00"
+    tt_corner = "nom_tt_025C_3v30"
     cell_regexp = r"gf180mcu_(?P<cell_lib>\S+)__(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
     netlist_type = "pnl"
     project_top_metal_layer = "Metal4"
@@ -168,6 +170,29 @@ class GF180MCUDTech(Tech):
         "LIB_SYNTH": "pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_3v30.lib",
         "LIB_FASTEST": "pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__ff_n40C_3v60.lib",
         "LIB_SLOWEST": "pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__ss_125C_3v00.lib",
+        "DEFAULT_CORNER": "nom_tt_025C_3v30",
+        "STA_CORNERS": [
+            "nom_tt_025C_3v30",
+            "nom_ss_125C_3v00",
+            "nom_ff_n40C_3v60",
+            "min_tt_025C_3v30",
+            "min_ss_125C_3v00",
+            "min_ff_n40C_3v60",
+            "max_tt_025C_3v30",
+            "max_ss_125C_3v00",
+            "max_ff_n40C_3v60",
+        ],
+        "LIB": {
+            "*_tt_025C_3v30": [
+                "pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_3v30.lib"
+            ],
+            "*_ss_125C_3v00": [
+                "pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__ss_125C_3v00.lib"
+            ],
+            "*_ff_n40C_3v60": [
+                "pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__ff_n40C_3v60.lib"
+            ],
+        },
     }
     label_layers = [
         # TODO: add label layers
