@@ -58,7 +58,9 @@ class Sky130Tech(Tech):
     def_suffix = "pg"
     librelane_pdk_args = ""
     tt_corner = "nom_tt_025C_1v80"
-    cell_regexp = r"sky130_(?P<cell_lib>\S+)__(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+    cell_regexp = (
+        r"^\s*sky130_(?P<cell_lib>\S+)__(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+    )
     netlist_type = "pnl"
     project_top_metal_layer = "met4"
     librelane_config = {}
@@ -110,7 +112,7 @@ class IHPTech(Tech):
     def_suffix = "pgvdd"
     librelane_pdk_args = "--manual-pdk --pdk ihp-sg13g2"
     tt_corner = "nom_typ_1p20V_25C"
-    cell_regexp = r"sg13g2_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+    cell_regexp = r"^\s*sg13g2_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
     netlist_type = "nl"
     project_top_metal_layer = "Metal5"
     librelane_config = {}
@@ -160,7 +162,9 @@ class GF180MCUDTech(Tech):
     def_suffix = "pgvdd"
     librelane_pdk_args = "--pdk gf180mcuD"
     tt_corner = "nom_tt_025C_3v30"
-    cell_regexp = r"gf180mcu_(?P<cell_lib>\S+)__(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+    cell_regexp = (
+        r"^\s*gf180mcu_(?P<cell_lib>\S+)__(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+    )
     netlist_type = "pnl"
     project_top_metal_layer = "Metal4"
     librelane_config = {
