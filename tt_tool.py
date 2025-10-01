@@ -117,6 +117,18 @@ if __name__ == "__main__":
         action="store_const",
         const=True,
     )
+    parser.add_argument(
+        "--open-in-klayout",
+        help="open the hardened design in KLayout",
+        action="store_const",
+        const=True,
+    )
+    parser.add_argument(
+        "--open-in-openroad",
+        help="open the hardened design in OpenROAD",
+        action="store_const",
+        const=True,
+    )
 
     # FPGA
     parser.add_argument(
@@ -188,6 +200,12 @@ if __name__ == "__main__":
 
     if args.create_tt_submission:
         project.create_tt_submission()
+
+    if args.open_in_klayout:
+        project.run_custom_librelane_flow("OpenInKLayout")
+
+    if args.open_in_openroad:
+        project.run_custom_librelane_flow("OpenInOpenROAD")
 
     if args.create_pdf:
         project.create_pdf()

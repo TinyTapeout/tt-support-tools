@@ -603,6 +603,15 @@ class Project:
             os.path.join(stats_dir, "synthesis-stats.txt"),
         )
 
+    def run_custom_librelane_flow(self, flow_name: str):
+        logging.info(f"Running {flow_name} for {self}")
+        ll_cmd = f"python -m librelane --docker-no-tty --dockerized {self.tech.librelane_pdk_args} --run-tag wokwi --force-run-dir {self.local_dir}/runs/wokwi {self.local_dir}/src/config_merged.json --flow {flow_name}"
+        logging.debug(ll_cmd)
+        p = subprocess.run(ll_cmd, shell=True)
+        if p.returncode != 0:
+            logging.error("librelane failed")
+            exit(1)
+
     def create_fpga_bitstream(self, args):
         logging.info(f"Creating FPGA bitstream for {self}")
 
