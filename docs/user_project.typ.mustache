@@ -1,0 +1,45 @@
+#import "@local/tt-datasheet:{{template-version}}" as tt
+
+#show: tt.project.with(
+    title: {{project-title}},
+    author: {{project-author}},
+    repo-link: {{project-repo-link}},
+    description: {{project-description}},
+    address: {{project-address}},
+    clock: {{project-clock}},
+    type: {{project-type}},
+
+    {{#is-wokwi}}
+    wokwi-id: {{project-wokwi-id}},
+    {{/is-wokwi}}
+
+    {{#is-dangerous}}
+    danger-level: {{project-danger-level}},
+    danger-reason: {{project-danger-reason}},
+    {{/is-dangerous}}
+)
+
+{{project-doc-body}}
+
+= Project Pinout
+== Digital Pins
+#align(center)[#table(
+    columns: 4,
+    align: left,
+    table.header(
+        [\\#], [Input], [Output], [Bidirectional]
+    ),
+    {{digital-pins}}
+)]
+
+{{#is-analog}}
+== Analog Pins
+#align(center)[#table(
+    columns: 3,
+    align: left,
+    table.header(
+        [`ua`\\#], [`analog`\\#], [Description]
+    ),
+    {{analog-pins}}
+)]
+{{/is-analog}}
