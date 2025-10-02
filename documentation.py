@@ -62,6 +62,36 @@ class DocsHelper:
             # https://typst.app/docs/reference/foundations/array/
             formatted_authors.append(f"\"{stripped}\",")
         return "".join(formatted_authors)
+    
+    @staticmethod
+    def _escape_square_brackets(text: str) -> str:
+        """
+        Helper function to escape square brackets in strings
+        """
+        return text.replace("[", "\\[").replace("]", "\\]")
+    
+    def format_digital_pins(self, pins: dict) -> str:
+        """
+        Iterate through and create the digital pin table as a string
+        """
+        pin_table = ""
+        for pin in pins:
+            ui_text = self._escape_square_brackets(pin["ui"])
+            uo_text = self._escape_square_brackets(pin["uo"])
+            uio_text = self._escape_square_brackets(pin["uio"])
+            pin_table += f"[`{pin["pin_index"]}`], [{ui_text}], [{uo_text}], [{uio_text}],\n"
+
+        return pin_table
+    
+    def format_analog_pins(self, pins: dict):
+        """
+        Iterate through and create the analog pin table as a string
+        """
+        pin_table = ""
+        for pin in pins:
+            desc_text = self._escape_square_brackets(pin["desc"])
+            pin_table += f"[`{pin["ua_index"]}`], [`{pin["analog_index"]}`], [{desc_text}],\n"
+        return pin_table
 
 
 class Docs:
@@ -326,17 +356,6 @@ class Docs:
                     )                
                     art_index += 1
 
-            # format digital pins
-            def _escape_square_brackets(text: str) -> str:
-                return text.replace("[", "\\[").replace("]", "\\]")
-
-            digital_pin_table = ""
-            for pin in yaml_data["pins"]:
-                ui_text = _escape_square_brackets(pin["ui"])
-                uo_text = _escape_square_brackets(pin["uo"])
-                uio_text = _escape_square_brackets(pin["uio"])
-                digital_pin_table += f"[`{pin["pin_index"]}`], [{ui_text}], [{uo_text}], [{uio_text}],\n"
-
             content = {
                 "template-version": template_version,
                 "project-title": yaml_data["title"].replace('"', '\\"'),
@@ -347,7 +366,7 @@ class Docs:
                 "project-clock": DocsHelper.pretty_clock(project.info.clock_hz),
                 "project-type": yaml_data["project_type"],
                 "project-doc-body": result.stdout.decode(),
-                "digital-pins": digital_pin_table,
+                "digital-pins": DocsHelper.format_digital_pins(yaml_data["pins"]),
                 "is-analog": yaml_data["is_analog"],
             }
 
@@ -362,13 +381,7 @@ class Docs:
 
             if yaml_data["is_analog"]:
                 content["is-analog"] = True
-
-                analog_pin_table = ""
-                for pin in yaml_data["analog_pins"]:
-                    desc_text = _escape_square_brackets(pin["desc"])
-                    analog_pin_table += f"[`{pin["ua_index"]}`], [`{pin["analog_index"]}`], [{desc_text}],\n"
-
-                content["analog-pins"] = analog_pin_table
+                content["analog-pins"] = DocsHelper.format_analog_pins(yaml_data["analog_pins"])
 
             with open(os.path.abspath(f"./projects/{project.get_macro_name()}/docs/doc.typ"), "w") as f:
                 f.write(chevron.render(project_template, content))
