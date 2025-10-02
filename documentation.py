@@ -44,6 +44,24 @@ class DocsHelper:
             return f"{hz_as_eng[0]} Hz"
         else:
             raise RuntimeError("unexpected amount of entries when formatting clock for datasheet")
+        
+    def format_authors(authors: str) -> str:
+        """
+        Format the authors properly
+
+        Split the authors with a set of delimiters, then repackage as a typst array for the template
+        """
+        split_authors = re.split(r"[,|;|+]| and | & ", authors)
+        formatted_authors = []
+        for author in split_authors:
+            stripped = author.strip()
+            if stripped == "":
+                continue
+
+            # typst needs a trailing comma if len(array) == 1, so that it doesn't interpret it as an expression
+            # https://typst.app/docs/reference/foundations/array/
+            formatted_authors.append(f"\"{stripped}\",")
+        return "".join(formatted_authors)
 
 
 class Docs:
@@ -308,33 +326,6 @@ class Docs:
                     )                
                     art_index += 1
 
-            if project.info.clock_hz == 0:
-                pretty_clock = "No Clock"
-            else:
-                formatter = mpl.ticker.EngFormatter(sep=" ")
-                # [clock, SI suffix]
-                hz_as_eng = formatter(project.info.clock_hz).split(" ")
-
-                if len(hz_as_eng) == 2:
-                    pretty_clock = f"{hz_as_eng[0]} {hz_as_eng[1]}Hz"
-                elif len(hz_as_eng) == 1:
-                    pretty_clock = f"{hz_as_eng[0]} Hz"
-                else:
-                    raise RuntimeError("unexpected amount of entries when formatting clock for datasheet")
-
-            # format author
-            authors = re.split(r"[,|;|+]| and | & ", yaml_data["author"])
-            formatted_authors = []
-            for author in authors:
-                stripped = author.strip()
-                if stripped == "":
-                    continue
-
-                # typst needs a trailing comma if len(array) == 1, so that it doesn't interpret it as an expression
-                # https://typst.app/docs/reference/foundations/array/
-                formatted_authors.append(f"\"{stripped}\",")
-            formatted_authors = "".join(formatted_authors)
-
             # format digital pins
             def _escape_square_brackets(text: str) -> str:
                 return text.replace("[", "\\[").replace("]", "\\]")
@@ -349,7 +340,7 @@ class Docs:
             content = {
                 "template-version": template_version,
                 "project-title": yaml_data["title"].replace('"', '\\"'),
-                "project-author": f"({formatted_authors})",
+                "project-author": f"({DocsHelper.format_authors(yaml_data["authors"])})",
                 "project-repo-link": yaml_data["git_url"],
                 "project-description": yaml_data["description"],
                 "project-address": DocsHelper.pretty_address(project.mux_address),
