@@ -296,7 +296,7 @@ class Docs:
 
             content = {
                 "template-version": template_version,
-                "project-title": yaml_data["title"],
+                "project-title": yaml_data["title"].replace('"', '\\"'),
                 "project-author": f"({formatted_authors})",
                 "project-repo-link": yaml_data["git_url"],
                 "project-description": yaml_data["description"],
