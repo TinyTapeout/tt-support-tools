@@ -27,6 +27,23 @@ class DocsHelper:
             content += f"/{subtile_address}"
         return content
     
+    def pretty_clock(clock: int) -> str:
+        """
+        Format the clock with engineering notation
+        """
+        if clock == 0:
+            return "No Clock"
+        else:
+            formatter = mpl.ticker.EngFormatter(sep=" ")
+            # [clock, SI suffix]
+            hz_as_eng = formatter(clock).split(" ")
+
+        if len(hz_as_eng) == 2:
+            return f"{hz_as_eng[0]} {hz_as_eng[1]}Hz"
+        elif len(hz_as_eng) == 1:
+            return f"{hz_as_eng[0]} Hz"
+        else:
+            raise RuntimeError("unexpected amount of entries when formatting clock for datasheet")
 
 
 class Docs:
@@ -336,7 +353,7 @@ class Docs:
                 "project-repo-link": yaml_data["git_url"],
                 "project-description": yaml_data["description"],
                 "project-address": DocsHelper.pretty_address(project.mux_address),
-                "project-clock": pretty_clock,
+                "project-clock": DocsHelper.pretty_clock(project.info.clock_hz),
                 "project-type": yaml_data["project_type"],
                 "project-doc-body": result.stdout.decode(),
                 "digital-pins": digital_pin_table,
