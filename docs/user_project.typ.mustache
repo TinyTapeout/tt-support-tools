@@ -2,10 +2,10 @@
 
 #show: tt.project.with(
     title: "{{project-title}}",
-    author: {{project-author}},
+    author: {{&project-author}},
     repo-link: "{{project-repo-link}}",
     description: "{{&project-description}}",
-    address: "{{project-address}}",
+    address: "{{&project-address}}",
     clock: "{{project-clock}}",
     type: "{{project-type}}",
     {{#is-wokwi}}
