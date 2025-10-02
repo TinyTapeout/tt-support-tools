@@ -3,6 +3,7 @@ import os
 import subprocess
 import json
 import re
+import math
 from typing import List, Optional
 
 import chevron
@@ -204,6 +205,17 @@ class Docs:
             f"#import \"@local/tt-datasheet:{template_version}\" as tt\n"
         ]
 
+        # handle art
+        current_project = 0
+        art_index = 0
+        total_available_art = None
+        if datasheet_content_config != None and "artwork" in datasheet_content_config:
+            total_available_art = len(datasheet_content_config["artwork"])
+
+        if total_available_art != None:
+            if total_available_art > 0:
+                insert_art_after = math.floor(len(self.projects) / total_available_art)
+
         for project in self.projects:           
             yaml_data = project.get_project_docs_dict()
             analog_pins = project.info.analog_pins
@@ -255,6 +267,18 @@ class Docs:
             else:
                 datasheet_manifest.append(include_proj_str)
 
+            # insert artwork
+            current_project += 1
+            if total_available_art != None:
+                if art_index >= len(datasheet_content_config["artwork"]):
+                    continue
+
+                if current_project % insert_art_after == 0:
+                    details = datasheet_content_config["artwork"][art_index]
+                    datasheet_manifest.append(
+                        f"#tt.art(\"{details["id"]}\", rot:{details["rotate"]})\n"
+                    )                
+                    art_index += 1
 
             # format project address
             # TODO: subtile addr
