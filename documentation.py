@@ -192,7 +192,11 @@ class Docs:
             logging.warning("danger_level.yaml not found")
         else:
             with open(os.path.abspath("./projects/danger_level.yaml"), "r") as f:
-                danger_info = yaml.safe_load(f)
+                content = yaml.safe_load(f)
+                # yaml.safe_load() returns None for an empty file
+                # check before overwriting since we rely on danger_info being a dict later
+                if content != None:
+                    danger_info = content
         
         project_template = self.load_doc_template("user_project.typ.mustache")
 
