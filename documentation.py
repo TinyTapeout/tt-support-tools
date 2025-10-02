@@ -1,11 +1,15 @@
 import logging
 import os
 import subprocess
+import json
+import re
 from typing import List, Optional
 
 import chevron
 import frontmatter  # type: ignore
 import git  # type: ignore
+import yaml
+import matplotlib as mpl
 
 from config import Config
 from git_utils import get_first_remote
@@ -156,3 +160,157 @@ class Docs:
             if p.returncode != 0:
                 logging.error("pdf generation failed")
                 raise RuntimeError(f"pdf generation failed with code {p.returncode}")
+            
+    def build_datasheet(self, template_version: str, tapeout_index_path: str, datasheet_content_config_path: str):
+        self.projects.sort(key=lambda x: x.mux_address)
+
+        logging.info(f"building datasheet with version {template_version}")
+        logging.info(f"tapeout index available? {True if tapeout_index_path != None else False}")
+        logging.info(f"content config available? {True if datasheet_content_config_path != None else False}")
+
+        tapeout_index = None
+        # if given a path but the file doesn't exist
+        if tapeout_index_path != None and not os.path.isfile(tapeout_index_path):
+            raise FileNotFoundError("unable to find tapeout index at given path")
+        # if given a path but it does exist
+        elif tapeout_index_path != None:
+            with open(os.path.abspath(tapeout_index_path), "r") as f:
+                tapeout_index = json.load(f)
+
+        if not os.path.isfile("datasheet.typ"):
+            raise FileNotFoundError("datasheet.typ not found in the root, cannot compile datasheet")
+        
+        danger_info = {}
+        if not os.path.isfile("./projects/danger_level.yaml"):
+            logging.warning("danger_level.yaml not found")
+        else:
+            with open(os.path.abspath("./projects/danger_level.yaml"), "r") as f:
+                danger_info = yaml.safe_load(f)
+        
+        project_template = self.load_doc_template("user_project.typ.mustache")
+
+        for project in self.projects[:3]:           
+            yaml_data = project.get_project_docs_dict()
+            analog_pins = project.info.analog_pins
+            yaml_data.update(
+                    {
+                        "user_docs": rewrite_image_paths(
+                            yaml_data["user_docs"],
+                            f"projects/{project.get_macro_name()}/docs",
+                        ),
+                        "mux_address": project.mux_address,
+                        "pins": [
+                            {
+                                "pin_index": str(i),
+                                "ui": project.info.pinout.ui[i],
+                                "uo": project.info.pinout.uo[i],
+                                "uio": project.info.pinout.uio[i],
+                            }
+                            for i in range(8)
+                        ],
+                        "analog_pins": [
+                            {
+                                "ua_index": str(i),
+                                "analog_index": str(project.analog_pins[i]),
+                                "desc": desc,
+                            }
+                            for i, desc in enumerate(
+                                project.info.pinout.ua[:analog_pins]
+                            )
+                        ],
+                        "is_analog": analog_pins > 0,
+                    }
+                )
+
+            logging.info(f"building datasheet for {project}")
+
+            pandoc_command = ["pandoc", f"projects/{project.get_macro_name()}/docs/info.md", 
+                              "--shift-heading-level-by=-1", "-f", "markdown-auto_identifiers", "-t", "typst", 
+                              "--columns=120"]
+            
+            result = subprocess.run(pandoc_command, capture_output=True)
+
+            if result.stderr != b'':
+                logging.warning(result.stderr.decode())
+
+            # format project address
+            # TODO: subtile addr
+            project_address = str(project.mux_address).rjust(4, "-")
+
+            if project.info.clock_hz == 0:
+                pretty_clock = "No Clock"
+            else:
+                formatter = mpl.ticker.EngFormatter(sep=" ")
+                # [clock, SI suffix]
+                hz_as_eng = formatter(project.info.clock_hz).split(" ")
+
+                if len(hz_as_eng) == 2:
+                    pretty_clock = f"{hz_as_eng[0]} {hz_as_eng[1]}Hz"
+                elif len(hz_as_eng) == 1:
+                    pretty_clock = f"{hz_as_eng[0]} Hz"
+                else:
+                    raise RuntimeError("unexpected amount of entries when formatting clock for datasheet")
+
+            # format author
+            authors = re.split(r"[,|;|+]| and | & ", yaml_data["author"])
+            formatted_authors = []
+            for author in authors:
+                stripped = author.strip()
+                if stripped == "":
+                    continue
+
+                # typst needs a trailing comma if len(array) == 1, so that it doesn't interpret it as an expression
+                # https://typst.app/docs/reference/foundations/array/
+                formatted_authors.append(f"\"{stripped}\",")
+            formatted_authors = "".join(formatted_authors)
+
+            # format digital pins
+            def _escape_square_brackets(text: str) -> str:
+                return text.replace("[", "\\[").replace("]", "\\]")
+
+            digital_pin_table = ""
+            for pin in yaml_data["pins"]:
+                ui_text = _escape_square_brackets(pin["ui"])
+                uo_text = _escape_square_brackets(pin["uo"])
+                uio_text = _escape_square_brackets(pin["uio"])
+                digital_pin_table += f"[`{pin["pin_index"]}`], [{ui_text}], [{uo_text}], [{uio_text}],\n"
+
+            content = {
+                "template-version": template_version,
+                "project-title": yaml_data["title"],
+                "project-author": f"({formatted_authors})",
+                "project-repo-link": yaml_data["git_url"],
+                "project-description": yaml_data["description"],
+                "project-address": project_address,
+                "project-clock": pretty_clock,
+                "project-type": yaml_data["project_type"],
+                "project-doc-body": result.stdout.decode(),
+                "digital-pins": digital_pin_table,
+                "is-analog": yaml_data["is_analog"],
+            }
+
+            if project.is_wokwi():
+                content["is-wokwi"] = True
+                content["project-wokwi-id"] = project.info.wokwi_id
+
+            if project.get_macro_name() in danger_info:
+                content["is-dangerous"] = True
+                content["project-danger-level"] = danger_info[project.get_macro_name()]["level"]
+                content["project-danger-reason"] = danger_info[project.get_macro_name()]["reason"]
+
+            if yaml_data["is_analog"]:
+                content["is-analog"] = True
+
+                analog_pin_table = ""
+                for pin in yaml_data["analog_pins"]:
+                    desc_text = _escape_square_brackets(pin["desc"])
+                    analog_pin_table += f"[`{pin["ua_index"]}`], [`{pin["analog_index"]}`], [{desc_text}],\n"
+
+                content["analog-pins"] = analog_pin_table
+
+            print(yaml_data)
+
+            with open(os.path.abspath(f"./projects/{project.get_macro_name()}/docs/doc.typ"), "w") as f:
+                f.write(chevron.render(project_template, content))
+
+            
