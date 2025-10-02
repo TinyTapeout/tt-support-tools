@@ -177,9 +177,16 @@ class Docs:
             with open(os.path.abspath(tapeout_index_path), "r") as f:
                 tapeout_index = json.load(f)
 
+        datasheet_content_config = None
+        if datasheet_content_config_path != None and not os.path.isfile(datasheet_content_config_path):
+            raise FileNotFoundError("unable to find datasheet content config at given path")
+        elif datasheet_content_config_path != None:
+            with open(os.path.abspath(datasheet_content_config_path), "r") as f:
+                datasheet_content_config = json.load(f)
+
         if not os.path.isfile("datasheet.typ"):
             raise FileNotFoundError("datasheet.typ not found in the root, cannot compile datasheet")
-        
+
         danger_info = {}
         if not os.path.isfile("./projects/danger_level.yaml"):
             logging.warning("danger_level.yaml not found")
@@ -189,7 +196,11 @@ class Docs:
         
         project_template = self.load_doc_template("user_project.typ.mustache")
 
-        for project in self.projects[:3]:           
+        datasheet_manifest = [
+            f"#import \"@local/tt-datasheet:{template_version}\" as tt\n"
+        ]
+
+        for project in self.projects:           
             yaml_data = project.get_project_docs_dict()
             analog_pins = project.info.analog_pins
             yaml_data.update(
@@ -227,11 +238,19 @@ class Docs:
             pandoc_command = ["pandoc", f"projects/{project.get_macro_name()}/docs/info.md", 
                               "--shift-heading-level-by=-1", "-f", "markdown-auto_identifiers", "-t", "typst", 
                               "--columns=120"]
-            
+            logging.info(pandoc_command)
             result = subprocess.run(pandoc_command, capture_output=True)
 
             if result.stderr != b'':
                 logging.warning(result.stderr.decode())
+
+            include_proj_str = f"#include \"projects/{project.get_macro_name()}/docs/doc.typ\"\n"
+            if datasheet_content_config != None and project.get_macro_name() in datasheet_content_config["disabled"]:
+                logging.warning(f"datasheet disabled for {project}")
+                datasheet_manifest.append("// " + include_proj_str)
+            else:
+                datasheet_manifest.append(include_proj_str)
+
 
             # format project address
             # TODO: subtile addr
@@ -308,9 +327,9 @@ class Docs:
 
                 content["analog-pins"] = analog_pin_table
 
-            print(yaml_data)
-
             with open(os.path.abspath(f"./projects/{project.get_macro_name()}/docs/doc.typ"), "w") as f:
                 f.write(chevron.render(project_template, content))
 
+        with open("datasheet_manifest.typ", "w") as f:
+            f.writelines(datasheet_manifest)
             
