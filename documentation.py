@@ -92,6 +92,14 @@ class DocsHelper:
             desc_text = self._escape_square_brackets(pin["desc"])
             pin_table += f"[`{pin["ua_index"]}`], [`{pin["analog_index"]}`], [{desc_text}],\n"
         return pin_table
+    
+    def get_docs_as_typst(project_macro: str) -> subprocess.CompletedProcess:
+        pandoc_command = ["pandoc", f"projects/{project_macro}/docs/info.md", 
+                              "--shift-heading-level-by=-1", "-f", "markdown-auto_identifiers", "-t", "typst", 
+                              "--columns=120"]
+        logging.info(pandoc_command)
+
+        return subprocess.run(pandoc_command, capture_output=True)
 
 
 class Docs:
@@ -326,12 +334,7 @@ class Docs:
                 )
 
             logging.info(f"building datasheet for {project}")
-
-            pandoc_command = ["pandoc", f"projects/{project.get_macro_name()}/docs/info.md", 
-                              "--shift-heading-level-by=-1", "-f", "markdown-auto_identifiers", "-t", "typst", 
-                              "--columns=120"]
-            logging.info(pandoc_command)
-            result = subprocess.run(pandoc_command, capture_output=True)
+            result = DocsHelper.get_docs_as_typst(project.get_macro_name())
 
             if result.stderr != b'':
                 logging.warning(result.stderr.decode())
