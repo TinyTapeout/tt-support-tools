@@ -17,6 +17,17 @@ from git_utils import get_first_remote
 from markdown_utils import rewrite_image_paths
 from project import Project
 
+class DocsHelper:
+    def pretty_address(address: int, subtile_address: Optional[int] = None) -> str:
+        """
+        Format the address and subtile address (if applicable) into an nice string for the typst template
+        """
+        content = str(address).rjust(4, "-")
+        if subtile_address != None:
+            content += f"/{subtile_address}"
+        return content
+    
+
 
 class Docs:
     def __init__(self, config: Config, projects: List[Project]):
@@ -280,10 +291,6 @@ class Docs:
                     )                
                     art_index += 1
 
-            # format project address
-            # TODO: subtile addr
-            project_address = str(project.mux_address).rjust(4, "-")
-
             if project.info.clock_hz == 0:
                 pretty_clock = "No Clock"
             else:
@@ -328,7 +335,7 @@ class Docs:
                 "project-author": f"({formatted_authors})",
                 "project-repo-link": yaml_data["git_url"],
                 "project-description": yaml_data["description"],
-                "project-address": project_address,
+                "project-address": DocsHelper.pretty_address(project.mux_address),
                 "project-clock": pretty_clock,
                 "project-type": yaml_data["project_type"],
                 "project-doc-body": result.stdout.decode(),
