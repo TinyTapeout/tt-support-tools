@@ -4,6 +4,7 @@ import logging
 import sys
 
 from project import Project
+from project_checks import check_project_docs
 from tech import TechName
 
 if __name__ == "__main__":
@@ -167,12 +168,12 @@ if __name__ == "__main__":
     log.addHandler(ch)
 
     pdk: TechName = "ihp-sg13g2" if args.ihp else "gf180mcuD" if args.gf else "sky130A"
+
+    if args.check_docs:
+        check_project_docs(args.project_dir, pdk)
+
     project = Project(0, "unknown", args.project_dir, pdk, is_user_project=True)
     project.post_clone_setup()
-
-    # handle the options
-    if args.check_docs:
-        project.check_docs()
 
     if args.print_cell_summary or args.print_cell_category:
         project.summarize(

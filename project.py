@@ -668,25 +668,6 @@ class Project:
 
         logging.info(f"Bitstream created successfully: {build_dir}/{base_name}.bin")
 
-    # doc check
-    # makes sure that the basic info is present
-    def check_docs(self):
-        info_md = os.path.join(self.local_dir, "docs/info.md")
-        if not os.path.exists(info_md):
-            logging.error("Missing docs/info.md file")
-            exit(1)
-
-        with open(info_md) as fh:
-            info_md_content = fh.read()
-
-        if "# How it works\n\nExplain how your project works" in info_md_content:
-            logging.error("Missing 'How it works' section in docs/info.md")
-            exit(1)
-
-        if "# How to test\n\nExplain how to use your project" in info_md_content:
-            logging.error("Missing 'How to test' section in docs/info.md")
-            exit(1)
-
     # use pandoc to create a single page PDF preview
     def create_pdf(self):
         template_args = copy.deepcopy(self.info.__dict__)

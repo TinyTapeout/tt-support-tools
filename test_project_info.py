@@ -422,6 +422,104 @@ class TestProjectInfoValidCombinations:
         assert project_info.pinout.uio[0] == ""
 
 
+class TestMultipleErrors:
+    """Test that multiple errors are collected and reported together"""
+
+    def test_multiple_project_errors(self, valid_yaml_data, tile_sizes):
+        """Test that multiple errors in project section are collected"""
+        del valid_yaml_data["project"]["title"]
+        del valid_yaml_data["project"]["author"]
+        valid_yaml_data["project"]["description"] = ""
+
+        with pytest.raises(ProjectYamlError) as exc_info:
+            ProjectInfo(valid_yaml_data, tile_sizes)
+
+        assert sorted(exc_info.value.errors) == sorted(
+            [
+                "Missing key 'title' in 'project' section",
+                "Missing key 'author' in 'project' section",
+                "Project description cannot be empty",
+            ]
+        )
+
+    def test_multiple_pinout_errors(self, valid_yaml_data, tile_sizes):
+        """Test that multiple errors in pinout section are collected"""
+        del valid_yaml_data["pinout"]["ui[0]"]
+        del valid_yaml_data["pinout"]["uo[3]"]
+        del valid_yaml_data["pinout"]["uio[7]"]
+
+        with pytest.raises(ProjectYamlError) as exc_info:
+            ProjectInfo(valid_yaml_data, tile_sizes)
+
+        assert sorted(exc_info.value.errors) == sorted(
+            [
+                "Missing 'ui[0]' in 'pinout' section",
+                "Missing 'uo[3]' in 'pinout' section",
+                "Missing 'uio[7]' in 'pinout' section",
+            ]
+        )
+
+    def test_errors_across_sections(self, valid_yaml_data, tile_sizes):
+        """Test that errors across different sections are all collected"""
+        del valid_yaml_data["yaml_version"]
+        del valid_yaml_data["project"]["title"]
+        valid_yaml_data["project"]["analog_pins"] = -1
+        del valid_yaml_data["pinout"]["ui[0]"]
+
+        with pytest.raises(ProjectYamlError) as exc_info:
+            ProjectInfo(valid_yaml_data, tile_sizes)
+
+        assert sorted(exc_info.value.errors) == sorted(
+            [
+                "Missing 'yaml_version'",
+                "Missing key 'title' in 'project' section",
+                "Invalid value for 'analog_pins' in 'project' section, must be between 0 and 6",
+                "Missing 'ui[0]' in 'pinout' section",
+            ]
+        )
+
+    def test_comprehensive_validation_errors(self, valid_yaml_data, tile_sizes):
+        """Test a comprehensive set of validation errors"""
+        valid_yaml_data["yaml_version"] = 999
+        valid_yaml_data["project"]["title"] = ""
+        valid_yaml_data["project"]["author"] = ""
+        valid_yaml_data["project"]["tiles"] = "invalid"
+        valid_yaml_data["project"]["analog_pins"] = 10
+        del valid_yaml_data["project"]["clock_hz"]
+        del valid_yaml_data["pinout"]["uo[0]"]
+        valid_yaml_data["pinout"]["invalid_key"] = "value"
+
+        with pytest.raises(ProjectYamlError) as exc_info:
+            ProjectInfo(valid_yaml_data, tile_sizes)
+
+        assert sorted(exc_info.value.errors) == sorted(
+            [
+                "Unsupported YAML version: 999, expected 6",
+                "Project title cannot be empty",
+                "Project author cannot be empty",
+                "Invalid value for 'tiles' in 'project' section: invalid",
+                "Invalid value for 'analog_pins' in 'project' section, must be between 0 and 6",
+                "Missing key 'clock_hz' in 'project' section",
+                "Missing 'uo[0]' in 'pinout' section",
+                "Invalid keys ['invalid_key'] in 'pinout' section. Please remove them.",
+            ]
+        )
+
+    def test_error_message_formatting(self, valid_yaml_data, tile_sizes):
+        """Test that error message contains all errors separated by commas"""
+        del valid_yaml_data["project"]["title"]
+        del valid_yaml_data["project"]["author"]
+
+        with pytest.raises(ProjectYamlError) as exc_info:
+            ProjectInfo(valid_yaml_data, tile_sizes)
+
+        error_message = str(exc_info.value)
+        assert (
+            "Missing key 'title' in 'project' section, Missing key 'author' in 'project' section"
+            == error_message
+        )
+
+
 class TestProjectInfoIntegration:
     """Integration tests with real YAML files"""
 
