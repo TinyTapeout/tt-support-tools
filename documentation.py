@@ -174,7 +174,16 @@ class Docs:
         # if given a path but it does exist
         elif tapeout_index_path != None:
             with open(os.path.abspath(tapeout_index_path), "r") as f:
-                tapeout_index = json.load(f)
+                index = json.load(f)
+
+            tapeout_index = {}
+            # remap the structure of the projects so that the macro can be used as a key
+            index_remap = map(
+                lambda project: (project.pop("macro"), project), # return tuple of (macro_name, project_info)
+                index["projects"]
+            )
+            for name, info in index_remap:
+                tapeout_index[name] = info
 
         datasheet_content_config = None
         if datasheet_content_config_path != None and not os.path.isfile(datasheet_content_config_path):
@@ -272,13 +281,22 @@ class Docs:
                         )                
                         art_index += 1
         
+            # attempt to get subtile address from tapeout index, if it exists
+            project_subtile_addr = None
+            if tapeout_index != None:
+                try:
+                    project_subtile_addr = tapeout_index[project.get_macro_name()]["subtile_addr"]
+                except KeyError:
+                    # no subtile address, no worries
+                    pass
+
             content = {
                 "template-version": template_version,
                 "project-title": yaml_data["title"].replace('"', '\\"'),
                 "project-author": f"({DocsHelper.format_authors(yaml_data["author"])})",
                 "project-repo-link": yaml_data["git_url"],
                 "project-description": yaml_data["description"],
-                "project-address": DocsHelper.pretty_address(project.mux_address),
+                "project-address": DocsHelper.pretty_address(project.mux_address, project_subtile_addr),
                 "project-clock": DocsHelper.pretty_clock(project.info.clock_hz),
                 "project-type": DocsHelper.get_project_type(yaml_data["language"], project.is_wokwi(), yaml_data["is_analog"]),
                 "project-doc-body": result.stdout.decode(),
