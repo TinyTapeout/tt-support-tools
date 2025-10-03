@@ -7,6 +7,7 @@ from typing import List, Optional
 import matplotlib as mpl
 
 class DocsHelper:
+    @staticmethod
     def pretty_address(address: int, subtile_address: Optional[int] = None) -> str:
         """
         Format the address and subtile address (if applicable) into an nice string for the typst template
@@ -16,6 +17,7 @@ class DocsHelper:
             content += f"/{subtile_address}"
         return content
     
+    @staticmethod
     def pretty_clock(clock: int) -> str:
         """
         Format the clock with engineering notation
@@ -33,7 +35,8 @@ class DocsHelper:
             return f"{hz_as_eng[0]} Hz"
         else:
             raise RuntimeError("unexpected amount of entries when formatting clock for datasheet")
-        
+    
+    @staticmethod
     def format_authors(authors: str) -> str:
         """
         Format the authors properly
@@ -59,29 +62,32 @@ class DocsHelper:
         """
         return text.replace("[", "\\[").replace("]", "\\]")
     
-    def format_digital_pins(self, pins: dict) -> str:
+    @staticmethod
+    def format_digital_pins(pins: dict) -> str:
         """
         Iterate through and create the digital pin table as a string
         """
         pin_table = ""
         for pin in pins:
-            ui_text = self._escape_square_brackets(pin["ui"])
-            uo_text = self._escape_square_brackets(pin["uo"])
-            uio_text = self._escape_square_brackets(pin["uio"])
+            ui_text = DocsHelper._escape_square_brackets(pin["ui"])
+            uo_text = DocsHelper._escape_square_brackets(pin["uo"])
+            uio_text = DocsHelper._escape_square_brackets(pin["uio"])
             pin_table += f"[`{pin["pin_index"]}`], [{ui_text}], [{uo_text}], [{uio_text}],\n"
 
         return pin_table
     
-    def format_analog_pins(self, pins: dict):
+    @staticmethod
+    def format_analog_pins(pins: dict):
         """
         Iterate through and create the analog pin table as a string
         """
         pin_table = ""
         for pin in pins:
-            desc_text = self._escape_square_brackets(pin["desc"])
+            desc_text = DocsHelper._escape_square_brackets(pin["desc"])
             pin_table += f"[`{pin["ua_index"]}`], [`{pin["analog_index"]}`], [{desc_text}],\n"
         return pin_table
     
+    @staticmethod
     def get_docs_as_typst(path: str) -> subprocess.CompletedProcess:
         pandoc_command = ["pandoc", path, 
                               "--shift-heading-level-by=-1", "-f", "markdown-auto_identifiers", "-t", "typst", 
@@ -89,3 +95,12 @@ class DocsHelper:
         logging.info(pandoc_command)
 
         return subprocess.run(pandoc_command, capture_output=True)
+    
+    @staticmethod
+    def get_project_type(language: str, is_wokwi: bool, is_analog: bool) -> str:
+        if is_wokwi:
+            return "Wokwi"
+        elif is_analog:
+            return "Analog"
+        else:
+            return "HDL"
