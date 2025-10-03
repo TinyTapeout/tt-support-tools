@@ -45,4 +45,10 @@ jobs:
 
       - name: Run tests
         working-directory: precheck
-        run: nix-shell --run "pytest"
+        run: nix-shell --run "pytest --junit-xml=test_results.xml"
+        
+      - name: Test Summary
+        uses: test-summary/action@v2.4
+        with:
+          paths: 'precheck/test_results.xml'
+        if: always()
