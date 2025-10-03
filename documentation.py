@@ -263,28 +263,25 @@ class Docs:
             # insert artwork
             current_project += 1
             if total_available_art != None:
-                if art_index >= len(datasheet_content_config["artwork"]):
-                    continue
-
-                if current_project % insert_art_after == 0:
-                    details = datasheet_content_config["artwork"][art_index]
-                    datasheet_manifest.append(
-                        f"#tt.art(\"{details["id"]}\", rot:{details["rotate"]})\n"
-                    )                
-                    art_index += 1
-
+                if not (art_index >= len(datasheet_content_config["artwork"])):
+                    if current_project % insert_art_after == 0:
+                        details = datasheet_content_config["artwork"][art_index]
+                        datasheet_manifest.append(
+                            f"#tt.art(\"{details["id"]}\", rot:{details["rotate"]})\n"
+                        )                
+                        art_index += 1
+        
             content = {
                 "template-version": template_version,
                 "project-title": yaml_data["title"].replace('"', '\\"'),
-                "project-author": f"({DocsHelper.format_authors(yaml_data["authors"])})",
+                "project-author": f"({DocsHelper.format_authors(yaml_data["author"])})",
                 "project-repo-link": yaml_data["git_url"],
                 "project-description": yaml_data["description"],
                 "project-address": DocsHelper.pretty_address(project.mux_address),
                 "project-clock": DocsHelper.pretty_clock(project.info.clock_hz),
-                "project-type": yaml_data["project_type"],
+                "project-type": DocsHelper.get_project_type(yaml_data["language"], project.is_wokwi(), yaml_data["is_analog"]),
                 "project-doc-body": result.stdout.decode(),
                 "digital-pins": DocsHelper.format_digital_pins(yaml_data["pins"]),
-                "is-analog": yaml_data["is_analog"],
             }
 
             if project.is_wokwi():
