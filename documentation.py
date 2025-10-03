@@ -197,7 +197,8 @@ class Docs:
                 if content != None:
                     danger_info = content
         
-        project_template = self.load_doc_template("user_project.typ.mustache")
+        with open(os.path.join(self.script_dir, "docs/user_project.typ.mustache")) as f:
+            project_template = f.read()
 
         datasheet_manifest = [
             f"#import \"@local/tt-datasheet:{template_version}\" as tt\n"
