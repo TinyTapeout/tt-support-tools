@@ -223,7 +223,7 @@ if __name__ == "__main__":
     if args.create_pdf:
         project.create_pdf()
 
-    if args.create_project_datasheet():
+    if args.create_project_datasheet:
         project.create_project_datasheet(args.template_version)
 
     if args.create_png:

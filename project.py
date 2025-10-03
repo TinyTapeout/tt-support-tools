@@ -21,6 +21,7 @@ from config_utils import read_config, write_config
 from markdown_utils import limit_markdown_headings
 from project_info import ProjectInfo, ProjectYamlError
 from tech import TechName, tech_map
+from doc_utils import DocsHelper
 
 PINOUT_KEYS = [
     "ui[0]",
@@ -728,6 +729,66 @@ class Project:
         if p.returncode != 0:
             logging.error("pdf generation failed")
             raise RuntimeError(f"pdf generation failed with code {p.returncode}")
+
+    def create_project_datasheet(self, template_version: str):
+        template_args = copy.deepcopy(self.info.__dict__)
+        template_args.update(
+            {
+                "pins": [
+                    {
+                        "pin_index": str(i),
+                        "ui": self.info.pinout.ui[i],
+                        "uo": self.info.pinout.uo[i],
+                        "uio": self.info.pinout.uio[i],
+                    }
+                    for i in range(8)
+                ],
+                "analog_pins": [
+                    {
+                        "ua_index": str(i),
+                        "analog_index": "?",
+                        "desc": desc,
+                    }
+                    for i, desc in enumerate(self.info.pinout.ua)
+                ],
+                "is_analog": self.info.is_analog,
+                "uses_3v3": self.info.uses_3v3,
+            }
+        )
+
+        logging.info("creating project datasheet")
+
+        with open(os.path.join(SCRIPT_DIR, "docs/user_project.typ.mustache")) as f:
+            project_template = f.read()
+
+        result = DocsHelper.get_docs_as_typst(os.path.join(self.local_dir, "docs/info.md"))
+        if result.stderr != b'':
+            logging.warning(result.stderr.decode())
+
+        content = {
+            "template-version": template_version,
+            "project-title": template_args["title"].replace('"', '\\"'),
+            "project-author": f"({DocsHelper.format_authors(template_args["author"])})",
+            "project-repo-link": "placeholder git repo link",
+            "project-description": template_args["description"],
+            "project-address": "----",
+            "project-clock": DocsHelper.pretty_clock(self.info.clock_hz),
+            "project-type": DocsHelper.get_project_type(template_args["language"], self.is_wokwi(), template_args["is_analog"]),
+            "project-doc-body": result.stdout.decode(),
+            "digital-pins": DocsHelper.format_digital_pins(template_args["pins"]),
+        }
+
+        if self.is_wokwi():
+            content["is-wokwi"] = True
+            content["project-wokwi-id"] = self.info.wokwi_id
+
+        if template_args["is_analog"]:
+            content["is-analog"] = True
+            content["analog-pins"] = DocsHelper.format_analog_pins(template_args["analog_pins"])
+        
+        with open(os.path.abspath(f"./docs/doc.typ"), "w") as f:
+            logging.info("writing datasheet to ./docs/doc.typ")
+            f.write(chevron.render(project_template, content))
 
     # Read and return top-level GDS data from the final GDS file, using gdstk:
     def get_final_gds_top_cells(self):
