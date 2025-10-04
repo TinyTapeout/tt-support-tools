@@ -282,15 +282,17 @@ if __name__ == "__main__":
         "--build-datasheet",
         help="build datasheet using the typst template",
         action="store_const",
-        const=True
+        const=True,
     )
     parser.add_argument("--doc-tapeout-index", help="path to json tapeout index")
-    parser.add_argument("--doc-content-config", help="path to json to configure datasheet content")
+    parser.add_argument(
+        "--doc-content-config", help="path to json to configure datasheet content"
+    )
     parser.add_argument(
         "--template-version",
         help="set typst template version (default 1.0.0)",
         default="1.0.0",
-        nargs="?"
+        nargs="?",
     )
 
     args = parser.parse_args()
@@ -358,4 +360,6 @@ if __name__ == "__main__":
         docs.write_datasheet(args.dump_markdown, args.dump_pdf)
 
     if args.build_datasheet:
-        docs.build_datasheet(args.template_version, args.doc_tapeout_index, args.doc_content_config)
+        docs.build_datasheet(
+            args.template_version, args.doc_tapeout_index, args.doc_content_config
+        )
