@@ -198,6 +198,47 @@ class DocsHelper:
         return info
 
     @staticmethod
+    def normalise_project_info(project) -> dict:
+        """
+        Similar to `DocHelper.format_project_info`, but this accepts a `Project` object and attempts to
+        normalise it to the tapeout index format that is expected by the `Docs.build_datasheet()` function.
+
+        To help visualise it, the output of this function would be fed to the `index_info` parameter of
+        the `DocsHelper.format_project_info()`.
+        """
+        info = {
+            "title": project.info.title,
+            "author": project.info.author,
+            "description": project.info.description,
+            "address": project.mux_address,
+            "clock_hz": project.info.clock_hz,
+            "repo": project.git_url,
+            "language": project.info.language,
+            "macro": project.info.top_module,
+            "is_analog": project.info.is_analog,
+            "is_wokwi": project.is_wokwi(),
+            "type": "project",
+        }
+
+        if project.is_wokwi():
+            info["wokwi_id"] = project.info.wokwi_id
+
+        info["pinout"] = {}
+        for i in range(8):
+            info["pinout"].update({f"ui[{i}]": project.info.pinout.ui[i]})
+            info["pinout"].update({f"uo[{i}]": project.info.pinout.uo[i]})
+            info["pinout"].update({f"uio[{i}]": project.info.pinout.uio[i]})
+
+        if project.info.is_analog:
+            info["analog_pins"] = project.analog_pins
+            for i, desc in enumerate(project.info.pinout.ua):
+                info["pinout"].update({f"ua[{i}]": desc})
+        else:
+            info["analog_pins"] = []
+
+        return info
+
+    @staticmethod
     def write_doc(path: str, template: str, content: dict) -> None:
         try:
             with open(path, "w") as f:

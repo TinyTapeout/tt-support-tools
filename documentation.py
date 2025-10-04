@@ -188,10 +188,9 @@ class Docs:
                 index["projects"], key=lambda project: project["address"]
             )
         elif tapeout_index_path is None:
-            logging.error(
-                "a tapeout index must be specified (pass --doc-tapeout-index <path>)"
-            )
-            exit(1)
+            logging.warning("tapeout index not provided, using project list")
+            self.projects.sort(key=lambda x: x.mux_address)
+            tapeout_index = map(DocsHelper.normalise_project_info, self.projects)
 
         datasheet_content_config = None
         if datasheet_content_config_path is None and not os.path.isfile(
