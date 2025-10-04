@@ -279,17 +279,17 @@ if __name__ == "__main__":
         "--metrics", help="print some project metrics", action="store_const", const=True
     )
     parser.add_argument(
-        "--build-datasheet", 
-        help="build datasheet using the typst template", 
-        action="store_const", 
+        "--build-datasheet",
+        help="build datasheet using the typst template",
+        action="store_const",
         const=True
     )
     parser.add_argument("--doc-tapeout-index", help="path to json tapeout index")
     parser.add_argument("--doc-content-config", help="path to json to configure datasheet content")
     parser.add_argument(
-        "--template-version", 
-        help="set typst template version (default 1.0.0)", 
-        default="1.0.0", 
+        "--template-version",
+        help="set typst template version (default 1.0.0)",
+        default="1.0.0",
         nargs="?"
     )
 

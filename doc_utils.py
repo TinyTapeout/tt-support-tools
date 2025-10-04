@@ -2,11 +2,12 @@ import re
 import subprocess
 import logging
 
-from typing import List, Optional
+from typing import Optional
 
 import chevron
 
 import matplotlib as mpl
+
 
 class DocsHelper:
     @staticmethod
@@ -15,10 +16,10 @@ class DocsHelper:
         Format the address and subtile address (if applicable) into an nice string for the typst template
         """
         content = str(address).rjust(4, "-")
-        if subtile_address != None:
+        if subtile_address is not None:
             content += f"/{subtile_address}"
         return content
-    
+
     @staticmethod
     def pretty_clock(clock: int) -> str:
         """
@@ -37,7 +38,7 @@ class DocsHelper:
             return f"{hz_as_eng[0]} Hz"
         else:
             raise RuntimeError("unexpected amount of entries when formatting clock for datasheet")
-    
+
     @staticmethod
     def format_authors(authors: str) -> str:
         """
@@ -56,14 +57,14 @@ class DocsHelper:
             # https://typst.app/docs/reference/foundations/array/
             formatted_authors.append(f"\"{stripped}\",")
         return "".join(formatted_authors)
-    
+
     @staticmethod
     def _escape_square_brackets(text: str) -> str:
         """
         Helper function to escape square brackets in strings
         """
         return text.replace("[", "\\[").replace("]", "\\]")
-    
+
     @staticmethod
     def format_digital_pins(pins: dict) -> str:
         """
@@ -74,10 +75,10 @@ class DocsHelper:
             ui_text = DocsHelper._escape_square_brackets(pin["ui"])
             uo_text = DocsHelper._escape_square_brackets(pin["uo"])
             uio_text = DocsHelper._escape_square_brackets(pin["uio"])
-            pin_table += f"[`{pin["pin_index"]}`], [{ui_text}], [{uo_text}], [{uio_text}],\n"
+            pin_table += f"[`{pin['pin_index']}`], [{ui_text}], [{uo_text}], [{uio_text}],\n"
 
         return pin_table
-    
+
     @staticmethod
     def format_analog_pins(pins: dict):
         """
@@ -86,17 +87,19 @@ class DocsHelper:
         pin_table = ""
         for pin in pins:
             desc_text = DocsHelper._escape_square_brackets(pin["desc"])
-            pin_table += f"[`{pin["ua_index"]}`], [`{pin["analog_index"]}`], [{desc_text}],\n"
+            pin_table += f"[`{pin['ua_index']}`], [`{pin['analog_index']}`], [{desc_text}],\n"
         return pin_table
-    
+
     @staticmethod
     def get_docs_as_typst(path: str) -> str:
         """
         Run pandoc to convert a given file to typst
         """
-        pandoc_command = ["pandoc", path, 
-                              "--shift-heading-level-by=-1", "-f", "markdown-auto_identifiers", "-t", "typst", 
-                              "--columns=120"]
+        pandoc_command = [
+            "pandoc", path, "--shift-heading-level-by=-1",
+            "-f", "markdown-auto_identifiers", "-t", "typst",
+            "--columns=120"
+        ]
         logging.info(pandoc_command)
 
         result = subprocess.run(pandoc_command, capture_output=True)
@@ -105,7 +108,7 @@ class DocsHelper:
             logging.warning(result.stderr.decode())
 
         return result.stdout.decode()
-    
+
     @staticmethod
     def get_project_type(language: str, is_wokwi: bool, is_analog: bool) -> str:
         if is_wokwi:
@@ -114,7 +117,7 @@ class DocsHelper:
             return "Analog"
         else:
             return "HDL"
-        
+
     @staticmethod
     def format_project_info(yaml_info: dict, index_info: dict) -> dict:
         """
@@ -170,13 +173,11 @@ class DocsHelper:
                 } for i in range(len(index_info["analog_pins"]))
             ]
 
-
         if "type" in index_info:
             if index_info["type"] == "subtile":
                 info["type"] = "subtile"
                 info["subtile_addr"] = index_info["subtile_addr"]
                 info["subtile_group"] = index_info["subtile_group"]
-            
             elif index_info["type"] == "group":
                 info["type"] = "group"
 
@@ -187,18 +188,18 @@ class DocsHelper:
         try:
             with open(path, "w") as f:
                 f.write(chevron.render(template, content))
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             logging.warning(f"unable to write to {path}... the project exists in tapeout index, but not in local directory? skipping")
 
     @staticmethod
-    def populate_template_tags(info: dict, danger_info: dict, docs: str, template_version = "1.0.0") -> dict:       
+    def populate_template_tags(info: dict, danger_info: dict, docs: str, template_version="1.0.0") -> dict:
         """
         Populate the required template fields given information about the project and its danger level
         """
         content = {
             "template-version": template_version,
             "project-title": info["title"].replace('"', '\\"'),
-            "project-author": f"({DocsHelper.format_authors(info["author"])})",
+            "project-author": f"({DocsHelper.format_authors(info['author'])})",
             "project-repo-link": info["git_url"],
             "project-description": info["description"],
             "project-address": DocsHelper.pretty_address(info["address"]),
@@ -211,7 +212,7 @@ class DocsHelper:
         if info["macro"] in danger_info:
             content["is-dangerous"] = True
             content["project-danger-level"] = danger_info[info["macro"]]["level"]
-            content["project-danger-reason"] = danger_info[info["macro"]]["reason"] 
+            content["project-danger-reason"] = danger_info[info["macro"]]["reason"]
 
         if info["type"] == "subtile":
             content["project-address"] = DocsHelper.pretty_address(info["address"], info["subtile_addr"])

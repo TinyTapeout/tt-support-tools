@@ -16,6 +16,7 @@ from markdown_utils import rewrite_image_paths
 from project import Project
 from doc_utils import DocsHelper
 
+
 class Docs:
     def __init__(self, config: Config, projects: List[Project]):
         self.config = config
@@ -159,30 +160,30 @@ class Docs:
             if p.returncode != 0:
                 logging.error("pdf generation failed")
                 raise RuntimeError(f"pdf generation failed with code {p.returncode}")
-            
+
     def build_datasheet(self, template_version: str, tapeout_index_path: str, datasheet_content_config_path: str):
         logging.info(f"building datasheet with version {template_version}")
-        logging.info(f"tapeout index available? {True if tapeout_index_path != None else False}")
-        logging.info(f"content config available? {True if datasheet_content_config_path != None else False}")
+        logging.info(f"tapeout index available? {True if tapeout_index_path is not None else False}")
+        logging.info(f"content config available? {True if datasheet_content_config_path is not None else False}")
 
         tapeout_index = None
         # if given a path but the file doesn't exist
-        if tapeout_index_path != None and not os.path.isfile(tapeout_index_path):
+        if tapeout_index_path is not None and not os.path.isfile(tapeout_index_path):
             raise FileNotFoundError("unable to find tapeout index at given path")
         # if given a path but it does exist
-        elif tapeout_index_path != None:
+        elif tapeout_index_path is not None:
             with open(os.path.abspath(tapeout_index_path), "r") as f:
                 index = json.load(f)
 
             tapeout_index = sorted(index["projects"], key=lambda project: project["address"])
-        elif tapeout_index_path == None:
+        elif tapeout_index_path is None:
             logging.error("a tapeout index must be specified (pass --doc-tapeout-index <path>)")
             exit(1)
 
         datasheet_content_config = None
-        if datasheet_content_config_path != None and not os.path.isfile(datasheet_content_config_path):
+        if datasheet_content_config_path is None and not os.path.isfile(datasheet_content_config_path):
             raise FileNotFoundError("unable to find datasheet content config at given path")
-        elif datasheet_content_config_path != None:
+        elif datasheet_content_config_path is not None:
             with open(os.path.abspath(datasheet_content_config_path), "r") as f:
                 datasheet_content_config = json.load(f)
 
@@ -197,9 +198,9 @@ class Docs:
                 content = yaml.safe_load(f)
                 # yaml.safe_load() returns None for an empty file
                 # check before overwriting since we rely on danger_info being a dict later
-                if content != None:
+                if content is not None:
                     danger_info = content
-        
+
         with open(os.path.join(self.script_dir, "docs/user_project.typ.mustache")) as f:
             project_template = f.read()
 
@@ -211,28 +212,28 @@ class Docs:
         current_project = 0
         art_index = 0
         total_available_art = None
-        if datasheet_content_config != None and "artwork" in datasheet_content_config:
+        if datasheet_content_config is not None and "artwork" in datasheet_content_config:
             total_available_art = len(datasheet_content_config["artwork"])
 
-        if total_available_art != None:
+        if total_available_art is not None:
             if total_available_art > 0:
                 insert_art_after = math.floor(len(self.projects) / total_available_art)
 
         temp_subtile_projects = {}
         for project in tapeout_index:
 
-            logging.info(f"processing datasheet for [{project["address"]} : {project["repo"]}]")
+            logging.info(f"processing datasheet for [{project['address']} : {project['repo']}]")
 
             # fetch info.yaml
-            yaml_path = os.path.abspath(f"./projects/{project["macro"]}/info.yaml")
+            yaml_path = os.path.abspath(f"./projects/{project['macro']}/info.yaml")
             if "type" in project:
                 if project["type"] == "subtile":
-                    yaml_path = os.path.abspath(f"./projects/{project["subtile_group"]}/docs/{project["macro"]}/info.yaml")
+                    yaml_path = os.path.abspath(f"./projects/{project['subtile_group']}/docs/{project['macro']}/info.yaml")
 
             try:
                 with open(yaml_path, "r") as f:
                     yaml_info = yaml.safe_load(f)
-            except FileNotFoundError as e:
+            except FileNotFoundError:
                 logging.warning(f"unable to read {yaml_path}... project exists in tapeout index but not in local directory? skipping")
                 continue
 
@@ -248,8 +249,8 @@ class Docs:
             elif info["type"] == "group":
 
                 # write group doc
-                group_md_path = f"projects/{info["macro"]}/docs/info.md"
-                group_typ_path = f"projects/{info["macro"]}/docs/doc.typ"
+                group_md_path = f"projects/{info['macro']}/docs/info.md"
+                group_typ_path = f"projects/{info['macro']}/docs/doc.typ"
                 DocsHelper.write_doc(
                     path=os.path.abspath(group_typ_path),
                     template=project_template,
@@ -262,15 +263,15 @@ class Docs:
                 )
 
                 # add group doc to manifest
-                if datasheet_content_config != None and info["macro"] in datasheet_content_config["disabled"]:
-                    logging.warning(f"datasheet disabled for [{info["address"]} : {info["git_url"]}")
+                if datasheet_content_config is not None and info["macro"] in datasheet_content_config["disabled"]:
+                    logging.warning(f"datasheet disabled for [{info['address']} : {info['git_url']}")
                     datasheet_manifest.append(f"// #include \"{group_typ_path}\"\n")
                 else:
                     datasheet_manifest.append(f"#include \"{group_typ_path}\"\n")
 
                 # write subtile doc
                 for _, subtile_info in temp_subtile_projects.items():
-                    partial_doc_path = f"projects/{subtile_info["subtile_group"]}/docs/{subtile_info["macro"]}"
+                    partial_doc_path = f"projects/{subtile_info['subtile_group']}/docs/{subtile_info['macro']}"
                     typ_path = os.path.join(partial_doc_path, "doc.typ")
                     md_path = os.path.join(partial_doc_path, "info.md")
 
@@ -286,8 +287,8 @@ class Docs:
                     )
 
                     # add subtile doc to manifest
-                    if datasheet_content_config != None and subtile_info["macro"] in datasheet_content_config["disabled"]:
-                        logging.warning(f"datasheet disabled for [{subtile_info["address"]} : {subtile_info["git_url"]}")
+                    if datasheet_content_config is not None and subtile_info["macro"] in datasheet_content_config["disabled"]:
+                        logging.warning(f"datasheet disabled for [{subtile_info['address']} : {subtile_info['git_url']}")
                         datasheet_manifest.append(f"// #include \"{typ_path}\"\n")
                     else:
                         datasheet_manifest.append(f"#include \"{typ_path}\"\n")
@@ -296,8 +297,8 @@ class Docs:
                 temp_subtile_projects = {}
 
             elif info["type"] == "project":
-                project_md_path = f"projects/{info["macro"]}/docs/info.md"
-                project_typ_path = f"projects/{info["macro"]}/docs/doc.typ"
+                project_md_path = f"projects/{info['macro']}/docs/info.md"
+                project_typ_path = f"projects/{info['macro']}/docs/doc.typ"
 
                 DocsHelper.write_doc(
                     path=project_typ_path,
@@ -309,29 +310,28 @@ class Docs:
                         template_version=template_version
                     )
                 )
-                
+
                 # add project doc to manifest
-                if datasheet_content_config != None and info["macro"] in datasheet_content_config["disabled"]:
-                    logging.warning(f"datasheet disabled for [{info["address"]} : {info["git_url"]}")
+                if datasheet_content_config is not None and info["macro"] in datasheet_content_config["disabled"]:
+                    logging.warning(f"datasheet disabled for [{info['address']} : {info['git_url']}")
                     datasheet_manifest.append(f"// #include \"{project_typ_path}\"\n")
                 else:
                     datasheet_manifest.append(f"#include \"{project_typ_path}\"\n")
 
             else:
-                logging.error(f"unhandled project type! what is '{info["type"]}'?")
+                logging.error(f"unhandled project type! what is \"{info['type']}\"?")
                 exit(1)
 
             # insert artwork
             current_project += 1
-            if total_available_art != None:
+            if total_available_art is not None:
                 if not (art_index >= len(datasheet_content_config["artwork"])):
                     if current_project % insert_art_after == 0:
                         details = datasheet_content_config["artwork"][art_index]
                         datasheet_manifest.append(
-                            f"#tt.art(\"{details["id"]}\", rot:{details["rotate"]})\n"
-                        )                
+                            f"#tt.art(\"{details['id']}\", rot:{details['rotate']})\n"
+                        )
                         art_index += 1
 
         with open("datasheet_manifest.typ", "w") as f:
             f.writelines(datasheet_manifest)
-            
