@@ -358,5 +358,4 @@ if __name__ == "__main__":
         docs.write_datasheet(args.dump_markdown, args.dump_pdf)
 
     if args.build_datasheet:
-        shuttle.configure_mux()
         docs.build_datasheet(args.template_version, args.doc_tapeout_index, args.doc_content_config)

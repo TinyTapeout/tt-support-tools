@@ -161,8 +161,6 @@ class Docs:
                 raise RuntimeError(f"pdf generation failed with code {p.returncode}")
             
     def build_datasheet(self, template_version: str, tapeout_index_path: str, datasheet_content_config_path: str):
-        self.projects.sort(key=lambda x: x.mux_address)
-
         logging.info(f"building datasheet with version {template_version}")
         logging.info(f"tapeout index available? {True if tapeout_index_path != None else False}")
         logging.info(f"content config available? {True if datasheet_content_config_path != None else False}")
@@ -176,14 +174,10 @@ class Docs:
             with open(os.path.abspath(tapeout_index_path), "r") as f:
                 index = json.load(f)
 
-            tapeout_index = {}
-            # remap the structure of the projects so that the macro can be used as a key
-            index_remap = map(
-                lambda project: (project.pop("macro"), project), # return tuple of (macro_name, project_info)
-                index["projects"]
-            )
-            for name, info in index_remap:
-                tapeout_index[name] = info
+            tapeout_index = sorted(index["projects"], key=lambda project: project["address"])
+        elif tapeout_index_path == None:
+            logging.error("a tapeout index must be specified (pass --doc-tapeout-index <path>)")
+            exit(1)
 
         datasheet_content_config = None
         if datasheet_content_config_path != None and not os.path.isfile(datasheet_content_config_path):
@@ -224,51 +218,108 @@ class Docs:
             if total_available_art > 0:
                 insert_art_after = math.floor(len(self.projects) / total_available_art)
 
-        for project in self.projects:           
-            yaml_data = project.get_project_docs_dict()
-            analog_pins = project.info.analog_pins
-            yaml_data.update(
-                    {
-                        "user_docs": rewrite_image_paths(
-                            yaml_data["user_docs"],
-                            f"projects/{project.get_macro_name()}/docs",
-                        ),
-                        "mux_address": project.mux_address,
-                        "pins": [
-                            {
-                                "pin_index": str(i),
-                                "ui": project.info.pinout.ui[i],
-                                "uo": project.info.pinout.uo[i],
-                                "uio": project.info.pinout.uio[i],
-                            }
-                            for i in range(8)
-                        ],
-                        "analog_pins": [
-                            {
-                                "ua_index": str(i),
-                                "analog_index": str(project.analog_pins[i]),
-                                "desc": desc,
-                            }
-                            for i, desc in enumerate(
-                                project.info.pinout.ua[:analog_pins]
-                            )
-                        ],
-                        "is_analog": analog_pins > 0,
-                    }
+        temp_subtile_projects = {}
+        for project in tapeout_index:
+
+            logging.info(f"processing datasheet for [{project["address"]} : {project["repo"]}]")
+
+            # fetch info.yaml
+            yaml_path = os.path.abspath(f"./projects/{project["macro"]}/info.yaml")
+            if "type" in project:
+                if project["type"] == "subtile":
+                    yaml_path = os.path.abspath(f"./projects/{project["subtile_group"]}/docs/{project["macro"]}/info.yaml")
+
+            try:
+                with open(yaml_path, "r") as f:
+                    yaml_info = yaml.safe_load(f)
+            except FileNotFoundError as e:
+                logging.warning(f"unable to read {yaml_path}... project exists in tapeout index but not in local directory? skipping")
+                continue
+
+            info = DocsHelper.format_project_info(yaml_info, project)
+
+            # decide what to do given project type
+            if info["type"] == "subtile":
+                # defer for later (when we hit the group module)
+                # we want the group module to appear first in the datasheet
+                temp_subtile_projects[info["subtile_addr"]] = info
+                continue
+
+            elif info["type"] == "group":
+
+                # write group doc
+                group_md_path = f"projects/{info["macro"]}/docs/info.md"
+                group_typ_path = f"projects/{info["macro"]}/docs/doc.typ"
+                DocsHelper.write_doc(
+                    path=os.path.abspath(group_typ_path),
+                    template=project_template,
+                    content=DocsHelper.populate_template_tags(
+                        info=info,
+                        danger_info=danger_info,
+                        docs=DocsHelper.get_docs_as_typst(group_md_path),
+                        template_version=template_version
+                    )
                 )
 
-            logging.info(f"building datasheet for {project}")
-            result = DocsHelper.get_docs_as_typst(f"projects/{project.get_macro_name()}/docs/info.md")
+                # add group doc to manifest
+                if datasheet_content_config != None and info["macro"] in datasheet_content_config["disabled"]:
+                    logging.warning(f"datasheet disabled for [{info["address"]} : {info["git_url"]}")
+                    datasheet_manifest.append(f"// #include \"{group_typ_path}\"\n")
+                else:
+                    datasheet_manifest.append(f"#include \"{group_typ_path}\"\n")
 
-            if result.stderr != b'':
-                logging.warning(result.stderr.decode())
+                # write subtile doc
+                for _, subtile_info in temp_subtile_projects.items():
+                    partial_doc_path = f"projects/{subtile_info["subtile_group"]}/docs/{subtile_info["macro"]}"
+                    typ_path = os.path.join(partial_doc_path, "doc.typ")
+                    md_path = os.path.join(partial_doc_path, "info.md")
 
-            include_proj_str = f"#include \"projects/{project.get_macro_name()}/docs/doc.typ\"\n"
-            if datasheet_content_config != None and project.get_macro_name() in datasheet_content_config["disabled"]:
-                logging.warning(f"datasheet disabled for {project}")
-                datasheet_manifest.append("// " + include_proj_str)
+                    DocsHelper.write_doc(
+                        path=typ_path,
+                        template=project_template,
+                        content=DocsHelper.populate_template_tags(
+                            info=subtile_info,
+                            danger_info=danger_info,
+                            docs=DocsHelper.get_docs_as_typst(md_path),
+                            template_version=template_version
+                        )
+                    )
+
+                    # add subtile doc to manifest
+                    if datasheet_content_config != None and subtile_info["macro"] in datasheet_content_config["disabled"]:
+                        logging.warning(f"datasheet disabled for [{subtile_info["address"]} : {subtile_info["git_url"]}")
+                        datasheet_manifest.append(f"// #include \"{typ_path}\"\n")
+                    else:
+                        datasheet_manifest.append(f"#include \"{typ_path}\"\n")
+
+                # clear subtiles for next group
+                temp_subtile_projects = {}
+
+            elif info["type"] == "project":
+                project_md_path = f"projects/{info["macro"]}/docs/info.md"
+                project_typ_path = f"projects/{info["macro"]}/docs/doc.typ"
+
+                DocsHelper.write_doc(
+                    path=project_typ_path,
+                    template=project_template,
+                    content=DocsHelper.populate_template_tags(
+                        info=info,
+                        danger_info=danger_info,
+                        docs=DocsHelper.get_docs_as_typst(project_md_path),
+                        template_version=template_version
+                    )
+                )
+                
+                # add project doc to manifest
+                if datasheet_content_config != None and info["macro"] in datasheet_content_config["disabled"]:
+                    logging.warning(f"datasheet disabled for [{info["address"]} : {info["git_url"]}")
+                    datasheet_manifest.append(f"// #include \"{project_typ_path}\"\n")
+                else:
+                    datasheet_manifest.append(f"#include \"{project_typ_path}\"\n")
+
             else:
-                datasheet_manifest.append(include_proj_str)
+                logging.error(f"unhandled project type! what is '{info["type"]}'?")
+                exit(1)
 
             # insert artwork
             current_project += 1
@@ -280,44 +331,6 @@ class Docs:
                             f"#tt.art(\"{details["id"]}\", rot:{details["rotate"]})\n"
                         )                
                         art_index += 1
-        
-            # attempt to get subtile address from tapeout index, if it exists
-            project_subtile_addr = None
-            if tapeout_index != None:
-                try:
-                    project_subtile_addr = tapeout_index[project.get_macro_name()]["subtile_addr"]
-                except KeyError:
-                    # no subtile address, no worries
-                    pass
-
-            content = {
-                "template-version": template_version,
-                "project-title": yaml_data["title"].replace('"', '\\"'),
-                "project-author": f"({DocsHelper.format_authors(yaml_data["author"])})",
-                "project-repo-link": yaml_data["git_url"],
-                "project-description": yaml_data["description"],
-                "project-address": DocsHelper.pretty_address(project.mux_address, project_subtile_addr),
-                "project-clock": DocsHelper.pretty_clock(project.info.clock_hz),
-                "project-type": DocsHelper.get_project_type(yaml_data["language"], project.is_wokwi(), yaml_data["is_analog"]),
-                "project-doc-body": result.stdout.decode(),
-                "digital-pins": DocsHelper.format_digital_pins(yaml_data["pins"]),
-            }
-
-            if project.is_wokwi():
-                content["is-wokwi"] = True
-                content["project-wokwi-id"] = project.info.wokwi_id
-
-            if project.get_macro_name() in danger_info:
-                content["is-dangerous"] = True
-                content["project-danger-level"] = danger_info[project.get_macro_name()]["level"]
-                content["project-danger-reason"] = danger_info[project.get_macro_name()]["reason"]
-
-            if yaml_data["is_analog"]:
-                content["is-analog"] = True
-                content["analog-pins"] = DocsHelper.format_analog_pins(yaml_data["analog_pins"])
-
-            with open(os.path.abspath(f"./projects/{project.get_macro_name()}/docs/doc.typ"), "w") as f:
-                f.write(chevron.render(project_template, content))
 
         with open("datasheet_manifest.typ", "w") as f:
             f.writelines(datasheet_manifest)
