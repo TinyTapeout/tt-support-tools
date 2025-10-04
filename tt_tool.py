@@ -90,13 +90,13 @@ if __name__ == "__main__":
         "--create-project-datasheet",
         help="create a datasheet for the current project",
         action="store_const",
-        const=True
+        const=True,
     )
     parser.add_argument(
         "--template-version",
         help="set typst template version (default 1.0.0)",
         default="1.0.0",
-        nargs="?"
+        nargs="?",
     )
     parser.add_argument(
         "--create-svg",

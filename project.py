@@ -18,10 +18,10 @@ from git.repo import Repo
 
 import git_utils
 from config_utils import read_config, write_config
+from doc_utils import DocsHelper
 from markdown_utils import limit_markdown_headings
 from project_info import ProjectInfo, ProjectYamlError
 from tech import TechName, tech_map
-from doc_utils import DocsHelper
 
 PINOUT_KEYS = [
     "ui[0]",
@@ -761,7 +761,9 @@ class Project:
         with open(os.path.join(SCRIPT_DIR, "docs/user_project.typ.mustache")) as f:
             project_template = f.read()
 
-        result = DocsHelper.get_docs_as_typst(os.path.join(self.local_dir, "docs/info.md"))
+        result = DocsHelper.get_docs_as_typst(
+            os.path.join(self.local_dir, "docs/info.md")
+        )
 
         content = {
             "template-version": template_version,
@@ -771,7 +773,9 @@ class Project:
             "project-description": template_args["description"],
             "project-address": "----",
             "project-clock": DocsHelper.pretty_clock(self.info.clock_hz),
-            "project-type": DocsHelper.get_project_type(template_args["language"], self.is_wokwi(), template_args["is_analog"]),
+            "project-type": DocsHelper.get_project_type(
+                template_args["language"], self.is_wokwi(), template_args["is_analog"]
+            ),
             "project-doc-body": result,
             "digital-pins": DocsHelper.format_digital_pins(template_args["pins"]),
         }
@@ -782,7 +786,9 @@ class Project:
 
         if template_args["is_analog"]:
             content["is-analog"] = True
-            content["analog-pins"] = DocsHelper.format_analog_pins(template_args["analog_pins"])
+            content["analog-pins"] = DocsHelper.format_analog_pins(
+                template_args["analog_pins"]
+            )
 
         with open(os.path.abspath(f"./docs/doc.typ"), "w") as f:
             logging.info("writing datasheet to ./docs/doc.typ")

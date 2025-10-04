@@ -1,11 +1,9 @@
+import logging
 import re
 import subprocess
-import logging
-
 from typing import Optional
 
 import chevron
-
 import matplotlib as mpl
 
 
@@ -37,7 +35,9 @@ class DocsHelper:
         elif len(hz_as_eng) == 1:
             return f"{hz_as_eng[0]} Hz"
         else:
-            raise RuntimeError("unexpected amount of entries when formatting clock for datasheet")
+            raise RuntimeError(
+                "unexpected amount of entries when formatting clock for datasheet"
+            )
 
     @staticmethod
     def format_authors(authors: str) -> str:
@@ -55,7 +55,7 @@ class DocsHelper:
 
             # typst needs a trailing comma if len(array) == 1, so that it doesn't interpret it as an expression
             # https://typst.app/docs/reference/foundations/array/
-            formatted_authors.append(f"\"{stripped}\",")
+            formatted_authors.append(f'"{stripped}",')
         return "".join(formatted_authors)
 
     @staticmethod
@@ -75,7 +75,9 @@ class DocsHelper:
             ui_text = DocsHelper._escape_square_brackets(pin["ui"])
             uo_text = DocsHelper._escape_square_brackets(pin["uo"])
             uio_text = DocsHelper._escape_square_brackets(pin["uio"])
-            pin_table += f"[`{pin['pin_index']}`], [{ui_text}], [{uo_text}], [{uio_text}],\n"
+            pin_table += (
+                f"[`{pin['pin_index']}`], [{ui_text}], [{uo_text}], [{uio_text}],\n"
+            )
 
         return pin_table
 
@@ -87,7 +89,9 @@ class DocsHelper:
         pin_table = ""
         for pin in pins:
             desc_text = DocsHelper._escape_square_brackets(pin["desc"])
-            pin_table += f"[`{pin['ua_index']}`], [`{pin['analog_index']}`], [{desc_text}],\n"
+            pin_table += (
+                f"[`{pin['ua_index']}`], [`{pin['analog_index']}`], [{desc_text}],\n"
+            )
         return pin_table
 
     @staticmethod
@@ -96,15 +100,20 @@ class DocsHelper:
         Run pandoc to convert a given file to typst
         """
         pandoc_command = [
-            "pandoc", path, "--shift-heading-level-by=-1",
-            "-f", "markdown-auto_identifiers", "-t", "typst",
-            "--columns=120"
+            "pandoc",
+            path,
+            "--shift-heading-level-by=-1",
+            "-f",
+            "markdown-auto_identifiers",
+            "-t",
+            "typst",
+            "--columns=120",
         ]
         logging.info(pandoc_command)
 
         result = subprocess.run(pandoc_command, capture_output=True)
 
-        if result.stderr != b'':
+        if result.stderr != b"":
             logging.warning(result.stderr.decode())
 
         return result.stdout.decode()
@@ -137,7 +146,7 @@ class DocsHelper:
             "macro": index_info["macro"],
             "is_analog": len(index_info["analog_pins"]) > 0,
             "is_wokwi": True if "wokwi_id" in yaml_info["project"] else False,
-            "type": "project"
+            "type": "project",
         }
 
         if info["is_wokwi"]:
@@ -150,10 +159,13 @@ class DocsHelper:
                     "ui": index_info["pinout"][f"ui[{i}]"],
                     "uo": index_info["pinout"][f"uo[{i}]"],
                     "uio": index_info["pinout"][f"uio[{i}]"],
-                } for i in range(8)
+                }
+                for i in range(8)
             ]
         except KeyError as e:
-            logging.info(f"project is missing a pin entry ({e}), falling back to info.yaml (is this a subtile?)")
+            logging.info(
+                f"project is missing a pin entry ({e}), falling back to info.yaml (is this a subtile?)"
+            )
 
             info["pins"] = [
                 {
@@ -161,7 +173,8 @@ class DocsHelper:
                     "ui": yaml_info["pinout"][f"ui[{i}]"],
                     "uo": yaml_info["pinout"][f"uo[{i}]"],
                     "uio": yaml_info["pinout"][f"uio[{i}]"],
-                } for i in range(8)
+                }
+                for i in range(8)
             ]
 
         if info["is_analog"]:
@@ -170,7 +183,8 @@ class DocsHelper:
                     "ua_index": str(i),
                     "analog_index": index_info["analog_pins"][i],
                     "desc": index_info["pinout"][f"ua[{i}]"],
-                } for i in range(len(index_info["analog_pins"]))
+                }
+                for i in range(len(index_info["analog_pins"]))
             ]
 
         if "type" in index_info:
@@ -189,10 +203,14 @@ class DocsHelper:
             with open(path, "w") as f:
                 f.write(chevron.render(template, content))
         except FileNotFoundError:
-            logging.warning(f"unable to write to {path}... the project exists in tapeout index, but not in local directory? skipping")
+            logging.warning(
+                f"unable to write to {path}... the project exists in tapeout index, but not in local directory? skipping"
+            )
 
     @staticmethod
-    def populate_template_tags(info: dict, danger_info: dict, docs: str, template_version="1.0.0") -> dict:
+    def populate_template_tags(
+        info: dict, danger_info: dict, docs: str, template_version="1.0.0"
+    ) -> dict:
         """
         Populate the required template fields given information about the project and its danger level
         """
@@ -204,7 +222,9 @@ class DocsHelper:
             "project-description": info["description"],
             "project-address": DocsHelper.pretty_address(info["address"]),
             "project-clock": DocsHelper.pretty_clock(info["clock_hz"]),
-            "project-type": DocsHelper.get_project_type(info["language"], info["is_wokwi"], info["is_analog"]),
+            "project-type": DocsHelper.get_project_type(
+                info["language"], info["is_wokwi"], info["is_analog"]
+            ),
             "project-doc-body": docs,
             "digital-pins": DocsHelper.format_digital_pins(info["pins"]),
         }
@@ -215,7 +235,9 @@ class DocsHelper:
             content["project-danger-reason"] = danger_info[info["macro"]]["reason"]
 
         if info["type"] == "subtile":
-            content["project-address"] = DocsHelper.pretty_address(info["address"], info["subtile_addr"])
+            content["project-address"] = DocsHelper.pretty_address(
+                info["address"], info["subtile_addr"]
+            )
 
         if info["is_wokwi"]:
             content["is-wokwi"] = True
