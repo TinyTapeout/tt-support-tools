@@ -59,11 +59,11 @@ class DocsHelper:
         return "".join(formatted_authors)
 
     @staticmethod
-    def _escape_square_brackets(text: str) -> str:
+    def _escape_characters_in_content(text: str) -> str:
         """
-        Helper function to escape square brackets in strings
+        Helper function to escape certain characters in content blocks
         """
-        return text.replace("[", "\\[").replace("]", "\\]")
+        return text.replace("[", "\\[").replace("]", "\\]").replace("/", "\\/")
 
     @staticmethod
     def format_digital_pins(pins: dict) -> str:
@@ -72,9 +72,9 @@ class DocsHelper:
         """
         pin_table = ""
         for pin in pins:
-            ui_text = DocsHelper._escape_square_brackets(pin["ui"])
-            uo_text = DocsHelper._escape_square_brackets(pin["uo"])
-            uio_text = DocsHelper._escape_square_brackets(pin["uio"])
+            ui_text = DocsHelper._escape_characters_in_content(pin["ui"])
+            uo_text = DocsHelper._escape_characters_in_content(pin["uo"])
+            uio_text = DocsHelper._escape_characters_in_content(pin["uio"])
             pin_table += (
                 f"[`{pin['pin_index']}`], [{ui_text}], [{uo_text}], [{uio_text}],\n"
             )
@@ -88,7 +88,7 @@ class DocsHelper:
         """
         pin_table = ""
         for pin in pins:
-            desc_text = DocsHelper._escape_square_brackets(pin["desc"])
+            desc_text = DocsHelper._escape_characters_in_content(pin["desc"])
             pin_table += (
                 f"[`{pin['ua_index']}`], [`{pin['analog_index']}`], [{desc_text}],\n"
             )
