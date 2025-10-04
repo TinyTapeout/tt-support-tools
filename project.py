@@ -762,8 +762,6 @@ class Project:
             project_template = f.read()
 
         result = DocsHelper.get_docs_as_typst(os.path.join(self.local_dir, "docs/info.md"))
-        if result.stderr != b'':
-            logging.warning(result.stderr.decode())
 
         content = {
             "template-version": template_version,
@@ -774,7 +772,7 @@ class Project:
             "project-address": "----",
             "project-clock": DocsHelper.pretty_clock(self.info.clock_hz),
             "project-type": DocsHelper.get_project_type(template_args["language"], self.is_wokwi(), template_args["is_analog"]),
-            "project-doc-body": result.stdout.decode(),
+            "project-doc-body": result,
             "digital-pins": DocsHelper.format_digital_pins(template_args["pins"]),
         }
 
