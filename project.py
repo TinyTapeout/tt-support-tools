@@ -766,7 +766,7 @@ class Project:
         content = {
             "template-version": template_version,
             "project-title": template_args["title"].replace('"', '\\"'),
-            "project-author": f"({DocsHelper.format_authors(template_args["author"])})",
+            "project-author": f"({DocsHelper.format_authors(template_args['author'])})",
             "project-repo-link": "placeholder git repo link",
             "project-description": template_args["description"],
             "project-address": "----",
@@ -783,7 +783,7 @@ class Project:
         if template_args["is_analog"]:
             content["is-analog"] = True
             content["analog-pins"] = DocsHelper.format_analog_pins(template_args["analog_pins"])
-        
+
         with open(os.path.abspath(f"./docs/doc.typ"), "w") as f:
             logging.info("writing datasheet to ./docs/doc.typ")
             f.write(chevron.render(project_template, content))

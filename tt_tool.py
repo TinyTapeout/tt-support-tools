@@ -93,9 +93,9 @@ if __name__ == "__main__":
         const=True
     )
     parser.add_argument(
-        "--template-version", 
-        help="set typst template version (default 1.0.0)", 
-        default="1.0.0", 
+        "--template-version",
+        help="set typst template version (default 1.0.0)",
+        default="1.0.0",
         nargs="?"
     )
     parser.add_argument(
