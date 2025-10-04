@@ -193,15 +193,14 @@ class Docs:
             tapeout_index = map(DocsHelper.normalise_project_info, self.projects)
 
         datasheet_content_config = None
-        if datasheet_content_config_path is None and not os.path.isfile(
-            datasheet_content_config_path
-        ):
-            raise FileNotFoundError(
-                "unable to find datasheet content config at given path"
-            )
-        elif datasheet_content_config_path is not None:
-            with open(os.path.abspath(datasheet_content_config_path), "r") as f:
-                datasheet_content_config = json.load(f)
+        if datasheet_content_config_path is not None:
+            if not os.path.isfile(datasheet_content_config_path):
+                raise FileNotFoundError(
+                    "unable to find datasheet content config at given path"
+                )
+            else:
+                with open(os.path.abspath(datasheet_content_config_path), "r") as f:
+                    datasheet_content_config = json.load(f)
 
         if not os.path.isfile("datasheet.typ"):
             raise FileNotFoundError(
