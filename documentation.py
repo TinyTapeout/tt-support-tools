@@ -2,8 +2,7 @@ import json
 import logging
 import math
 import os
-import subprocess
-from typing import List, Optional
+from typing import List
 
 import chevron
 import frontmatter  # type: ignore
@@ -65,101 +64,6 @@ class Docs:
             return frontmatter.dumps(doc) + "\n"
         else:
             return doc.content + "\n"
-
-    def write_datasheet(self, markdown_file: str, pdf_file: Optional[str] = None):
-        doc_header = self.load_doc_template("doc_header.md.mustache")
-        doc_chip_map = self.load_doc_template("../../docs/chip_map.md")
-        doc_template = self.load_doc_template("doc_template.md.mustache")
-        doc_pinout = self.load_doc_template("PINOUT.md")
-        doc_info = self.load_doc_template("../../tt-multiplexer/docs/INFO.md")
-        doc_credits = self.load_doc_template("CREDITS.md")
-
-        with open(markdown_file, "w") as fh:
-            repo = git.Repo(".")
-            fh.write(
-                chevron.render(
-                    doc_header,
-                    {
-                        "name": self.config["name"],
-                        "repo": get_first_remote(repo),
-                    },
-                )
-            )
-            fh.write(doc_chip_map)
-            fh.write("# Projects\n")
-
-            self.projects.sort(key=lambda x: x.mux_address)
-
-            for project in self.projects:
-                yaml_data = project.get_project_docs_dict()
-                analog_pins = project.info.analog_pins
-                yaml_data.update(
-                    {
-                        "user_docs": rewrite_image_paths(
-                            yaml_data["user_docs"],
-                            f"projects/{project.get_macro_name()}/docs",
-                        ),
-                        "mux_address": project.mux_address,
-                        "pins": [
-                            {
-                                "pin_index": str(i),
-                                "ui": project.info.pinout.ui[i],
-                                "uo": project.info.pinout.uo[i],
-                                "uio": project.info.pinout.uio[i],
-                            }
-                            for i in range(8)
-                        ],
-                        "analog_pins": [
-                            {
-                                "ua_index": str(i),
-                                "analog_index": str(project.analog_pins[i]),
-                                "desc": desc,
-                            }
-                            for i, desc in enumerate(
-                                project.info.pinout.ua[:analog_pins]
-                            )
-                        ],
-                        "is_analog": analog_pins > 0,
-                    }
-                )
-
-                logging.info(f"building datasheet for {project}")
-
-                # ensure that optional fields are set
-                for key in [
-                    "author",
-                    "description",
-                    "clock_hz",
-                    "git_url",
-                    "doc_link",
-                ]:
-                    if key not in yaml_data:
-                        yaml_data[key] = ""
-
-                # now build the doc & print it
-                try:
-                    doc = chevron.render(doc_template, yaml_data)
-                    fh.write(doc)
-                    fh.write("\n```{=latex}\n\\clearpage\n```\n")
-                except IndexError:
-                    logging.warning("missing pins in info.yaml, skipping")
-
-            # ending
-            fh.write(doc_pinout)
-            fh.write("\n```{=latex}\n\\clearpage\n```\n")
-            fh.write(doc_info)
-            fh.write("\n```{=latex}\n\\clearpage\n```\n")
-            fh.write(doc_credits)
-
-        logging.info(f"wrote markdown to {markdown_file}")
-
-        if pdf_file is not None:
-            pdf_cmd = f"pandoc --toc --toc-depth 2 --pdf-engine=xelatex -i {markdown_file} -o {pdf_file} --from gfm+raw_attribute+smart+attributes"
-            logging.info(pdf_cmd)
-            p = subprocess.run(pdf_cmd, shell=True)
-            if p.returncode != 0:
-                logging.error("pdf generation failed")
-                raise RuntimeError(f"pdf generation failed with code {p.returncode}")
 
     def build_datasheet(
         self,

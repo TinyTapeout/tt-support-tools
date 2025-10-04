@@ -272,10 +272,6 @@ if __name__ == "__main__":
         "--dump-json", help="dump json of all project data to given file"
     )
     parser.add_argument(
-        "--dump-markdown", help="dump markdown of all project data to given file"
-    )
-    parser.add_argument("--dump-pdf", help="create pdf from the markdown")
-    parser.add_argument(
         "--metrics", help="print some project metrics", action="store_const", const=True
     )
     parser.add_argument(
@@ -354,10 +350,6 @@ if __name__ == "__main__":
 
     if args.update_image:
         docs.update_image()
-
-    if args.dump_markdown:
-        shuttle.configure_mux()
-        docs.write_datasheet(args.dump_markdown, args.dump_pdf)
 
     if args.build_datasheet:
         shuttle.configure_mux()

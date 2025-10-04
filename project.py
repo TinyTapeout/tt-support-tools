@@ -676,60 +676,6 @@ class Project:
 
         logging.info(f"Bitstream created successfully: {build_dir}/{base_name}.bin")
 
-    # use pandoc to create a single page PDF preview
-    def create_pdf(self):
-        template_args = copy.deepcopy(self.info.__dict__)
-        template_args.update(
-            {
-                "pins": [
-                    {
-                        "pin_index": str(i),
-                        "ui": self.info.pinout.ui[i],
-                        "uo": self.info.pinout.uo[i],
-                        "uio": self.info.pinout.uio[i],
-                    }
-                    for i in range(8)
-                ],
-                "analog_pins": [
-                    {
-                        "ua_index": str(i),
-                        "analog_index": "?",
-                        "desc": desc,
-                    }
-                    for i, desc in enumerate(self.info.pinout.ua)
-                ],
-                "is_analog": self.info.is_analog,
-                "uses_3v3": self.info.uses_3v3,
-            }
-        )
-
-        logging.info("Creating PDF")
-        with open(os.path.join(SCRIPT_DIR, "docs/project_header.md")) as fh:
-            doc_header = fh.read()
-        with open(os.path.join(SCRIPT_DIR, "docs/project_preview.md.mustache")) as fh:
-            doc_template = fh.read()
-        info_md = os.path.join(self.local_dir, "docs/info.md")
-        with open(info_md) as fh:
-            template_args["info"] = fh.read()
-
-        with open("datasheet.md", "w") as fh:
-            fh.write(doc_header)
-
-            # now build the doc & print it
-            try:
-                doc = chevron.render(doc_template, template_args)
-                fh.write(doc)
-                fh.write("\n```{=latex}\n\\pagebreak\n```\n")
-            except IndexError:
-                logging.warning("missing pins in info.yaml, skipping")
-
-        pdf_cmd = "pandoc --pdf-engine=xelatex --resource-path=docs -i datasheet.md -o datasheet.pdf --from gfm+raw_attribute+smart+attributes"
-        logging.info(pdf_cmd)
-        p = subprocess.run(pdf_cmd, shell=True)
-        if p.returncode != 0:
-            logging.error("pdf generation failed")
-            raise RuntimeError(f"pdf generation failed with code {p.returncode}")
-
     def create_project_datasheet(self, template_version: str):
         template_args = copy.deepcopy(self.info.__dict__)
         template_args.update(
