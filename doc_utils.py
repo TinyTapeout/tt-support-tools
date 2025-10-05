@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import subprocess
 from typing import Optional
@@ -285,3 +286,119 @@ class DocsHelper:
             content["project-wokwi-id"] = info["wokwi_id"]
 
         return content
+
+    @staticmethod
+    def configure_datasheet(
+        shuttle_config: dict, datasheet_template: str, template_version: str = "1.0.0"
+    ) -> None:
+        """
+        Prepare the datasheet.typ file with info from `config.yaml`
+
+        The following keys can be used to configure the datasheet:
+        - `pinout`: set what pinout table is shown in multiplexer chapter (caravel or openframe)
+        - `theme_override_colour`: set a custom colour for the datasheet (rgb object)
+        - `show_chip_viewer`*: toggle the chip viewer QR code (boolean)
+        - `link_disable_colour`: disable link colouring (boolean)
+        - `link_override_colour`: set a custom link colour (rgb object)
+        - `qrcode_follows_theme`: colour template-generated QR codes with the main theme colour (boolean)
+        - `include`*: a list of additional `.typ` files to include - they are copied into the body of `datasheet.typ`
+
+        The keys correspond to the arguments available in the template, except those marked with an asterisk.
+
+        Example usage (in `config.yaml`):
+        ```yaml
+        datasheet_config:
+            pinout: caravel
+            theme_override_colour: tt.colours.THEME_TT06_PINK
+            link_override_colour: rgb("#a5415c")
+            include:
+                - doc/chip_map.typ
+                - doc/funding.typ
+        ```
+
+        There are other keys which are *not* used to configure the datasheet, but instead control the content of it:
+        - `disabled`: a list of projects which are excluded from the datasheet, mainly due to compilation issues
+        - `artwork`: a list of key pairs that specify which artwork is added in the projects section (order sensitive)
+
+        The `artwork` key pairs consist of an `ID` and a `rotate` value that specify which image to use and its rotation:
+        ```yaml
+        datasheet_config:
+            disabled:
+                - tt_um_project_1
+                - tt_um_project_2
+            artwork:
+                - {id: photo1, rotate: 90deg}
+                - {id: photo2, rotate: -90deg}
+        ```
+        """
+        logging.info("configuring datasheet.typ")
+        content = {
+            "template-version": template_version,
+            # the template already prefixes "Tiny Tapeout" to shuttle name, so remove it here
+            "shuttle-pretty-name": shuttle_config["name"].replace("Tiny Tapeout ", ""),
+            "shuttle-id": shuttle_config["id"],
+            "if-chip-viewer": True,
+            # themeing
+            "qrcode-follows-theme": "false",
+            "link-disable-colour": "false",
+        }
+
+        # get repo link
+        git_repo_link_cmd = ["git", "config", "--get", "remote.origin.url"]
+        logging.info(git_repo_link_cmd)
+        result = subprocess.run(git_repo_link_cmd, capture_output=True)
+        git_repo_link = result.stdout.decode().strip()
+        content["repo-link"] = git_repo_link
+
+        if "datasheet_config" in shuttle_config:
+            datasheet_config = shuttle_config["datasheet_config"]
+
+            if datasheet_config is None:
+                logging.warning(
+                    "datasheet config specified in config.yaml but has no entries"
+                )
+            else:
+
+                if "pinout" in datasheet_config:
+                    content["if-pinout"] = True
+                    content["pinout"] = shuttle_config["datasheet_config"]["pinout"]
+
+                if "theme_override_colour" in datasheet_config:
+                    content["if-theme-override-colour"] = True
+                    content["theme-override-colour"] = datasheet_config[
+                        "theme_override_colour"
+                    ]
+
+                if "show_chip_viewer" in datasheet_config:
+                    content["if-chip-viewer"] = datasheet_config["show_chip_viewer"]
+
+                if "link_disable_colour" in datasheet_config:
+                    # convert to string and lowercase because python "False" != typst "false"
+                    content["link-disable-colour"] = str(
+                        datasheet_config["link_disable_colour"]
+                    ).lower()
+
+                if "link_override_colour" in datasheet_config:
+                    content["if-link-override-colour"] = True
+                    content["link-override-colour"] = datasheet_config[
+                        "link_override_colour"
+                    ]
+
+                if "qrcode_follows_theme" in datasheet_config:
+                    content["qrcode-follows-theme"] = str(
+                        datasheet_config["qrcode_follows_theme"]
+                    ).lower()
+
+                if "include" in datasheet_config:
+                    doc_body = []
+                    for path in datasheet_config["include"]:
+                        logging.info(f"including {os.path.abspath(path)}")
+
+                        with open(os.path.abspath(path)) as f:
+                            doc_body.append(f.read())
+
+                    content["datasheet-body"] = "\n".join(doc_body)
+
+        with open("datasheet.typ", "w") as f:
+            logging.info("writing datasheet.typ")
+            f.write(chevron.render(datasheet_template, content))

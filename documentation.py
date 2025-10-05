@@ -106,10 +106,12 @@ class Docs:
                 with open(os.path.abspath(datasheet_content_config_path), "r") as f:
                     datasheet_content_config = json.load(f)
 
-        if not os.path.isfile("datasheet.typ"):
-            raise FileNotFoundError(
-                "datasheet.typ not found in the root, cannot compile datasheet"
-            )
+        with open(os.path.join(self.script_dir, "docs/datasheet.typ.mustache")) as f:
+            datasheet_template = f.read()
+
+        DocsHelper.configure_datasheet(
+            self.config, datasheet_template, template_version
+        )
 
         danger_info = {}
         if not os.path.isfile("./projects/danger_level.yaml"):

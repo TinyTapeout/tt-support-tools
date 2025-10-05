@@ -1,0 +1,31 @@
+#import "@local/tt-datasheet:{{template-version}}" as tt
+
+#show: tt.datasheet.with(
+    shuttle: "{{&shuttle-pretty-name}}",
+    repo-link: "{{&repo-link}}",
+    theme: "bold",
+    
+    {{#if-theme-override-colour}}
+    theme-override-colour: {{&theme-override-colour}},
+    {{/if-theme-override-colour}}
+    
+    projects: include "datasheet_manifest.typ",
+    
+    {{#if-pinout}}
+    show-pinouts: "{{&pinout}}",
+    {{/if-pinout}}
+    
+    {{#if-chip-viewer}}
+    chip-viewer-link: "https://tinytapeout.com/decap/{{shuttle-id}}",
+    {{/if-chip-viewer}}
+    
+    link-disable-colour: {{link-disable-colour}},
+
+    {{#if-link-override-colour}}
+    link-override-colour: {{&link-override-colour}},
+    {{/if-link-override-colour}}
+
+    qrcode-follows-theme: {{qrcode-follows-theme}},
+)
+
+{{&datasheet-body}}
