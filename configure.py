@@ -282,9 +282,6 @@ if __name__ == "__main__":
     )
     parser.add_argument("--doc-tapeout-index", help="path to json tapeout index")
     parser.add_argument(
-        "--doc-content-config", help="path to json to configure datasheet content"
-    )
-    parser.add_argument(
         "--template-version",
         help="set typst template version (default 1.0.0)",
         default="1.0.0",
@@ -353,6 +350,4 @@ if __name__ == "__main__":
 
     if args.build_datasheet:
         shuttle.configure_mux()
-        docs.build_datasheet(
-            args.template_version, args.doc_tapeout_index, args.doc_content_config
-        )
+        docs.build_datasheet(args.template_version, args.doc_tapeout_index)

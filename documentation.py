@@ -69,15 +69,8 @@ class Docs:
         self,
         template_version: str,
         tapeout_index_path: str,
-        datasheet_content_config_path: str,
     ):
         logging.info(f"building datasheet with version {template_version}")
-        logging.info(
-            f"tapeout index available? {True if tapeout_index_path is not None else False}"
-        )
-        logging.info(
-            f"content config available? {True if datasheet_content_config_path is not None else False}"
-        )
 
         tapeout_index = None
         # if given a path but the file doesn't exist
@@ -97,14 +90,9 @@ class Docs:
             tapeout_index = map(DocsHelper.normalise_project_info, self.projects)
 
         datasheet_content_config = None
-        if datasheet_content_config_path is not None:
-            if not os.path.isfile(datasheet_content_config_path):
-                raise FileNotFoundError(
-                    "unable to find datasheet content config at given path"
-                )
-            else:
-                with open(os.path.abspath(datasheet_content_config_path), "r") as f:
-                    datasheet_content_config = json.load(f)
+        if "datasheet_config" in self.config:
+            logging.info("using datasheet config in config.yaml")
+            datasheet_content_config = self.config["datasheet_config"]
 
         with open(os.path.join(self.script_dir, "docs/datasheet.typ.mustache")) as f:
             datasheet_template = f.read()
@@ -195,16 +183,17 @@ class Docs:
                 )
 
                 # add group doc to manifest
+                include_str = f'#include "{group_typ_path}"\n'
                 if (
                     datasheet_content_config is not None
-                    and info["macro"] in datasheet_content_config["disabled"]
+                    and "disabled" in datasheet_content_config
                 ):
-                    logging.warning(
-                        f"datasheet disabled for [{info['address']} : {info['git_url']}"
-                    )
-                    datasheet_manifest.append(f'// #include "{group_typ_path}"\n')
-                else:
-                    datasheet_manifest.append(f'#include "{group_typ_path}"\n')
+                    if info["macro"] in datasheet_content_config["disabled"]:
+                        logging.warning(
+                            f"datasheet disabled for [{info['address']} : {info['git_url']}"
+                        )
+                        include_str = "// " + include_str
+                datasheet_manifest.append(include_str)
 
                 # write subtile doc
                 for _, subtile_info in temp_subtile_projects.items():
@@ -224,17 +213,20 @@ class Docs:
                     )
 
                     # add subtile doc to manifest
+                    include_str = f'#include "{typ_path}"\n'
                     if (
                         datasheet_content_config is not None
-                        and subtile_info["macro"]
-                        in datasheet_content_config["disabled"]
+                        and "disabled" in datasheet_content_config
                     ):
-                        logging.warning(
-                            f"datasheet disabled for [{subtile_info['address']} : {subtile_info['git_url']}"
-                        )
-                        datasheet_manifest.append(f'// #include "{typ_path}"\n')
-                    else:
-                        datasheet_manifest.append(f'#include "{typ_path}"\n')
+                        if (
+                            subtile_info["macro"]
+                            in datasheet_content_config["disabled"]
+                        ):
+                            logging.warning(
+                                f"datasheet disabled for [{subtile_info['address']} : {subtile_info['git_url']}"
+                            )
+                            include_str = "// " + include_str
+                    datasheet_manifest.append(include_str)
 
                 # clear subtiles for next group
                 temp_subtile_projects = {}
@@ -255,16 +247,17 @@ class Docs:
                 )
 
                 # add project doc to manifest
+                include_str = f'#include "{project_typ_path}"\n'
                 if (
                     datasheet_content_config is not None
-                    and info["macro"] in datasheet_content_config["disabled"]
+                    and "disabled" in datasheet_content_config
                 ):
-                    logging.warning(
-                        f"datasheet disabled for [{info['address']} : {info['git_url']}"
-                    )
-                    datasheet_manifest.append(f'// #include "{project_typ_path}"\n')
-                else:
-                    datasheet_manifest.append(f'#include "{project_typ_path}"\n')
+                    if info["macro"] in datasheet_content_config["disabled"]:
+                        logging.warning(
+                            f"datasheet disabled for [{info['address']} : {info['git_url']}"
+                        )
+                        include_str = "// " + include_str
+                datasheet_manifest.append(include_str)
 
             else:
                 logging.error(f"unhandled project type! what is \"{info['type']}\"?")
