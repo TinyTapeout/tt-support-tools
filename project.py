@@ -297,7 +297,14 @@ class Project:
 
     def get_tt_tools_version(self):
         repo = Repo(os.path.join(self.local_dir, "tt"))
-        return f"{repo.active_branch.name} {repo.commit().hexsha[:8]}"
+        if repo.head.is_detached:
+            ref = next(
+                (ref.name for ref in repo.refs if ref.commit == repo.head.commit),
+                "(detached)",
+            )
+        else:
+            ref = repo.active_branch.name
+        return f"{ref} {repo.commit().hexsha[:8]}"
 
     def read_commit_info_json(self) -> typing.Dict[str, typing.Any]:
         json_file = os.path.join(self.local_dir, "commit_id.json")
