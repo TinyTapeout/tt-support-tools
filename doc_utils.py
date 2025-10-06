@@ -7,6 +7,8 @@ from typing import Optional
 import chevron
 import matplotlib as mpl
 
+from config import Config
+
 
 class DocsHelper:
     @staticmethod
@@ -289,7 +291,7 @@ class DocsHelper:
 
     @staticmethod
     def configure_datasheet(
-        shuttle_config: dict, datasheet_template: str, template_version: str = "1.0.0"
+        shuttle_config: Config, datasheet_template: str, template_version: str = "1.0.0"
     ) -> None:
         """
         Prepare the datasheet.typ file with info from `config.yaml`
