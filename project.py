@@ -715,7 +715,7 @@ class Project:
             "template-version": template_version,
             "project-title": template_args["title"].replace('"', '\\"'),
             "project-author": f"({DocsHelper.format_authors(template_args['author'])})",
-            "project-repo-link": "placeholder git repo link",
+            "project-repo-link": self.get_git_remote(),
             "project-description": template_args["description"],
             "project-address": "----",
             "project-clock": DocsHelper.pretty_clock(self.info.clock_hz),
