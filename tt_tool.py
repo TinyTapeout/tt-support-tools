@@ -81,7 +81,7 @@ if __name__ == "__main__":
         const=True,
     )
     parser.add_argument(
-        "--create-project-datasheet",
+        "--create-pdf",
         help="create a datasheet for the current project",
         action="store_const",
         const=True,
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     if args.open_in_openroad:
         project.run_custom_librelane_flow("OpenInOpenROAD")
 
-    if args.create_project_datasheet:
+    if args.create_pdf:
         project.create_project_datasheet(args.template_version)
 
     if args.create_png:
