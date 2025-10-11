@@ -336,9 +336,8 @@ class DocsHelper:
         logging.info("configuring datasheet.typ")
         content = {
             "template_version": template_version,
-            # the template already prefixes "Tiny Tapeout" to shuttle name, so remove it here
-            "shuttle_pretty_name": shuttle_config["name"].replace("Tiny Tapeout ", ""),
-            "shuttle_id": shuttle_config["id"],
+            "shuttle_name": shuttle_config["name"],
+            "shuttle_id": shuttle_config["id"].upper(),
             "if_chip_viewer": True,
             # themeing
             "qrcode_follows_theme": "false",
