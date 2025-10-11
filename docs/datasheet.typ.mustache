@@ -1,31 +1,31 @@
-#import "@local/tt-datasheet:{{template-version}}" as tt
+#import "@local/tt-datasheet:{{template_version}}" as tt
 
 #show: tt.datasheet.with(
-    shuttle: "{{&shuttle-pretty-name}}",
-    repo-link: "{{&repo-link}}",
+    shuttle: "{{&shuttle_pretty_name}}",
+    repo_link: "{{&repo_link}}",
     theme: "bold",
     
-    {{#if-theme-override-colour}}
-    theme-override-colour: {{&theme-override-colour}},
-    {{/if-theme-override-colour}}
+    {{#if_theme_override_colour}}
+    theme_override_colour: {{&theme_override_colour}},
+    {{/if_theme_override_colour}}
     
     projects: include "datasheet_manifest.typ",
     
-    {{#if-pinout}}
-    show-pinouts: "{{&pinout}}",
-    {{/if-pinout}}
+    {{#if_pinout}}
+    show_pinouts: "{{&pinout}}",
+    {{/if_pinout}}
     
-    {{#if-chip-viewer}}
-    chip-viewer-link: "https://tinytapeout.com/decap/{{shuttle-id}}",
-    {{/if-chip-viewer}}
+    {{#if_chip_viewer}}
+    chip_viewer_link: "https://tinytapeout.com/decap/{{shuttle_id}}",
+    {{/if_chip_viewer}}
     
-    link-disable-colour: {{link-disable-colour}},
+    link_disable_colour: {{link_disable_colour}},
 
-    {{#if-link-override-colour}}
-    link-override-colour: {{&link-override-colour}},
-    {{/if-link-override-colour}}
+    {{#if_link_override_colour}}
+    link_override_colour: {{&link_override_colour}},
+    {{/if_link_override_colour}}
 
-    qrcode-follows-theme: {{qrcode-follows-theme}},
+    qrcode_follows_theme: {{qrcode_follows_theme}},
 )
 
-{{&datasheet-body}}
+{{&datasheet_body}}

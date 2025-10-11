@@ -259,33 +259,33 @@ class DocsHelper:
         Populate the required template fields given information about the project and its danger level
         """
         content = {
-            "template-version": template_version,
-            "project-title": info["title"].replace('"', '\\"'),
-            "project-author": f"({DocsHelper.format_authors(info['author'])})",
-            "project-repo-link": info["git_url"],
-            "project-description": info["description"],
-            "project-address": DocsHelper.pretty_address(info["address"]),
-            "project-clock": DocsHelper.pretty_clock(info["clock_hz"]),
-            "project-type": DocsHelper.get_project_type(
+            "template_version": template_version,
+            "project_title": info["title"].replace('"', '\\"'),
+            "project_author": f"({DocsHelper.format_authors(info['author'])})",
+            "project_repo_link": info["git_url"],
+            "project_description": info["description"],
+            "project_address": DocsHelper.pretty_address(info["address"]),
+            "project_clock": DocsHelper.pretty_clock(info["clock_hz"]),
+            "project_type": DocsHelper.get_project_type(
                 info["language"], info["is_wokwi"], info["is_analog"]
             ),
-            "project-doc-body": docs,
-            "digital-pins": DocsHelper.format_digital_pins(info["pins"]),
+            "project_doc_body": docs,
+            "digital_pins": DocsHelper.format_digital_pins(info["pins"]),
         }
 
         if info["macro"] in danger_info:
-            content["is-dangerous"] = True
-            content["project-danger-level"] = danger_info[info["macro"]]["level"]
-            content["project-danger-reason"] = danger_info[info["macro"]]["reason"]
+            content["is_dangerous"] = True
+            content["project_danger_level"] = danger_info[info["macro"]]["level"]
+            content["project_danger_reason"] = danger_info[info["macro"]]["reason"]
 
         if info["type"] == "subtile":
-            content["project-address"] = DocsHelper.pretty_address(
+            content["project_address"] = DocsHelper.pretty_address(
                 info["address"], info["subtile_addr"]
             )
 
         if info["is_wokwi"]:
-            content["is-wokwi"] = True
-            content["project-wokwi-id"] = info["wokwi_id"]
+            content["is_wokwi"] = True
+            content["project_wokwi_id"] = info["wokwi_id"]
 
         return content
 
@@ -335,14 +335,14 @@ class DocsHelper:
         """
         logging.info("configuring datasheet.typ")
         content = {
-            "template-version": template_version,
+            "template_version": template_version,
             # the template already prefixes "Tiny Tapeout" to shuttle name, so remove it here
-            "shuttle-pretty-name": shuttle_config["name"].replace("Tiny Tapeout ", ""),
-            "shuttle-id": shuttle_config["id"],
-            "if-chip-viewer": True,
+            "shuttle_pretty_name": shuttle_config["name"].replace("Tiny Tapeout ", ""),
+            "shuttle_id": shuttle_config["id"],
+            "if_chip_viewer": True,
             # themeing
-            "qrcode-follows-theme": "false",
-            "link-disable-colour": "false",
+            "qrcode_follows_theme": "false",
+            "link_disable_colour": "false",
         }
 
         # get repo link
@@ -350,7 +350,7 @@ class DocsHelper:
         logging.info(git_repo_link_cmd)
         result = subprocess.run(git_repo_link_cmd, capture_output=True)
         git_repo_link = result.stdout.decode().strip()
-        content["repo-link"] = git_repo_link
+        content["repo_link"] = git_repo_link
 
         if "datasheet_config" in shuttle_config:
             datasheet_config = shuttle_config["datasheet_config"]
@@ -362,32 +362,32 @@ class DocsHelper:
             else:
 
                 if "pinout" in datasheet_config:
-                    content["if-pinout"] = True
+                    content["if_pinout"] = True
                     content["pinout"] = shuttle_config["datasheet_config"]["pinout"]
 
                 if "theme_override_colour" in datasheet_config:
-                    content["if-theme-override-colour"] = True
-                    content["theme-override-colour"] = datasheet_config[
+                    content["if_theme_override_colour"] = True
+                    content["theme_override_colour"] = datasheet_config[
                         "theme_override_colour"
                     ]
 
                 if "show_chip_viewer" in datasheet_config:
-                    content["if-chip-viewer"] = datasheet_config["show_chip_viewer"]
+                    content["if_chip_viewer"] = datasheet_config["show_chip_viewer"]
 
                 if "link_disable_colour" in datasheet_config:
                     # convert to string and lowercase because python "False" != typst "false"
-                    content["link-disable-colour"] = str(
+                    content["link_disable_colour"] = str(
                         datasheet_config["link_disable_colour"]
                     ).lower()
 
                 if "link_override_colour" in datasheet_config:
-                    content["if-link-override-colour"] = True
-                    content["link-override-colour"] = datasheet_config[
+                    content["if_link_override_colour"] = True
+                    content["link_override_colour"] = datasheet_config[
                         "link_override_colour"
                     ]
 
                 if "qrcode_follows_theme" in datasheet_config:
-                    content["qrcode-follows-theme"] = str(
+                    content["qrcode_follows_theme"] = str(
                         datasheet_config["qrcode_follows_theme"]
                     ).lower()
 
@@ -399,7 +399,7 @@ class DocsHelper:
                         with open(os.path.abspath(path)) as f:
                             doc_body.append(f.read())
 
-                    content["datasheet-body"] = "\n".join(doc_body)
+                    content["datasheet_body"] = "\n".join(doc_body)
 
         with open("datasheet.typ", "w") as f:
             logging.info("writing datasheet.typ")

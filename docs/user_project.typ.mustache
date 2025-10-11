@@ -1,23 +1,23 @@
-#import "@local/tt-datasheet:{{template-version}}" as tt
+#import "@local/tt-datasheet:{{template_version}}" as tt
 
 #show: tt.project.with(
-    title: "{{&project-title}}",
-    author: {{&project-author}},
-    repo-link: "{{project-repo-link}}",
-    description: "{{&project-description}}",
-    address: "{{&project-address}}",
-    clock: "{{project-clock}}",
-    type: "{{project-type}}",
-    {{#is-wokwi}}
-    wokwi-id: "{{project-wokwi-id}}",
-    {{/is-wokwi}}
-    {{#is-dangerous}}
-    danger-level: "{{project-danger-level}}",
-    danger-reason: "{{project-danger-reason}}",
-    {{/is-dangerous}}
+    title: "{{&project_title}}",
+    author: {{&project_author}},
+    repo_link: "{{project_repo_link}}",
+    description: "{{&project_description}}",
+    address: "{{&project_address}}",
+    clock: "{{project_clock}}",
+    type: "{{project_type}}",
+    {{#is_wokwi}}
+    wokwi_id: "{{project_wokwi_id}}",
+    {{/is_wokwi}}
+    {{#is_dangerous}}
+    danger_level: "{{project_danger_level}}",
+    danger_reason: "{{project_danger_reason}}",
+    {{/is_dangerous}}
 )
 
-{{&project-doc-body}}
+{{&project_doc_body}}
 
 = Project Pinout
 == Digital Pins
@@ -27,10 +27,10 @@
     table.header(
         [\#], [Input], [Output], [Bidirectional]
     ),
-    {{&digital-pins}}
+    {{&digital_pins}}
 )]
 
-{{#is-analog}}
+{{#is_analog}}
 == Analog Pins
 #align(center)[#table(
     columns: 3,
@@ -38,6 +38,6 @@
     table.header(
         [`ua`\#], [`analog`\#], [Description]
     ),
-    {{&analog-pins}}
+    {{&analog_pins}}
 )]
-{{/is-analog}}
+{{/is_analog}}

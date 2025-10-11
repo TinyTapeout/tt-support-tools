@@ -712,27 +712,27 @@ class Project:
         )
 
         content = {
-            "template-version": template_version,
-            "project-title": template_args["title"].replace('"', '\\"'),
-            "project-author": f"({DocsHelper.format_authors(template_args['author'])})",
-            "project-repo-link": self.get_git_remote(),
-            "project-description": template_args["description"],
-            "project-address": "----",
-            "project-clock": DocsHelper.pretty_clock(self.info.clock_hz),
-            "project-type": DocsHelper.get_project_type(
+            "template_version": template_version,
+            "project_title": template_args["title"].replace('"', '\\"'),
+            "project_author": f"({DocsHelper.format_authors(template_args['author'])})",
+            "project_repo_link": self.get_git_remote(),
+            "project_description": template_args["description"],
+            "project_address": "----",
+            "project_clock": DocsHelper.pretty_clock(self.info.clock_hz),
+            "project_type": DocsHelper.get_project_type(
                 template_args["language"], self.is_wokwi(), template_args["is_analog"]
             ),
-            "project-doc-body": result,
-            "digital-pins": DocsHelper.format_digital_pins(template_args["pins"]),
+            "project_doc_body": result,
+            "digital_pins": DocsHelper.format_digital_pins(template_args["pins"]),
         }
 
         if self.is_wokwi():
-            content["is-wokwi"] = True
-            content["project-wokwi-id"] = self.info.wokwi_id
+            content["is_wokwi"] = True
+            content["project_wokwi_id"] = self.info.wokwi_id
 
         if template_args["is_analog"]:
-            content["is-analog"] = True
-            content["analog-pins"] = DocsHelper.format_analog_pins(
+            content["is_analog"] = True
+            content["analog_pins"] = DocsHelper.format_analog_pins(
                 template_args["analog_pins"]
             )
 
