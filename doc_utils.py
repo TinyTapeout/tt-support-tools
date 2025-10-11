@@ -337,7 +337,8 @@ class DocsHelper:
         content = {
             "template_version": template_version,
             "shuttle_name": shuttle_config["name"],
-            "shuttle_id": shuttle_config["id"].upper(),
+            "shuttle_id": shuttle_config["id"],
+            "shuttle_id_upper": shuttle_config["id"].upper(),
             "if_chip_viewer": True,
             # themeing
             "qrcode_follows_theme": "false",
