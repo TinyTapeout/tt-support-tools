@@ -116,7 +116,7 @@ class Docs:
             project_template = f.read()
 
         datasheet_manifest = [
-            f'#import "@local/tt-datasheet:{template_version}" as tt\n'
+            f'#import "/tt/docs/typst/src/tt.typ" as tt\n'
         ]
 
         # handle art
@@ -270,7 +270,7 @@ class Docs:
                     if current_project % insert_art_after == 0:
                         details = datasheet_content_config["artwork"][art_index]
                         datasheet_manifest.append(
-                            f"#tt.art(\"{details['id']}\", rot:{details['rotate']})\n"
+                            f"#tt.datasheet.art(\"{details['id']}\", rot:{details['rotate']})\n"
                         )
                         art_index += 1
 
