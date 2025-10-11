@@ -404,3 +404,22 @@ class DocsHelper:
         with open("datasheet.typ", "w") as f:
             logging.info("writing datasheet.typ")
             f.write(chevron.render(datasheet_template, content))
+
+    @staticmethod
+    def compile(path="datasheet.typ") -> None:
+        typst_cmd = [
+            "typst",
+            "compile",
+            path,
+            "datasheet.pdf",
+            "--root",
+            ".",
+            "--font-path",
+            "./tt/docs/typst/resources/fonts",
+        ]
+        logging.info(typst_cmd)
+        result = subprocess.call(typst_cmd)
+
+        if result != 0:
+            logging.error("running typst returned non-zero exit code")
+            exit(1)

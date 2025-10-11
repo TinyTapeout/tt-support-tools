@@ -115,9 +115,7 @@ class Docs:
         with open(os.path.join(self.script_dir, "docs/user_project.typ.mustache")) as f:
             project_template = f.read()
 
-        datasheet_manifest = [
-            f'#import "/tt/docs/typst/src/tt.typ" as tt\n'
-        ]
+        datasheet_manifest = [f'#import "/tt/docs/typst/src/tt.typ" as tt\n']
 
         # handle art
         current_project = 0
@@ -276,3 +274,5 @@ class Docs:
 
         with open("datasheet_manifest.typ", "w") as f:
             f.writelines(datasheet_manifest)
+
+        DocsHelper.compile()

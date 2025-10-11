@@ -740,6 +740,8 @@ class Project:
             logging.info("writing datasheet to ./docs/doc.typ")
             f.write(chevron.render(project_template, content))
 
+        DocsHelper.compile("./docs/doc.typ")
+
     # Read and return top-level GDS data from the final GDS file, using gdstk:
     def get_final_gds_top_cells(self):
         if "GDS_PATH" in os.environ:
