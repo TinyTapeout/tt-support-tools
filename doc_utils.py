@@ -69,6 +69,17 @@ class DocsHelper:
         return text.replace("[", "\\[").replace("]", "\\]").replace("/", "\\/")
 
     @staticmethod
+    def _escape_characters_in_string(text: str) -> str:
+        """
+        Helper function to escape characters in strings
+
+        - Escapes double quotation mark
+        - Removes newlines, carrige returns
+        """
+
+        return text.replace('"', '\\"').replace("\n", "").replace("\r", "")
+
+    @staticmethod
     def format_digital_pins(pins: dict) -> str:
         """
         Iterate through and create the digital pin table as a string
@@ -260,10 +271,12 @@ class DocsHelper:
         """
         content = {
             "template_version": template_version,
-            "project_title": info["title"].replace('"', '\\"'),
+            "project_title": DocsHelper._escape_characters_in_string(info["title"]),
             "project_author": f"({DocsHelper.format_authors(info['author'])})",
             "project_repo_link": info["git_url"],
-            "project_description": info["description"],
+            "project_description": DocsHelper._escape_characters_in_string(
+                info["description"]
+            ),
             "project_address": DocsHelper.pretty_address(info["address"]),
             "project_clock": DocsHelper.pretty_clock(info["clock_hz"]),
             "project_type": DocsHelper.get_project_type(
