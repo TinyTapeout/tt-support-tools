@@ -66,7 +66,12 @@ class DocsHelper:
         """
         Helper function to escape certain characters in content blocks
         """
-        return text.replace("[", "\\[").replace("]", "\\]").replace("/", "\\/")
+        return (
+            text.replace("[", "\\[")
+            .replace("]", "\\]")
+            .replace("/", "\\/")
+            .replace("#", "\\#")
+        )
 
     @staticmethod
     def _escape_characters_in_string(text: str) -> str:
