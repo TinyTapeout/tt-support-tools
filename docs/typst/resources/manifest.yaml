@@ -1,0 +1,25 @@
+# the root key (i.e. logos, backgrounds, images) is used in resolving the file path
+# that means that folders must exist that are named exactly the same as the root key
+logos:
+  efabless:
+    file: efabless-logo.png
+
+  texplained:
+    file: texplained-hardware-security.jpg
+
+backgrounds:
+  background_texture:
+    file: colourful-background-gds-o10-bw.png
+
+images:
+  mux_controller:
+    file: mux_controller.svg
+
+  mux_diagram:
+    file: mux_diagram.svg
+
+  mux_address_select_waveform:
+    file: mux_select_addr_12.svg
+
+  chip_pinout_qfn64:
+    file: tt-qfn-64.svg
