@@ -212,18 +212,13 @@ class Docs:
 
                     # add subtile doc to manifest
                     include_str = f'#include "{typ_path}"\n'
-                    if (
-                        datasheet_content_config is not None
-                        and "disabled" in datasheet_content_config
+                    if DocsHelper.project_is_disabled(
+                        datasheet_content_config, subtile_info["macro"]
                     ):
-                        if (
-                            subtile_info["macro"]
-                            in datasheet_content_config["disabled"]
-                        ):
-                            logging.warning(
-                                f"datasheet disabled for [{subtile_info['address']} : {subtile_info['git_url']}"
-                            )
-                            include_str = "// " + include_str
+                        logging.warning(
+                            f"datasheet disabled for [{subtile_info['address']} : {subtile_info['git_url']}]"
+                        )
+                        include_str = "// " + include_str
                     datasheet_manifest.append(include_str)
 
                 # clear subtiles for next group
@@ -246,15 +241,13 @@ class Docs:
 
                 # add project doc to manifest
                 include_str = f'#include "{project_typ_path}"\n'
-                if (
-                    datasheet_content_config is not None
-                    and "disabled" in datasheet_content_config
+                if DocsHelper.project_is_disabled(
+                    datasheet_content_config, info["macro"]
                 ):
-                    if info["macro"] in datasheet_content_config["disabled"]:
-                        logging.warning(
-                            f"datasheet disabled for [{info['address']} : {info['git_url']}"
-                        )
-                        include_str = "// " + include_str
+                    logging.warning(
+                        f"datasheet disabled for [{info['address']} : {info['git_url']}]"
+                    )
+                    include_str = "// " + include_str
                 datasheet_manifest.append(include_str)
 
             else:

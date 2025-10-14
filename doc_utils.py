@@ -436,3 +436,12 @@ class DocsHelper:
         if result != 0:
             logging.error("running typst returned non-zero exit code")
             exit(1)
+
+    @staticmethod
+    def project_is_disabled(config: dict, macro: str) -> bool:
+
+        if config is not None:
+            if "disabled" in config and config["disabled"] is not None:
+                return macro in config["disabled"]
+
+        return False
