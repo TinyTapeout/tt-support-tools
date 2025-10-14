@@ -126,7 +126,7 @@ class DocsHelper:
             "gfm-gfm_auto_identifiers",
             "-t",
             "typst-citations",
-            "--columns=120",
+            "--wrap=preserve",
         ]
         logging.info(pandoc_command)
 
