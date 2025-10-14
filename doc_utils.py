@@ -118,9 +118,9 @@ class DocsHelper:
             path,
             "--shift-heading-level-by=-1",
             "-f",
-            "markdown-auto_identifiers",
+            "gfm-gfm_auto_identifiers",
             "-t",
-            "typst",
+            "typst-citations",
             "--columns=120",
         ]
         logging.info(pandoc_command)
