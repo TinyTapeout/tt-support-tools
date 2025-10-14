@@ -7,7 +7,7 @@ from typing import Optional
 import chevron
 import matplotlib as mpl
 
-from config import Config
+from config import Config, DatasheetConfig
 
 
 class DocsHelper:
@@ -443,7 +443,7 @@ class DocsHelper:
             exit(1)
 
     @staticmethod
-    def project_is_disabled(config: dict, macro: str) -> bool:
+    def project_is_disabled(config: DatasheetConfig, macro: str) -> bool:
 
         if config is not None:
             if "disabled" in config and config["disabled"] is not None:
