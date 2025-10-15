@@ -1,3 +1,5 @@
+#import "../src/lib.typ": get_image_by_id
+
 = The Tiny Tapeout Multiplexer
 == Overview
 The Tiny Tapeout Multiplexer distributes a single set of user IOs to multiple user designs. It is the backbone of the 
@@ -36,24 +38,17 @@ For instance, to select the design at address 12, you need to pulse `sel_rst_n` 
 
 #figure(
   caption: [Mux signals for activating the design at address 12],
-
-  align(center)[
-    #image("../resources/images/mux_select_addr_12.svg")
-  ]
+  align(center, get_image_by_id("images", "mux_address_select_waveform"))
 )
 
 #figure(
   caption: [Mux Diagram],
-  align(center)[
-    #image("../resources/images/mux_diagram.svg", height: 55%)
-  ]
+  align(center, get_image_by_id("images", "mux_diagram", height: 55%))
 )
 
 #figure(
   caption: [Mux Controller Diagram],
-  align(center)[
-    #image("../resources/images/mux_controller.png")
-  ]
+  align(center, get_image_by_id("images", "mux_controller"))
 )
 
 Internally, the controller is just a chain of 10 D-flip-flops. The `sel_inc` signal is connected to the clock of the 
