@@ -65,9 +65,9 @@
 
   let logo = box(baseline: 0.25em, {
     if invert_text_colour {
-      image("../resources/logos/tt-logo-white.svg", height: 25%)
+      get_image_by_id("logos", "tt_roundel_white", height: 25%)
     } else {
-      image("../resources/logos/tt-logo-black.svg", height: 25%)
+      get_image_by_id("logos", "tt_roundel_black", height: 25%)
     }
   })
 
@@ -246,7 +246,7 @@
   let pattern = tiling(
     size: (3cm, 3cm),
     spacing: (1cm, 1cm),
-    image("../resources/logos/tt-logo-light-grey.svg")
+    get_image_by_id("logos", "tt_roundel_light_grey")
   )
 
   page(
@@ -309,18 +309,18 @@
 
   // make titlepage
   if theme == "classic" {
-    image("../resources/logos/tt-logo-colourful.png")
+    get_image_by_id("logos", "tt_square_colourful")
     cover_text
 
   } else if theme == "bold" {
     set page(
-      background: image("../resources/backgrounds/colourful-background-gds-o10-bw.png", height: 100%),
+      background: get_image_by_id("backgrounds", "gds_bw_transparent", height: 100%),
       fill: selected_theme_colour
     )
 
     align(
       center + horizon,
-      image("../resources/logos/tt-logo-white.svg", height: 60%)
+      get_image_by_id("logos", "tt_roundel_white", height: 60%)
     )
 
     set text(white)
@@ -329,7 +329,7 @@
   } else if theme == "monochrome" {
     align(
       center + horizon,
-      image("../resources/logos/tt-logo-black.svg", height: 60%)
+      get_image_by_id("logos", "tt_roundel_black", height: 60%)
     )
     cover_text
   }
