@@ -124,29 +124,14 @@
 
   // external manifest is used for artwork repo
   // since large photos would bloat the template size
-  let external_manifest = yaml("../resources/external/manifest.yaml")
-  let local_manifest = yaml("../resources/manifest.yaml")
-  let combined_manifest = (:)
+  let manifest = yaml("../resources/external/manifest.yaml")
 
-  // combine the two
-  for (k, v) in local_manifest.pairs() {
-    combined_manifest.insert(k, v)
+  if type not in manifest {
+    panic("type not in manifest")
   }
 
-  for (k, v) in external_manifest.pairs() {
-    combined_manifest.insert(k, v)
-  }
-
-  if type not in combined_manifest {
-    panic("type not in either local or external manifest")
-  }
-
-  let root_path = "../resources"
-  if type in external_manifest {
-    root_path += "/external"
-  }
-
-  let img_details = combined_manifest.at(type).at(id)
+  let root_path = "../resources/external"
+  let img_details = manifest.at(type).at(id)
 
   // make image
   image(root_path + "/" + type + "/" + img_details.file, ..args)
