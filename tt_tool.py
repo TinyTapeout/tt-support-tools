@@ -73,9 +73,15 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--create-pdf",
-        help="create a single page PDF",
+        help="create a datasheet for the current project",
         action="store_const",
         const=True,
+    )
+    parser.add_argument(
+        "--template-version",
+        help="set typst template version (default 1.0.0)",
+        default="1.0.0",
+        nargs="?",
     )
     parser.add_argument(
         "--create-svg",
@@ -150,7 +156,7 @@ if __name__ == "__main__":
         project.harden()
 
     if args.create_pdf:
-        project.create_pdf()
+        project.create_project_datasheet(args.template_version)
 
     if args.create_png:
         project.create_png()
