@@ -1,0 +1,10 @@
+[package]
+name = "tt-docs"
+version = "1.0.0"
+authors = ["Kristaps Jurkans <kris.jurkans@gmail.com>"]
+license = "Apache-2.0"
+description = "Tiny Tapeout Docs"
+repository = "?"
+keywords = ["TinyTapeout"]
+entrypoint = "src/tt.typ"
+exclude = ["images"]
