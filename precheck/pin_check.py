@@ -112,6 +112,7 @@ def pin_check(
     # parse pins from template def
     # def syntax: https://coriolis.lip6.fr/doc/lefdef/lefdefref/DEFSyntax.html
 
+    units_re = re.compile(r"UNITS DISTANCE MICRONS (\S+) ;")
     diearea_re = re.compile(r"DIEAREA \( (\S+) (\S+) \) \( (\S+) (\S+) \) ;")
     pins_re = re.compile(r"PINS (\d+) ;")
     pin_re = re.compile(r" *- (\S+) \+ NET (\S+) \+ DIRECTION (\S+) \+ USE (\S+)")
@@ -119,20 +120,27 @@ def pin_check(
     placed_re = re.compile(r" *\+ PLACED \( (\S+) (\S+) \) (\S+) ;")
 
     def_pins = {}
+    dbu_per_micron = 0
     die_width = 0
     die_height = 0
 
     with open(template_def) as f:
         for line in f:
-            if line.startswith("DIEAREA "):
+            if line.startswith("UNITS "):
+                match = units_re.match(line)
+                (dbu_per_micron,) = map(int, match.groups())
+            elif line.startswith("DIEAREA "):
                 match = diearea_re.match(line)
                 lx, by, rx, ty = map(int, match.groups())
                 if (lx, by) != (0, 0):
                     raise PrecheckFailure(
                         "Wrong die origin in template DEF, expecting (0, 0)"
                     )
-                die_width = rx
-                die_height = ty
+                assert dbu_per_micron != 0
+                assert (rx * 1000) % dbu_per_micron == 0
+                assert (ty * 1000) % dbu_per_micron == 0
+                die_width = (rx * 1000) // dbu_per_micron
+                die_height = (ty * 1000) // dbu_per_micron
             elif line.startswith("PINS "):
                 match = pins_re.match(line)
                 pin_count = int(match.group(1))
