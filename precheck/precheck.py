@@ -19,6 +19,7 @@ from pin_check import pin_check
 from precheck_failure import PrecheckFailure
 from tech_data import (
     analog_pin_pos,
+    boundary_layer,
     forbidden_layers,
     layer_map,
     lyp_filename,
@@ -128,13 +129,12 @@ def klayout_checks(gds: str, expected_name: str, tech: str):
             raise PrecheckFailure(f"Forbidden layer {layer} found in {gds}")
 
     logging.info("Running prBoundary check...")
-    layer_info = layers["prBoundary.boundary"]
+    layer_name = boundary_layer[tech]
+    layer_info = layers[layer_name]
     layer_index = layout.find_layer(layer_info.layer, layer_info.data_type)
     if layer_index is None:
         calma_index = f"{layer_info.layer}/{layer_info.data_type}"
-        raise PrecheckFailure(
-            f"prBoundary.boundary ({calma_index}) layer not found in {gds}"
-        )
+        raise PrecheckFailure(f"{layer_name} ({calma_index}) layer not found in {gds}")
 
 
 def boundary_check(gds: str, tech: str):
@@ -147,7 +147,8 @@ def boundary_check(gds: str, tech: str):
     boundary = top.copy("test_boundary")
 
     layers = load_layers(tech)
-    layer_info = layers["prBoundary.boundary"]
+    layer_name = boundary_layer[tech]
+    layer_info = layers[layer_name]
     boundary.filter([(layer_info.layer, layer_info.data_type)], False)
     if top.bounding_box() != boundary.bounding_box():
         raise PrecheckFailure("Shapes outside project area")
@@ -300,7 +301,7 @@ def main():
     yaml_dir = os.path.dirname(args.gds)
     while not os.path.exists(f"{yaml_dir}/info.yaml"):
         yaml_dir = os.path.dirname(yaml_dir)
-        if yaml_dir == "/":
+        if yaml_dir in ("/", ""):
             raise PrecheckFailure("info.yaml not found")
     yaml_file = f"{yaml_dir}/info.yaml"
     yaml_data = yaml.safe_load(open(yaml_file))
@@ -323,7 +324,7 @@ def main():
             template_def = f"{def_root}/analog/tt_analog_{tiles}_3v3.def"
         else:
             template_def = f"{def_root}/analog/tt_analog_{tiles}.def"
-    elif tech == "ihp-sg13g2":
+    elif tech == "ihp-sg13g2" or tech == "gf180mcuD":
         template_def = f"{def_root}/tt_block_{tiles}_pgvdd.def"
     else:
         template_def = f"{def_root}/tt_block_{tiles}_pg.def"
@@ -336,22 +337,22 @@ def main():
         {
             "name": "Magic DRC",
             "check": lambda: magic_drc(gds_file, top_module),
-            "tech": "sky130A",
+            "techs": ["sky130A"],
         },
         {
             "name": "KLayout FEOL",
             "check": lambda: klayout_drc(gds_file, "feol"),
-            "tech": "sky130A",
+            "techs": ["sky130A"],
         },
         {
             "name": "KLayout BEOL",
             "check": lambda: klayout_drc(gds_file, "beol"),
-            "tech": "sky130A",
+            "techs": ["sky130A"],
         },
         {
             "name": "KLayout offgrid",
             "check": lambda: klayout_drc(gds_file, "offgrid"),
-            "tech": "sky130A",
+            "techs": ["sky130A"],
         },
         {
             "name": "KLayout pin label overlapping drawing",
@@ -364,7 +365,7 @@ def main():
         {
             "name": "KLayout SG13G2 DRC",
             "check": lambda: klayout_sg13g2(gds_file),
-            "tech": "ihp-sg13g2",
+            "techs": ["ihp-sg13g2"],
         },
         {"name": "KLayout zero area", "check": lambda: klayout_zero_area(gds_file)},
         {
@@ -376,18 +377,20 @@ def main():
             "check": lambda: pin_check(
                 gds_file, lef_file, template_def, top_module, uses_3v3, tech
             ),
+            "techs": ["sky130A", "ihp-sg13g2"],
         },
         {"name": "Boundary check", "check": lambda: boundary_check(gds_file, tech)},
         {
             "name": "Power pin check",
             "check": lambda: power_pin_check(verilog_file, lef_file, uses_3v3),
-            "tech": "sky130A",
+            "techs": ["sky130A", "gf180mcuD"],
         },
         {"name": "Layer check", "check": lambda: layer_check(gds_file, tech)},
         {"name": "Cell name check", "check": lambda: cell_name_check(gds_file)},
         {
             "name": "urpm/nwell check",
             "check": lambda: urpm_nwell_check(gds_file, top_module),
+            "techs": ["sky130A"],
         },
         {
             "name": "Analog pin check",
@@ -403,7 +406,7 @@ def main():
     markdown_table += "| Check | Result |\n|-----------|--------|\n"
     for check in checks:
         name = check["name"]
-        if "tech" in check and check["tech"] != tech:
+        if "techs" in check and tech not in check["techs"]:
             continue
         start_time = time.time()
         test_case = ET.SubElement(testsuite, "testcase", name=name)

@@ -28,20 +28,57 @@ def parse_lyp_layers(lyp_file: str, only_valid: bool = True):
         if only_valid and valid is not None and valid.text == "false":
             continue
 
-        if (
-            name is not None
-            and name.text is not None
-            and source is not None
-            and source.text is not None
-        ):
-            name_key = name.text.split("-")[0].strip()
-            layer, data_type = source.text.split("@")[0].split("/")
-            # Add the 'source' text as the value in the dictionary
-            layers_dict[name_key] = LayerInfo(
-                name=name.text,
-                source=source.text,
-                layer=int(layer),
-                data_type=int(data_type),
-            )
+        if name is None or name.text is None:
+            name = None
+        else:
+            name = name.text
+
+        if source is None or source.text is None:
+            continue
+
+        source = source.text
+
+        name_orig = name
+        source_orig = source
+
+        # for more details on the source field, see
+        # https://www.klayout.de/doc/about/layer_sources.html
+        # and klayout's src/laybasic/laybasic/layParsedLayerSource.cc
+
+        if "@" in source:
+            assert source.count("@") == 1
+            source, layout_index = source.split("@")
+            assert layout_index.isnumeric()
+            if layout_index != "1":
+                continue
+
+        if " " in source:
+            assert source.count(" ") == 1
+            # sky130A and sg13g2 has the name in the "name" field
+            # gf180mcuD has the name as part of the "source" field
+            # if a future PDK has it in both places, we'll trigger the
+            #     assertion below to decide which one has priority
+            assert name is None
+            name, source = source.split(" ")
+
+        if name is None:
+            name = source
+
+        # the source field can have further transformations & filters,
+        # but so far none of the PDKs use them, so we are ignoring them
+
+        layer, data_type = source.split("/")
+        assert layer.isnumeric()
+        assert data_type.isnumeric()
+        layer = int(layer)
+        data_type = int(data_type)
+
+        # sky130A includes an extra copy of layer & data_type
+        # as part of the name, let's remove that
+        name = name.split(" - ")[0]
+
+        layers_dict[name] = LayerInfo(
+            name=name_orig, source=source_orig, layer=layer, data_type=data_type
+        )
 
     return layers_dict
