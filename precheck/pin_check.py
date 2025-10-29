@@ -1,6 +1,7 @@
 import logging
 import re
 from collections.abc import Iterable
+from functools import partial
 from itertools import combinations
 from numbers import Real
 
@@ -91,12 +92,20 @@ def canonicalize_rectangles(
     return sorted(set(closed_rects))
 
 
-def parsefp3(value: str):
+def parse_fp3(value: str):
     # parse fixed-point numbers with 3 digits after the decimal point
     # e.g. '20.470' to 20470
     ip, fp = value.split(".")
     mul = ip + fp[:3].rjust(3, "0")
     return int(mul)
+
+
+def parse_dbu_to_nm(value: str, dbu_per_micron: int):
+    # parse a value in database units into nanometers
+    assert dbu_per_micron != 0
+    val_dbu = int(value)
+    assert (val_dbu * 1000) % dbu_per_micron == 0
+    return (val_dbu * 1000) // dbu_per_micron
 
 
 def pin_check(
@@ -129,18 +138,16 @@ def pin_check(
             if line.startswith("UNITS "):
                 match = units_re.match(line)
                 (dbu_per_micron,) = map(int, match.groups())
+                parse_nm = partial(parse_dbu_to_nm, dbu_per_micron=dbu_per_micron)
             elif line.startswith("DIEAREA "):
                 match = diearea_re.match(line)
-                lx, by, rx, ty = map(int, match.groups())
+                lx, by, rx, ty = map(parse_nm, match.groups())
                 if (lx, by) != (0, 0):
                     raise PrecheckFailure(
                         "Wrong die origin in template DEF, expecting (0, 0)"
                     )
-                assert dbu_per_micron != 0
-                assert (rx * 1000) % dbu_per_micron == 0
-                assert (ty * 1000) % dbu_per_micron == 0
-                die_width = (rx * 1000) // dbu_per_micron
-                die_height = (ty * 1000) // dbu_per_micron
+                die_width = rx
+                die_height = ty
             elif line.startswith("PINS "):
                 match = pins_re.match(line)
                 pin_count = int(match.group(1))
@@ -164,12 +171,12 @@ def pin_check(
             line = next(f)
             match = layer_re.match(line)
             layer, lx, by, rx, ty = match.groups()
-            lx, by, rx, ty = map(int, (lx, by, rx, ty))
+            lx, by, rx, ty = map(parse_nm, (lx, by, rx, ty))
 
             line = next(f)
             match = placed_re.match(line)
             ox, oy, direction = match.groups()
-            ox, oy = map(int, (ox, oy))
+            ox, oy = map(parse_nm, (ox, oy))
 
             if pin_name in def_pins:
                 raise PrecheckFailure("Duplicate pin in template DEF")
@@ -214,14 +221,14 @@ def pin_check(
             elif macro_active:
                 if line.startswith("ORIGIN "):
                     match = origin_re.match(line)
-                    lx, by = map(parsefp3, match.groups())
+                    lx, by = map(parse_fp3, match.groups())
                     if lx != 0 or by != 0:
                         raise PrecheckFailure(
                             "Wrong die origin in LEF, expecting (0, 0)"
                         )
                 elif line.startswith("SIZE "):
                     match = size_re.match(line)
-                    rx, ty = map(parsefp3, match.groups())
+                    rx, ty = map(parse_fp3, match.groups())
                     if (rx, ty) != (die_width, die_height):
                         raise PrecheckFailure(
                             f"Inconsistent die area between LEF and template DEF: ({rx}, {ty}) != ({die_width}, {die_height})"
@@ -250,7 +257,7 @@ def pin_check(
                         line = next(f).strip()
                         while line.startswith("RECT "):
                             match = rect_re.match(line)
-                            lx, by, rx, ty = map(parsefp3, match.groups())
+                            lx, by, rx, ty = map(parse_fp3, match.groups())
                             pin_rects += 1
                             if current_pin not in lef_ports:
                                 lef_ports[current_pin] = []
@@ -369,41 +376,43 @@ def pin_check(
         raise PrecheckFailure("Wrong cell at GDS top-level")
     top = top[0]
 
-    gds_layers = valid_lef_port_layers[tech]
-    gds_layer_lookup = {j: i for i, j in gds_layers.items()}
-    polygon_list = {layer: [] for layer in gds_layers}
-    for poly in top.polygons:
-        poly_layer = (poly.layer, poly.datatype)
-        layer_name = gds_layer_lookup.get(poly_layer, None)
-        if layer_name is not None:
-            polygon_list[layer_name].append(poly)
-    merged_layers = {}
-    for layer in gds_layers:
-        merged_layers[layer] = gdstk.boolean(polygon_list[layer], [], "or")
-
     gds_errors = 0
-    for current_pin, lef_rects in sorted(lef_ports_orig.items()):
-        for layer, lx, by, rx, ty in lef_rects:
-            if layer + ".pin" not in gds_layers:
-                raise PrecheckFailure(
-                    f"Unexpected port layer in LEF: {current_pin} is on layer {layer}"
-                )
 
-            pin_ok = False
-            for poly in merged_layers[layer + ".pin"]:
-                if poly.contain_all(
-                    ((lx + 1) / 1000, (by + 1) / 1000),
-                    ((rx - 1) / 1000, (by + 1) / 1000),
-                    ((lx + 1) / 1000, (ty - 1) / 1000),
-                    ((rx - 1) / 1000, (ty - 1) / 1000),
-                ):
-                    pin_ok = True
+    if tech != "gf180mcuD":
+        gds_layers = valid_lef_port_layers[tech]
+        gds_layer_lookup = {j: i for i, j in gds_layers.items()}
+        polygon_list = {layer: [] for layer in gds_layers}
+        for poly in top.polygons:
+            poly_layer = (poly.layer, poly.datatype)
+            layer_name = gds_layer_lookup.get(poly_layer, None)
+            if layer_name is not None:
+                polygon_list[layer_name].append(poly)
+        merged_layers = {}
+        for layer in gds_layers:
+            merged_layers[layer] = gdstk.boolean(polygon_list[layer], [], "or")
 
-            if not pin_ok:
-                logging.error(
-                    f"Port {current_pin} missing from layer {layer}.pin in {gds}"
-                )
-                gds_errors += 1
+        for current_pin, lef_rects in sorted(lef_ports_orig.items()):
+            for layer, lx, by, rx, ty in lef_rects:
+                if layer + ".pin" not in gds_layers:
+                    raise PrecheckFailure(
+                        f"Unexpected port layer in LEF: {current_pin} is on layer {layer}"
+                    )
+
+                pin_ok = False
+                for poly in merged_layers[layer + ".pin"]:
+                    if poly.contain_all(
+                        ((lx + 1) / 1000, (by + 1) / 1000),
+                        ((rx - 1) / 1000, (by + 1) / 1000),
+                        ((lx + 1) / 1000, (ty - 1) / 1000),
+                        ((rx - 1) / 1000, (ty - 1) / 1000),
+                    ):
+                        pin_ok = True
+
+                if not pin_ok:
+                    logging.error(
+                        f"Port {current_pin} missing from layer {layer}.pin in {gds}"
+                    )
+                    gds_errors += 1
 
     if lef_errors > 0 or gds_errors > 0:
         err_list = []

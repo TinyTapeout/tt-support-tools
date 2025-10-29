@@ -337,7 +337,7 @@ def main():
         {
             "name": "Magic DRC",
             "check": lambda: magic_drc(gds_file, top_module),
-            "techs": ["sky130A"],
+            "techs": ["sky130A", "gf180mcuD"],
         },
         {
             "name": "KLayout FEOL",
@@ -377,7 +377,6 @@ def main():
             "check": lambda: pin_check(
                 gds_file, lef_file, template_def, top_module, uses_3v3, tech
             ),
-            "techs": ["sky130A", "ihp-sg13g2"],
         },
         {"name": "Boundary check", "check": lambda: boundary_check(gds_file, tech)},
         {
