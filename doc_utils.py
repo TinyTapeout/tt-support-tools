@@ -305,6 +305,10 @@ class DocsHelper:
             content["is_wokwi"] = True
             content["project_wokwi_id"] = info["wokwi_id"]
 
+        if info["is_analog"]:
+            content["is_analog"] = True
+            content["analog_pins"] = DocsHelper.format_analog_pins(info["analog_pins"])
+
         return content
 
     @staticmethod
