@@ -494,20 +494,23 @@
   })
 
   // add funding/sponsor page
-  page(context {
-    let funding_content = _funding_content.final()
-    let alt_title = _funding_alt_title.final()
+  context {
+    // check if funding has been provided, otherwise we risk adding an empty page instead
+    if _funding_content.final() != [] {
+      page({
+        let funding_content = _funding_content.final()
+        let alt_title = _funding_alt_title.final()
 
-    if funding_content != [] {
-      if alt_title != none {
-        heading(level: 1, alt_title)
-      } else {
-        heading(level: 1, "Funding")
-      }
+        if alt_title != none {
+          heading(level: 1, alt_title)
+        } else {
+          heading(level: 1, "Funding")
+        }
+
+        funding_content
+      })
     }
-
-    funding_content
-  })
+  }
 
   page(include "../chapters/team.typ")
   page(include "../chapters/using-this-datasheet.typ")
