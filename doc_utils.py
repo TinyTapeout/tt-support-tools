@@ -118,12 +118,28 @@ class DocsHelper:
         """
         Run pandoc to convert a given file to typst
         """
+        # enable/disable certain extensions
+        # see all with `pandoc --list-extensions=markdown`
+        # documentation at https://pandoc.org/MANUAL.html
+        # in general, these extensions should offer some additional formatting options whilst still
+        # remaining similar to github flavoured markdown
+        pandoc_extensions = [
+            "-auto_identifiers",
+            "+autolink_bare_uris",
+            "-citations",
+            "-definition_lists",
+            "+emoji",
+            "-example_lists",
+            "-fancy_lists",
+            "+lists_without_preceding_blankline",
+            "-fenced_divs",
+        ]
         pandoc_command = [
             "pandoc",
             path,
             "--shift-heading-level-by=-1",
             "-f",
-            "gfm-gfm_auto_identifiers",
+            f"markdown{''.join(pandoc_extensions)}",
             "-t",
             "typst-citations",
             "--wrap=preserve",
