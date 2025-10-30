@@ -118,12 +118,28 @@ class DocsHelper:
         """
         Run pandoc to convert a given file to typst
         """
+        # enable/disable certain extensions
+        # see all with `pandoc --list-extensions=markdown`
+        # documentation at https://pandoc.org/MANUAL.html
+        # in general, these extensions should offer some additional formatting options whilst still
+        # remaining similar to github flavoured markdown
+        pandoc_extensions = [
+            "-auto_identifiers",
+            "+autolink_bare_uris",
+            "-citations",
+            "-definition_lists",
+            "+emoji",
+            "-example_lists",
+            "-fancy_lists",
+            "+lists_without_preceding_blankline",
+            "-fenced_divs",
+        ]
         pandoc_command = [
             "pandoc",
             path,
             "--shift-heading-level-by=-1",
             "-f",
-            "gfm-gfm_auto_identifiers",
+            f"markdown{''.join(pandoc_extensions)}",
             "-t",
             "typst-citations",
             "--wrap=preserve",
@@ -304,6 +320,10 @@ class DocsHelper:
         if info["is_wokwi"]:
             content["is_wokwi"] = True
             content["project_wokwi_id"] = info["wokwi_id"]
+
+        if info["is_analog"]:
+            content["is_analog"] = True
+            content["analog_pins"] = DocsHelper.format_analog_pins(info["analog_pins"])
 
         return content
 
