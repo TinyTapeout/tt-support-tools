@@ -306,7 +306,7 @@ class Project:
         repo = Repo(os.path.join(self.local_dir, "tt"))
         if repo.head.is_detached:
             ref = next(
-                (ref.name for ref in repo.refs if ref.commit == repo.head.commit),
+                (ref.name for ref in repo.refs if ref.commit == repo.head.commit),  # type: ignore[attr-defined] # see mypy issue #8085
                 "(detached)",
             )
         else:
@@ -764,7 +764,7 @@ class Project:
     # Helper function to randomize layer order of polygons in a subcell in a deterministic way
     def scramble_polygons(self, polygons, seed):
         # group polygons by layer/datatype
-        groups = {}
+        groups: dict[tuple[int, int], list] = {}
         for p in polygons:
             groups.setdefault((p.layer, p.datatype), []).append(p)
         # shuffle the layer list
@@ -865,7 +865,7 @@ class Project:
                 self.convert_svg_to_png(svg_alt, png)
             except SVGTooComplexError:
                 # Fall back to cairosvg, and since we're doing that, might as well use the original full-detail SVG anyway:
-                self.convert_to_png(svg, png, force_cairo=True)
+                self.convert_svg_to_png(svg, png, force_cairo=True)
 
         # By now we should have gds_render_preview.png
 
