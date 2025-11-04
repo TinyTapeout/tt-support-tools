@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List, Literal, Protocol, Tuple, TypedDict, Union
+from typing import Dict, List, Literal, Pattern, Protocol, Tuple, TypedDict, Union
 
 from git.repo import Repo
 
@@ -33,6 +33,8 @@ class Tech(Protocol):
     label_layers: List[Tuple[int, int]]
     """ These layers are hardly visible and will also be removed from the SVG render of the layout """
     buried_layers: List[Tuple[int, int]]
+    """ Cells with names matching this regex will have their layers shuffled in the SVG render """
+    scramble_cells: None | str | Pattern
     """ Default name of the mux config YAML file. """
     mux_config_yaml_name: str
     """ Lists all of the analog switch / power gate macros that need to be copied to the tt_top directory. """
@@ -81,6 +83,7 @@ class Sky130Tech(Tech):
         (81, 4),  # areaid.standardc
         (70, 20),  # met3.drawing
     ]
+    scramble_cells = None
     mux_config_yaml_name = "sky130.yaml"
     mux_macros = [
         "pg/sky130/tt_pg_1v8_hp_1",
@@ -129,6 +132,7 @@ class IHPTech(Tech):
         (51, 0),  # HeatTrans.drawing
         (189, 4),  # prBoundary.boundary
     ]
+    scramble_cells = "sg13g2_"
     mux_config_yaml_name = "ihp-sg13g2.yaml"
     mux_macros = [
         "pg/ihp-sg13g2/tt_pg_1v5_hp_1",
@@ -204,6 +208,7 @@ class GF180MCUDTech(Tech):
     buried_layers = [
         # TODO: add buried layers
     ]
+    scramble_cells = "gf180mcu_fd_sc_"
     mux_config_yaml_name = "gf180mcuD.yaml"
     mux_macros = [
         "pg/gf180mcuD/tt_pg_1v8_hp_1",
