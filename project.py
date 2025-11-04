@@ -4,6 +4,7 @@ import glob
 import json
 import logging
 import os
+import random
 import re
 import shutil
 import subprocess
@@ -51,6 +52,11 @@ PINOUT_KEYS = [
 ]
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+
+# Custom exception for Project.convert_svg_to_png()
+class SVGTooComplexError(Exception):
+    pass
 
 
 class Project:
@@ -743,7 +749,7 @@ class Project:
         DocsHelper.compile("./docs/doc.typ")
 
     # Read and return top-level GDS data from the final GDS file, using gdstk:
-    def get_final_gds_top_cells(self):
+    def get_final_gds_top_cell(self):
         if "GDS_PATH" in os.environ:
             gds_path = os.environ["GDS_PATH"]
         else:
@@ -752,13 +758,74 @@ class Project:
             )[0]
         library = gdstk.read_gds(gds_path)
         top_cells = library.top_level()
+        assert len(top_cells) == 1
         return top_cells[0]
 
-    # SVG render of the GDS.
-    # NOTE: This includes all standard GDS layers inc. text labels.
-    def create_svg(self):
-        top_cells = self.get_final_gds_top_cells()
-        top_cells.write_svg("gds_render.svg")
+    # Helper function to randomize layer order of polygons in a subcell in a deterministic way
+    def scramble_polygons(self, polygons, seed):
+        # group polygons by layer/datatype
+        groups = {}
+        for p in polygons:
+            groups.setdefault((p.layer, p.datatype), []).append(p)
+        # shuffle the layer list
+        layers = sorted(groups)
+        random.Random(seed).shuffle(layers)
+        # return polygons according to the shuffled layer order
+        return [p for layer in layers for p in groups[layer]]
+
+    # SVG render of the GDS
+    def create_svg(
+        self,
+        filename="gds_render.svg",
+        pad="5%",
+        filter_text=False,
+        filter_buried=False,
+        scramble_cells=None,
+    ):
+        top_cell = self.get_final_gds_top_cell()
+        cells = [top_cell] + top_cell.dependencies(True)
+        for cell in cells:
+            if filter_text:
+                cell.remove(*cell.labels)
+            if filter_buried:
+                cell.filter(self.tech.buried_layers)
+            if scramble_cells is not None:
+                if re.match(scramble_cells, cell.name):
+                    polygons = cell.polygons
+                    paths = cell.paths
+                    cell.remove(*polygons, *paths)
+                    path_polygons = [pp for p in paths for pp in p.to_polygons()]
+                    cell.add(*self.scramble_polygons(polygons, cell.name))
+                    cell.add(*self.scramble_polygons(path_polygons, cell.name))
+        top_cell.write_svg(filename, pad=pad)
+
+    # Convert SVG to PNG using rsvg-convert or cairosvg
+    def convert_svg_to_png(self, svg, png, force_cairo=False):
+        if force_cairo:
+            logging.warning("Falling back to cairosvg. This might take a while...")
+            cairosvg.svg2png(url=svg, write_to=png)
+        else:
+            cmd = f"rsvg-convert --unlimited {svg} -o {png} --no-keep-image-data"
+            logging.debug(cmd)
+            p = subprocess.run(cmd, shell=True, capture_output=True)
+            if p.returncode == 127:
+                logging.warning(
+                    'rsvg-convert not found; is package "librsvg2-bin" installed?'
+                )
+                # fall back to cairosvg
+                self.convert_svg_to_png(svg, png, force_cairo=True)
+            elif p.returncode != 0:
+                if b"cannot load more than" in p.stderr:
+                    logging.warning(
+                        f'Too many SVG elements ("{p.stderr.decode().strip()}")'
+                    )
+                    raise SVGTooComplexError()
+                else:
+                    logging.warning(
+                        f'rsvg-convert returned an error ("{p.stderr.decode().strip()}")'
+                    )
+                    # fall back to cairosvg
+                    self.convert_svg_to_png(svg, png, force_cairo=True)
 
     # Try various QUICK methods to create a more-compressed PNG render of the GDS,
     # and fall back to cairosvg if it doesn't work. This is designed for speed,
@@ -766,67 +833,39 @@ class Project:
     # For more info, see:
     # https://github.com/TinyTapeout/tt-gds-action/issues/8
     def create_png(self):
-        logging.info("Loading GDS data...")
-        top_cells = self.get_final_gds_top_cells()
-
-        # Remove label layers (i.e. delete text), then generate SVG:
-        label_layers = self.tech.label_layers
-        top_cells.filter(label_layers)
-        for subcell in top_cells.dependencies(True):
-            subcell.filter(label_layers)
+        # For ihp & gf, randomize polygon z-order in standard cells to make them easier to distinguish
+        scramble_cells = None
+        if self.pdk == "ihp-sg13g2":
+            scramble_cells = "sg13g2_"
+        elif self.pdk == "gf180mcuD":
+            scramble_cells = "gf180mcu_fd_sc_"
         svg = "gds_render_preview.svg"
-        logging.info("Rendering SVG without text label layers: {}".format(svg))
-        top_cells.write_svg(svg, pad=0)
-        # We should now have gds_render_preview.svg
-
-        # Try converting using 'rsvg-convert' command-line utility.
-        # This should create gds_render_preview.png
         png = "gds_render_preview.png"
-        logging.info("Converting to PNG using rsvg-convert: {}".format(png))
-
-        cmd = "rsvg-convert --unlimited {} -o {} --no-keep-image-data".format(svg, png)
-        logging.debug(cmd)
-        p = subprocess.run(cmd, shell=True, capture_output=True)
-
-        if p.returncode == 127:
-            logging.warning(
-                'rsvg-convert not found; is package "librsvg2-bin" installed? Falling back to cairosvg. This might take a while...'
-            )
-            # Fall back to cairosvg:
-            cairosvg.svg2png(url=svg, write_to=png)
-
-        elif p.returncode != 0 and b"cannot load more than" in p.stderr:
-            logging.warning(
-                'Too many SVG elements ("{}"). Reducing complexity...'.format(
-                    p.stderr.decode().strip()
-                )
-            )
-
-            # Remove more layers that are hardly visible anyway:
-            buried_layers = self.tech.buried_layers
-            top_cells.filter(buried_layers)
-            for subcell in top_cells.dependencies(True):
-                subcell.filter(buried_layers)
+        logging.info(f"Rendering SVG without text labels: {svg}")
+        self.create_svg(
+            filename=svg, pad=0, filter_text=True, scramble_cells=scramble_cells
+        )
+        try:
+            logging.info(f"Converting to PNG using rsvg-convert: {png}")
+            self.convert_svg_to_png(svg, png)
+        except SVGTooComplexError:
             svg_alt = "gds_render_preview_alt.svg"
-            logging.info("Rendering SVG with more layers removed: {}".format(svg_alt))
-            top_cells.write_svg(svg_alt, pad=0)
-            logging.info("Converting to PNG using rsvg-convert: {}".format(png))
-
-            cmd = "rsvg-convert --unlimited {} -o {} --no-keep-image-data".format(
-                svg_alt, png
+            logging.info(
+                f"Rendering SVG without text labels or buried layers: {svg_alt}"
             )
-            logging.debug(cmd)
-            p = subprocess.run(cmd, shell=True, capture_output=True)
-
-            if p.returncode != 0:
-                logging.warning(
-                    'Still cannot convert to SVG ("{}"). Falling back to cairosvg. This might take a while...'.format(
-                        p.stderr.decode().strip()
-                    )
-                )
-
+            self.create_svg(
+                filename=svg_alt,
+                pad=0,
+                filter_text=True,
+                filter_buried=True,
+                scramble_cells=scramble_cells,
+            )
+            try:
+                logging.info(f"Converting to PNG using rsvg-convert: {png}")
+                self.convert_svg_to_png(svg_alt, png)
+            except SVGTooComplexError:
                 # Fall back to cairosvg, and since we're doing that, might as well use the original full-detail SVG anyway:
-                cairosvg.svg2png(url=svg, write_to=png)
+                self.convert_to_png(svg, png, force_cairo=True)
 
         # By now we should have gds_render_preview.png
 
