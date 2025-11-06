@@ -21,12 +21,12 @@ class TechDef(TypedDict):
 
 
 tech: Dict[str, TechDef] = {
-    "sky130A": {
-        "PRBOUNDARY_LAYER": 235,  # prBoundary
-        "PRBOUNDARY_DATATYPE": 4,  # .boundary
-        "LOGO_LAYER": 71,  # Metal4
-        "LOGO_DATATYPE": 20,  # .drawing
-        "OBS_LAYER_NAME": "met4",
+    "gf180mcuD": {
+        "PRBOUNDARY_LAYER": 0,  # PR_bndry
+        "PRBOUNDARY_DATATYPE": 0,  #
+        "LOGO_LAYER": 46,  # Metal4
+        "LOGO_DATATYPE": 0,  #
+        "OBS_LAYER_NAME": "Metal4",
         "PIXEL_SIZE": 0.5,  # um
     },
     "ihp-sg13g2": {
@@ -36,6 +36,14 @@ tech: Dict[str, TechDef] = {
         "LOGO_DATATYPE": 0,  # .drawing
         "OBS_LAYER_NAME": "Metal5",
         "PIXEL_SIZE": 0.25,  # um
+    },
+    "sky130A": {
+        "PRBOUNDARY_LAYER": 235,  # prBoundary
+        "PRBOUNDARY_DATATYPE": 4,  # .boundary
+        "LOGO_LAYER": 71,  # Metal4
+        "LOGO_DATATYPE": 20,  # .drawing
+        "OBS_LAYER_NAME": "met4",
+        "PIXEL_SIZE": 0.5,  # um
     },
 }
 
