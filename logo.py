@@ -2,59 +2,23 @@
 
 import argparse
 import sys
-from typing import Dict, TypedDict
 
 import gdstk
 from git.repo import Repo
 from PIL import Image, ImageDraw, ImageFont
 
 from config import Config
-
-
-class TechDef(TypedDict):
-    PRBOUNDARY_LAYER: int
-    PRBOUNDARY_DATATYPE: int
-    LOGO_LAYER: int
-    LOGO_DATATYPE: int
-    OBS_LAYER_NAME: str
-    PIXEL_SIZE: float
-
-
-tech: Dict[str, TechDef] = {
-    "gf180mcuD": {
-        "PRBOUNDARY_LAYER": 0,  # PR_bndry
-        "PRBOUNDARY_DATATYPE": 0,  #
-        "LOGO_LAYER": 46,  # Metal4
-        "LOGO_DATATYPE": 0,  #
-        "OBS_LAYER_NAME": "Metal4",
-        "PIXEL_SIZE": 0.5,  # um
-    },
-    "ihp-sg13g2": {
-        "PRBOUNDARY_LAYER": 189,  # prBoundary
-        "PRBOUNDARY_DATATYPE": 4,  # .boundary
-        "LOGO_LAYER": 67,  # Metal5
-        "LOGO_DATATYPE": 0,  # .drawing
-        "OBS_LAYER_NAME": "Metal5",
-        "PIXEL_SIZE": 0.25,  # um
-    },
-    "sky130A": {
-        "PRBOUNDARY_LAYER": 235,  # prBoundary
-        "PRBOUNDARY_DATATYPE": 4,  # .boundary
-        "LOGO_LAYER": 71,  # Metal4
-        "LOGO_DATATYPE": 20,  # .drawing
-        "OBS_LAYER_NAME": "met4",
-        "PIXEL_SIZE": 0.5,  # um
-    },
-}
+from tech import TechName, tech_map
 
 LOGO_WIDTH = 200
 LOGO_HEIGHT = 200
 
 
 class LogoGenerator:
-    def __init__(self, tt_dir, pdk: str, config: Config | None = None):
+    def __init__(self, tt_dir, pdk: TechName, config: Config | None = None):
         self.tt_dir = tt_dir
         self.pdk = pdk
+        self.tech = tech_map[pdk]
         self.config = config
 
     def gen_logo(self, variant: str, gds_file: str, shuttle=None, commit=None):
@@ -96,19 +60,14 @@ class LogoGenerator:
             draw.text((1, 137), commit[18:29], fill=255, font=font(32))
             draw.text((1, 165), commit[29:], fill=255, font=font(32))
 
-        PRBOUNDARY_LAYER = tech[self.pdk]["PRBOUNDARY_LAYER"]
-        PRBOUNDARY_DATATYPE = tech[self.pdk]["PRBOUNDARY_DATATYPE"]
-        MET4_LAYER = tech[self.pdk]["LOGO_LAYER"]
-        DRAWING_DATATYPE = tech[self.pdk]["LOGO_DATATYPE"]
-        PIXEL_SIZE = tech[self.pdk]["PIXEL_SIZE"]
-
+        pixel_size = self.tech.logo_pixel_size
         lib = gdstk.Library()
         cell = lib.new_cell(f"tt_logo_{variant}")
         boundary = gdstk.rectangle(
             (0, 0),
-            (img.width * PIXEL_SIZE, img.height * PIXEL_SIZE),
-            layer=PRBOUNDARY_LAYER,
-            datatype=PRBOUNDARY_DATATYPE,
+            (img.width * pixel_size, img.height * pixel_size),
+            layer=self.tech.prboundary_layer[0],
+            datatype=self.tech.prboundary_layer[1],
         )
         cell.add(boundary)
 
@@ -118,10 +77,10 @@ class LogoGenerator:
                 if color >= 128:
                     flipped_y = img.height - y - 1  # flip vertically
                     rect = gdstk.rectangle(
-                        (x * PIXEL_SIZE, flipped_y * PIXEL_SIZE),
-                        ((x + 1) * PIXEL_SIZE, (flipped_y + 1) * PIXEL_SIZE),
-                        layer=MET4_LAYER,
-                        datatype=DRAWING_DATATYPE,
+                        (x * pixel_size, flipped_y * pixel_size),
+                        ((x + 1) * pixel_size, (flipped_y + 1) * pixel_size),
+                        layer=self.tech.logo_layer[0],
+                        datatype=self.tech.logo_layer[1],
                     )
                     cell.add(rect)
 
@@ -129,8 +88,8 @@ class LogoGenerator:
 
     def gen_lef(self, variant: str, lef_file: str):
         assert variant in ("top", "bottom")
-        width = tech[self.pdk]["PIXEL_SIZE"] * LOGO_WIDTH
-        height = tech[self.pdk]["PIXEL_SIZE"] * LOGO_HEIGHT
+        width = self.tech.logo_pixel_size * LOGO_WIDTH
+        height = self.tech.logo_pixel_size * LOGO_HEIGHT
         lef_lines = [
             f"VERSION 5.7 ;",
             f"  NOWIREEXTENSIONATPIN ON ;",
@@ -142,7 +101,7 @@ class LogoGenerator:
             f"  ORIGIN 0.000 0.000 ;",
             f"  SIZE {width:.3f} BY {height:.3f} ;",
             f"  OBS",
-            f'      LAYER {tech[self.pdk]["OBS_LAYER_NAME"]} ;',
+            f"      LAYER {self.tech.logo_layer_name} ;",
             f"        RECT 0.000 0.000 {width:.3f} {height:.3f} ;",
             f"  END",
             f"END tt_logo_{variant}",
@@ -157,7 +116,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="TT logo generator")
     parser.add_argument(
-        "--pdk", type=str, default="sky130A", choices=["sky130A", "ihp-sg13g2"]
+        "--pdk",
+        type=str,
+        default="sky130A",
+        choices=["sky130A", "ihp-sg13g2", "gf180mcuD"],
     )
     parser.add_argument("--top", action="store_true")
     parser.add_argument("--bottom", action="store_true")

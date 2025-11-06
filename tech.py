@@ -41,6 +41,14 @@ class Tech(Protocol):
     mux_macros: List[str]
     """ Lists all of the extra logo macros that need to be copied to the tt_top directory. """
     extra_logo_macros: List[str]
+    """ GDS layer/datatype for the place&route boundary marker layer """
+    prboundary_layer: Tuple[int, int]
+    """ GDS layer/datatype for the metal layer used in the logo """
+    logo_layer: Tuple[int, int]
+    """ LEF layer name for the metal layer used in the logo """
+    logo_layer_name: str
+    """ Logo pixel size in microns """
+    logo_pixel_size: float
 
     def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
         raise NotImplementedError()
@@ -96,6 +104,10 @@ class Sky130Tech(Tech):
         "asw/sky130/tt_asw_3v3",
     ]
     extra_logo_macros = []
+    prboundary_layer = (235, 4)  # prBoundary.boundary
+    logo_layer = (71, 20)  # met4.drawing
+    logo_layer_name = "met4"
+    logo_pixel_size = 0.5  # um
 
     def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
         pdk_sources_file = os.path.join(pdk_root, "sky130A", "SOURCES")
@@ -145,6 +157,10 @@ class IHPTech(Tech):
     extra_logo_macros = [
         "tech/ihp-sg13g2/tt_logo_corner",
     ]
+    prboundary_layer = (189, 4)  # prBoundary.boundary
+    logo_layer = (67, 0)  # Metal5.drawing
+    logo_layer_name = "Metal5"
+    logo_pixel_size = 0.25  # um
 
     def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
         pdk_repo = Repo(pdk_root)
@@ -219,6 +235,10 @@ class GF180MCUDTech(Tech):
         "pg/gf180mcuD/tt_pg_1v8_ll_4",
     ]
     extra_logo_macros = []
+    prboundary_layer = (0, 0)  # PR_bndry
+    logo_layer = (46, 0)  # Metal4
+    logo_layer_name = "Metal4"
+    logo_pixel_size = 0.5  # um
 
     def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
         pdk_sources_file = os.path.join(pdk_root, "gf180mcuD", "SOURCES")
