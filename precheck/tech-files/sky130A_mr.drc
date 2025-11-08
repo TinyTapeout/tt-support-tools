@@ -30,8 +30,10 @@
 #     * Rename `licon` checks
 #   2024-9-1 :
 #     * Change the default of sram_exclude to false
+#   2025-10-29 : 2025.10.29_01.10 release
+#     * Updated to be in line with the current Skywater required rules
 ##########################################################################################
-release = "2024.2.11_01.09"
+release = "2025.10.29_01.10"
 
 require "time"
 require "logger"
@@ -114,6 +116,13 @@ if $sram_exclude == "0" || $sram_exclude == "false"
 else
     SRAM_EXCLUDE = true
 end
+
+if $info == "0" || $info == "false"
+    INFO = false
+else
+    INFO = true # front-end-of-line checks
+end
+
 logger.info("Args:")
 logger.info("\tsram_exclude: #{$sram_exclude}")
 logger.info("\tfeol: #{$feol}")
@@ -286,14 +295,19 @@ if FEOL
     log("FEOL section")
     #   dnwell
     log("START: 64/18 (dnwell)")
-    dnwell.width(3.0, euclidian).output(
-        "dnwell.1",
-        "dnwell.1: min. dnwell width : 3.0um"
+    dnwell
+        .width(3.0, euclidian)
+        .output(
+            "MRW_dnwell.WID.1",
+            "MRW_dnwell.WID.1: min. dnwell width : 3.0um"
     )
     dnwell
         .not(uhvi.or(vhvi))
         .space(6.3, euclidian)
-        .output("dnwell.2", "dnwell.2 : min. dnwell spacing : 6.3um")
+        .output(
+            "MRW_dnwell.SP.1", 
+            "MRW_dnwell.SP.1 : min. dnwell spacing : 6.3um"
+    )
     log("END: 64/18 (dnwell)")
 
     not_sram = layout(source.cell_obj).select("-*sky130_sram_*kbyte_*")
@@ -313,34 +327,34 @@ if FEOL
     #   nwell
     log("START: 64/20 (nwell)")
     nwell.width(0.84, euclidian).output(
-        "nwell.1",
-        "nwell.1 : min. nwell width : 0.84um"
+        "MR_nwell.WID.1",
+        "MR_nwell.WID.1 : min. nwell width : 0.84um"
     )
     nwell.space(1.27, euclidian).output(
-        "nwell.2a",
-        "nwell.2a : min. nwell spacing (merged if less) : 1.27um"
+        "MR_nwell.SP.1",
+        "MR_nwell.SP.1 : min. nwell spacing (merged if less) : 1.27um"
     )
     nwell_interact = not_sram_nwell.and(not_io_nwell).merge
     dnwell.enclosing(nwell_interact.holes, 1.03, euclidian).output(
-        "nwell.6",
-        "nwell.6 : min enclosure of nwellHole by dnwell : 1.03um"
+        "MR_nwell.ENC.1",
+        "MR_nwell.ENC.1 : min enclosure of nwellHole by dnwell : 1.03um"
     )
     hvmarker = hvi.or(rdl).or(uhvi).or(vhvi)
     nwell
         .interacting(nwell.and(hvmarker))
         .not(hvmarker)
-        .output("nwell.9", "nwell.9 : HVnwell must be enclosed by hv marker")
+        .output("MR_nwell.CON.1", "MR_nwell.CON.1 : HVnwell must be enclosed by hv marker")
     log("END: 64/20 (nwell)")
 
     #   hvtp
     log("START: 78/44 (hvtp)")
     hvtp.width(0.38, euclidian).output(
-        "hvtp.1",
-        "hvtp.1 : min. hvtp width : 0.38um"
+        "MR_hvtp.WID.1",
+        "MR_hvtp.WID.1 : min. hvtp width : 0.38um"
     )
     hvtp.space(0.38, euclidian).output(
-        "hvtp.2",
-        "hvtp.2 : min. hvtp spacing : 0.38um"
+        "MR_hvtp.SP.1",
+        "MR_hvtp.SP.1 : min. hvtp spacing : 0.38um"
     )
     log("END: 78/44 (hvtp)")
 
@@ -353,7 +367,7 @@ if FEOL
     pwde
         .and(uhvi.or(vhvi))
         .space(1.27, euclidian)
-        .output("pwde.2", "pwde.2 : min. pwde inside v20 spacing : 1.27um")
+        .output("MR_pwde.SP.1", "MR_pwde.SP.1 : min. pwde inside v20 spacing : 1.27um")
     log("END: 124/20 (pwde)")
 
     #   hvtr
@@ -366,7 +380,7 @@ if FEOL
         "hvtr.2",
         "hvtr.2 : min. hvtr spacing : 0.38um"
     )
-    hvtr.and(hvtp).output("hvtr.2_a", "hvtr.2_a : hvtr must not overlap hvtp")
+    hvtr.and(hvtp).output("MR_hvtr.CON.1", "MR_hvtr.CON.1 : hvtr must not overlap hvtp")
     log("END: 18/20 (htvr)")
 
     #   lvtn
@@ -389,7 +403,7 @@ if FEOL
 
     #   ncm
     log("START: 92/44 (ncm)")
-    ncm.width(0.38, euclidian).output("ncm.1", "ncm.1 : min. ncm width : 0.38um")
+    ncm.width(0.38, euclidian).output("MR_ncm.WID.1", "MR_ncm.WID.1 : min. ncm width : 0.38um")
     ncm.space(0.38, euclidian).output(
         "ncm.2a",
         "ncm.2a : min. ncm spacing : 0.38um"
@@ -439,7 +453,7 @@ if FEOL
     tap
         .not(areaid_ce)
         .width(0.15, euclidian)
-        .output("difftap.1_c", "difftap.1_c : min. tap width in periphery : 0.15um")
+        .output("MR_diff.WID.2", "MR_diff.WID.2 : min. tap width in periphery : 0.15um")
     log("END: 65/44 (tap)")
 
     difftap.space(0.27, euclidian).output(
@@ -474,29 +488,57 @@ if FEOL
         "thkox.2",
         "thkox.2 : min. thkox spacing inside periphery : 0.7um"
     )
-    thkox
+    # thkox
+    hvi
         .interacting(diff)
         .not_inside(diff)
         .edges
         .and(diff)
         .output("MR_thkox.CON.1", "MR_thkox.CON.1 : thkox must not straddle diff")
+    
+    # MR_hv.SP.10: ndiff inside (v5, v12, or v20 and thkox) minimum spacing when non-abutting ptap
+    # Note: Using available area identifiers - areaid_ft (81,12) for v12, areaid_ed (81,19) for v20
+    # Assuming v5 might be areaid_ft or another high-voltage area
+    ptap_hv = tap.and(psdm).and(hvi)    # ptap inside hv areas and thkox
+    ndiff_hv = diff.and(nsdm).and(hvi).not_interacting(ptap_hv)  # ndiff inside hv areas and thkox
+    
+    # Check spacing when ndiff is non-abutting ptap
+    gap_violations = ndiff_hv.separation(ndiff_hv, 1.07, euclidian).polygons
+    gap_violations.interacting(ptap_hv).output(
+        "MR_hv.SP.10",
+        "MR_hv.SP.10 : ndiff inside (v12, v20 and thkox) minimum spacing when non-abutting ptap : 1.07um"
+    )
     log("END: 80/20 (thkox)")
 
     #   poly
     log("START: 66/20 (poly)")
     poly.width(0.15, euclidian).output(
-        "poly.1a",
-        "poly.1a : min. poly width : 0.15um"
+        "MR_poly.WID.2",
+        "MR_poly.WID.2 : min. poly width : 0.15um"
     )
     poly
         .not(areaid_ce)
         .space(0.21, euclidian)
-        .output("poly.2", "poly.2 : min. poly spacing : 0.21um")
+        .output("MR_poly.SP.1", "MR_poly.SP.1 : min. poly spacing : 0.21um")
     core_poly_gap = poly.inside(areaid_ce).drc(width(projection) <= 0.15).polygons
     poly
         .interacting(core_poly_gap)
         .isolated(0.16, projection)
-        .output("poly.3", "poly.3 : min. poly spacing inside areaid:core : 0.16um")
+        .output("MR_poly.SP.4", "MR_poly.SP.4 : min. poly spacing inside areaid:core : 0.16um")
+    
+    # Additional MR poly resistor rules
+    # MR_poly.LEN.2: poly:res minimum length for rpoly_hp and rpoly_hp2K resistors ≥ 0.66
+    poly_rs.drc(bbox_max < 0.66).output(
+        "MR_poly.LEN.2",
+        "MR_poly.LEN.2 : poly:res minimum length for rpoly_hp and rpoly_hp2K resistors : 0.66um"
+    )
+    
+    # MR_poly.WID.3: poly:res minimum width ≥ 0.33
+    poly_rs.width(0.33).output(
+        "MR_poly.WID.3",
+        "MR_poly.WID.3 : poly:res minimum width : 0.33um"
+    )
+    
     log("END: 66/20 (poly)")
 
     #   ldntm
@@ -515,37 +557,37 @@ if FEOL
     #   rpm
     log("START: 86/20 (rpm)")
     rpm.width(1.27, euclidian).output(
-        "rpm.1a",
-        "rpm.1a : min. rpm width : 1.27um"
+        "MR_rpm.WID.1",
+        "MR_rpm.WID.1 : min. rpm width : 1.27um"
     )
     rpm.space(0.84, euclidian).output(
-        "rpm.2",
-        "rpm.2 : min. rpm spacing : 0.84um"
+        "MR_rpm.SP.1",
+        "MR_rpm.SP.1 : min. rpm spacing : 0.84um"
     )
     log("END: 86/20 (rpm)")
 
     #   rdl
     log("START: 74/20 (rdl)")
-    rdl.width(10.um, euclidian).output("rdl.1", "rdl.1 : min. rdl width : 10um")
-    rdl.space(10.um, euclidian).output("rdl.2", "rdl.2 : min. rdl spacing : 10um")
+    rdl.width(10.um, euclidian).output("MR_rdl.WID.1", "MR_rdl.WID.1 : min. rdl width : 10um")
+    rdl.space(10.um, euclidian).output("MR_rdl.SP.1", "MR_rdl.SP.1 : min. rdl spacing : 10um")
     rdl.output("MR_rdl.CON.1", "MR_rdl.CON.1 : use of rdl layer is prohibited")
     log("END: 74/20 (rdl)")
 
     #   urpm
     log("START: 79/20 (urpm)")
     urpm.width(1.27, euclidian).output(
-        "urpm.1a",
-        "urpm.1a : min. rpm width : 1.27um"
+        "MR_urpm.WID.1",
+        "MR_urpm.WID.1 : min. rpm width : 1.27um"
     )
     urpm.space(0.84, euclidian).output(
-        "urpm.2",
-        "urpm.2 : min. rpm spacing : 0.84um"
+        "MR_urpm.SP.1",
+        "MR_urpm.SP.1 : min. rpm spacing : 0.84um"
     )
     log("END: 79/20 (urpm)")
 
     #   npc
     log("START: 95/20 (npc)")
-    npc.width(0.27, euclidian).output("npc.1", "npc.1 : min. npc width : 0.27um")
+    npc.width(0.27, euclidian).output("MR_npc.WID.1", "MR_npc.WID.1 : min. npc width : 0.27um")
     npc.space(0.27, euclidian).output(
         "npc.2",
         "npc.2 : min. npc spacing, should be manually merged if less than : 0.27um"
@@ -558,11 +600,11 @@ if FEOL
         not_sram_nsdm
             .not(areaid_ce)
             .space(0.38, euclidian)
-            .output("nsdm.1", "nsdm.1 : min. nsdm spacing in periphery : 0.38um")
+            .output("MR_nsdm.SP.1", "MR_nsdm.SP.1 : min. nsdm spacing in periphery : 0.38um")
         not_sram_nsdm
             .outside(areaid_ce)
             .width(0.38, euclidian)
-            .output("nsdm.2", "nsdm.2 : min. nsdm width in periphery : 0.38um")
+            .output("MR_nsdm.WID.2", "MR_nsdm.WID.2 : min. nsdm width in periphery : 0.38um")
         not_sram_nsdm_width =
             not_sram_nsdm
                 .width(0.38, euclidian)
@@ -570,7 +612,7 @@ if FEOL
                 .interacting(areaid_ce_merged)
         not_sram_nsdm_width.interacting(
             not_sram_nsdm_width.edges.outside_part(areaid_ce_merged)
-        ).output("nsdm.3", "nsdm.3 : min. diff width across areaid:ce : 0.38um")
+        ).output("MR_nsdm.WID.1", "MR_nsdm.WID.1 : min. diff width across areaid:ce : 0.38um")
         nsdm_space =
             not_sram_nsdm
                 .space(0.38, euclidian)
@@ -578,15 +620,15 @@ if FEOL
                 .interacting(areaid_ce_merged)
         nsdm_space.interacting(
             nsdm_space.edges.outside_part(areaid_ce_merged)
-        ).output("nsdm.4", "nsdm.4 : min. spacing across areaid:ce : 0.38um")
+        ).output("MR_nsdm.SP.2", "MR_nsdm.SP.2 : min. spacing across areaid:ce : 0.38um")
         not_sram_nsdm
             .inside(areaid_ce)
             .width(0.29, euclidian)
-            .output("nsdm.5", "nsdm.5 : min. nsdm width in areaid:ce : 0.29um")
+            .output("MR_nsdm.WID.3", "MR_nsdm.WID.3 : min. nsdm width in areaid:ce : 0.29um")
         not_sram_nsdm
             .inside(areaid_ce)
             .space(0.29, euclidian)
-            .output("nsdm.6", "nsdm.6 : min. nsdm spacing in areaid:ce : 0.29um")
+            .output("MR_nsdm.SP.3", "MR_nsdm.SP.3 : min. nsdm spacing in areaid:ce : 0.29um")
         not_sram_nsdm
             .inside(areaid_ce)
             .space(0.38, projection)
@@ -599,29 +641,29 @@ if FEOL
         nsdm
             .not(areaid_ce)
             .space(0.38, euclidian)
-            .output("nsdm.1", "nsdm.1 : min. nsdm spacing in periphery : 0.38um")
+            .output("MR_nsdm.SP.1", "MR_nsdm.SP.1 : min. nsdm spacing in periphery : 0.38um")
         nsdm
             .outside(areaid_ce)
             .width(0.38, euclidian)
-            .output("nsdm.2", "nsdm.2 : min. nsdm width in periphery : 0.38um")
+            .output("MR_nsdm.WID.2", "MR_nsdm.WID.2 : min. nsdm width in periphery : 0.38um")
         nsdm_width =
             nsdm.width(0.38, euclidian).polygons.interacting(areaid_ce_merged)
         nsdm_width.interacting(
             nsdm_width.edges.outside_part(areaid_ce_merged)
-        ).output("nsdm.3", "nsdm.3 : min. diff width across areaid:ce : 0.38um")
+        ).output("MR_nsdm.WID.1", "MR_nsdm.WID.1 : min. diff width across areaid:ce : 0.38um")
         nsdm_space =
             nsdm.space(0.38, euclidian).polygons.interacting(areaid_ce_merged)
         nsdm_space.interacting(
             nsdm_space.edges.outside_part(areaid_ce_merged)
-        ).output("nsdm.4", "nsdm.4 : min. spacing across areaid:ce : 0.38um")
+        ).output("MR_nsdm.SP.2", "MR_nsdm.SP.2 : min. spacing across areaid:ce : 0.38um")
         nsdm
             .inside(areaid_ce)
             .width(0.29, euclidian)
-            .output("nsdm.5", "nsdm.5 : min. nsdm width in areaid:ce : 0.29um")
+            .output("MR_nsdm.WID.3", "MR_nsdm.WID.3 : min. nsdm width in areaid:ce : 0.29um")
         nsdm
             .inside(areaid_ce)
             .space(0.29, euclidian)
-            .output("nsdm.6", "nsdm.6 : min. nsdm spacing in areaid:ce : 0.29um")
+            .output("MR_nsdm.SP.3", "MR_nsdm.SP.3 : min. nsdm spacing in areaid:ce : 0.29um")
         nsdm
             .inside(areaid_ce)
             .space(0.38, projection)
@@ -640,11 +682,11 @@ if FEOL
         not_sram_psdm
             .not(areaid_ce)
             .space(0.38, euclidian)
-            .output("psdm.1", "psdm.1 : min. psdm spacing in periphery : 0.38um")
+            .output("MR_psdm.SP.1", "MR_psdm.SP.1 : min. psdm spacing in periphery : 0.38um")
         not_sram_psdm
             .outside(areaid_ce)
             .width(0.38, euclidian)
-            .output("psdm.2", "psdm.2 : min. psdm width in periphery : 0.38um")
+            .output("MR_psdm.WID.2", "MR_psdm.WID.2 : min. psdm width in periphery : 0.38um")
         not_sram_psdm_width =
             not_sram_psdm
                 .width(0.38, euclidian)
@@ -652,7 +694,7 @@ if FEOL
                 .interacting(areaid_ce_merged)
         not_sram_psdm_width.interacting(
             not_sram_psdm_width.edges.outside_part(areaid_ce_merged)
-        ).output("psdm.3", "psdm.3 : min. diff width across areaid:ce : 0.38um")
+        ).output("MR_psdm.WID.1", "MR_psdm.WID.1 : min. diff width across areaid:ce : 0.38um")
         psdm_space =
             not_sram_psdm
                 .space(0.38, euclidian)
@@ -660,15 +702,15 @@ if FEOL
                 .interacting(areaid_ce_merged)
         psdm_space.interacting(
             psdm_space.edges.outside_part(areaid_ce_merged)
-        ).output("psdm.4", "psdm.4 : min. spacing across areaid:ce : 0.38um")
+        ).output("MR_psdm.SP.2", "MR_psdm.SP.2 : min. spacing across areaid:ce : 0.38um")
         not_sram_psdm
             .inside(areaid_ce)
             .width(0.29, euclidian)
-            .output("psdm.5", "psdm.5 : min. psdm width in areaid:ce : 0.29um")
+            .output("MR_psdm.WID.3", "MR_psdm.WID.3 : min. psdm width in areaid:ce : 0.29um")
         not_sram_psdm
             .inside(areaid_ce)
             .space(0.29, euclidian)
-            .output("psdm.6", "psdm.6 : min. psdm spacing in areaid:ce : 0.29um")
+            .output("MR_psdm.SP.3", "MR_psdm.SP.3 : min. psdm spacing in areaid:ce : 0.29um")
         not_sram_psdm
             .inside(areaid_ce)
             .space(0.38, projection)
@@ -688,29 +730,29 @@ if FEOL
         psdm
             .not(areaid_ce)
             .space(0.38, euclidian)
-            .output("psdm.1", "psdm.1 : min. psdm spacing in periphery : 0.38um")
+            .output("MR_psdm.SP.1", "MR_psdm.SP.1 : min. psdm spacing in periphery : 0.38um")
         psdm
             .outside(areaid_ce)
             .width(0.38, euclidian)
-            .output("psdm.2", "psdm.2 : min. psdm width in periphery : 0.38um")
+            .output("MR_psdm.WID.2", "MR_psdm.WID.2 : min. psdm width in periphery : 0.38um")
         psdm_width =
             psdm.width(0.38, euclidian).polygons.interacting(areaid_ce_merged)
         psdm_width.interacting(
             psdm_width.edges.outside_part(areaid_ce_merged)
-        ).output("psdm.3", "psdm.3 : min. diff width across areaid:ce : 0.38um")
+        ).output("MR_psdm.WID.1", "MR_psdm.WID.1 : min. diff width across areaid:ce : 0.38um")
         psdm_space =
             psdm.space(0.38, euclidian).polygons.interacting(areaid_ce_merged)
         psdm_space.interacting(
             psdm_space.edges.outside_part(areaid_ce_merged)
-        ).output("psdm.4", "psdm.4 : min. spacing across areaid:ce : 0.38um")
+        ).output("MR_psdm.SP.2", "MR_psdm.SP.2 : min. spacing across areaid:ce : 0.38um")
         psdm
             .inside(areaid_ce)
             .width(0.29, euclidian)
-            .output("psdm.5", "psdm.5 : min. psdm width in areaid:ce : 0.29um")
+            .output("MR_psdm.WID.3", "MR_psdm.WID.3 : min. psdm width in areaid:ce : 0.29um")
         psdm
             .inside(areaid_ce)
             .space(0.29, euclidian)
-            .output("psdm.6", "psdm.6 : min. psdm spacing in areaid:ce : 0.29um")
+            .output("MR_psdm.SP.3", "MR_psdm.SP.3 : min. psdm spacing in areaid:ce : 0.29um")
         psdm
             .inside(areaid_ce)
             .space(0.38, projection)
@@ -735,6 +777,18 @@ if FEOL
     polyi = poly_fill.and(poly)
     poly_licon = (polyi.and(licon)).and(areaid_ce)
     licon_peri = licon.outside(areaid_ce)
+
+    licon_squares = licon.drc((squares) & (bbox_min == 0.17).polygons)
+    licon_not_squares = licon.not(licon_squares)
+    licon_bars = licon.drc((bbox_max == 2.0) & (bbox_min == 0.19).polygons)
+
+    #if INFO
+    #    licon_bars.output(
+    #        "licon_bar",
+    #        "licon bar : Info only"
+    #    )
+    #end
+
     if SEAL
         ringLICON = licon.drc(with_holes > 0)
         rectLICON = licon.not(ringLICON)
@@ -789,94 +843,180 @@ if FEOL
         "licon.6",
         "licon.6 : npc min enclosure of poly_licon inside areaid:core : 0.045um"
     )
+    
+    # Additional MR licon bar rules
+    # MR_licon.ANG.1: licon outside areaid:seal must be orthogonal
+    licon_outside_seal = licon.outside(areaid_sl)
+    licon_outside_seal.with_angle(0..90).output(
+        "MR_licon.ANG.1",
+        "MR_licon.ANG.1 : licon outside areaid:seal must be orthogonal"
+    )
+    
+    # MR_licon.CON.13: licon bar outside prec_resistor is prohibited
+    licon_bars_outside_prec_resistor = licon_bars.outside(prec_resistor)
+    licon_bars_outside_prec_resistor.output(
+        "MR_licon.CON.13",
+        "MR_licon.CON.13 : licon bar outside prec_resistor is prohibited"
+    )
+
+    licon_squares_rpm_urpm = licon_squares.interacting(rpm | urpm)
+    licon_squares_rpm_urpm.output(
+        "MR_licon.CON.xx",
+        "MR_licon.CON.xx : licon square interacting with rpm/urpm is prohibited"
+    )
+    
+    # MR_licon.SP.2: licon bar end to end minimum spacing ≥ 0.35
+    licon_bars.drc(width == 2.00).space(0.35, euclidian).output(
+        "MR_licon.SP.2",
+        "MR_licon.SP.2 : licon bar end to end minimum spacing : 0.35um"
+    )
+    
+    # MR_licon.SP.3: licon bar side to side minimum spacing ≥ 0.51
+    # This is handled by the general spacing rule above, but we can add specific check
+    licon_bars.drc(width == 0.19).space(0.51, euclidian).output(
+        "MR_licon.SP.3",
+        "MR_licon.SP.3 : licon bar side to side minimum spacing : 0.51um"
+    )
+    
+    # MR_licon.SP.4: licon bar minimum space to licon square ≥ 0.51
+    licon_bars.separation(licon_squares, 0.51, euclidian).output(
+        "MR_licon.SP.4",
+        "MR_licon.SP.4 : licon bar minimum space to licon square : 0.51um"
+    )
+    
+    # MRW_licon.SP.16: 0.19 width bar licons (post-maskgen) bar licon spacing < 0.51
+    #licon_bars.space(0.51, euclidian).output(
+    #    "MRW_licon.SP.16",
+    #    "MRW_licon.SP.16 : 0.19 width bar licons (post-maskgen) bar licon spacing < 0.51"
+    #)
+    
+    # MR_licon.SP.5: tap_licon minimum space to tap edge abutting diff ≥ 0.06
+    tap_licon = licon.and(tap)
+    tap_licon.separation(diff, 0.06, euclidian).output(
+        "MR_licon.SP.5",
+        "MR_licon.SP.5 : tap_licon minimum space to tap edge abutting diff : 0.06um"
+    )
+    
+    # MR_licon.SP.6: poly_licon minimum space to psdm (overlap prohibited) ≥ 0.11
+    poly_licon_all = licon.and(poly)
+    poly_licon_all.separation(psdm, 0.11, euclidian).output(
+        "MR_licon.SP.6",
+        "MR_licon.SP.6 : poly_licon minimum space to psdm (overlap prohibited) : 0.11um"
+    )
+    
+    # MR_licon.SP.8: licon on diff minimum space to gate outside areaid:standardc (overlap prohibited) ≥ 0.055
+    licon_on_diff = licon.and(difftap)
+    licon_on_diff_outside_stdc = licon_on_diff.outside(areaid_sc)
+    licon_on_diff_outside_stdc.separation(poly, 0.055, euclidian).output(
+        "MR_licon.SP.8",
+        "MR_licon.SP.8 : licon on diff minimum space to gate outside areaid:standardc (overlap prohibited) : 0.055um"
+    )
+    
+    # MR_licon.WID.1: licon (non-bar) minimum/maximum width == 0.17
+    licon_non_bar = licon.drc((length <= 0.17).polygons)
+    licon_non_bar.drc(width != 0.17).output(
+        "MR_licon.WID.1",
+        "MR_licon.WID.1 : licon (non-bar) minimum/maximum width : 0.17um"
+    )
+    
+    # MR_licon.WID.2: licon bar exact size: 0.19 µm × 2.0 µm
+    licon_bars.drc(width(euclidian) != 0.19).output(
+        "MR_licon.WID.2",
+        "MR_licon.WID.2 : licon bar exact width : 0.19um"
+    )
+    licon_bars.drc(bbox_max != 2.0).output(
+        "MR_licon.WID.2",
+        "MR_licon.WID.2 : licon bar exact length : 2.0um"
+    )
+    
     log("END: 66/44 (licon)")
 
     #nsm
     log("START: 61/20 (nsm)")
-    nsm.space(4.0, euclidian).output("nsm.1", "nsm.1 : nsm min. spacing : 4.0um")
-    nsm.width(3.0, euclidian).output("nsm.2", "nsm.2 : nsm min. width : 3.0um")
+    nsm.space(4.0, euclidian).output("MR_nsm.SP.1", "MR_nsm.SP.1 : nsm min. spacing : 4.0um")
+    nsm.width(3.0, euclidian).output("MR_nsm.WID.1", "MR_nsm.WID.1 : nsm min. width : 3.0um")
     log("END: 61/20 (nsm)")
 
     # CAPM
     log("START: 89/44 (capm)")
     capm.width(1.0, euclidian).output(
-        "capm.1",
-        "capm.1 : min. capm width : 1.0um"
+        "MR_capm.WID.1",
+        "MR_capm.WID.1 : min. capm width : 1.0um"
     )
     capm.space(0.84, euclidian).output(
-        "capm.2a",
-        "capm.2a : min. capm spacing : 0.84um"
+        "MR_capm.SP.1",
+        "MR_capm.SP.1 : min. capm spacing : 0.84um"
     )
     m3_bot_plate = ((capm.and(m3)).sized(0.14))
     m3_bot_plate
         .isolated(1.2, euclidian)
         .polygons
         .not(m3)
-        .output("capm.2b", "capm.2b : min. spacing between met3_bot_plate : 1.2um")
+        .output("MR_capm.SP.2", "MR_capm.SP.2 : min. spacing between met3_bot_plate : 1.2um")
     (m3.not_interacting(m3_bot_plate)).separation(
         m3_bot_plate,
         1.2,
         euclidian
     ).output(
-        "capm.2b_a",
-        "capm.2b_a : min. spacing between met3_bot_plate and met3 : 1.2um"
+        "MR_capm.SP.2",
+        "MR_capm.SP.2 : min. spacing between met3_bot_plate and met3 : 1.2um"
     )
     # capm.and(m3).enclosing(m3, 0.14, euclidian).output("capm.3", "capm.3 : min. capm and m3 enclosure of m3 : 0.14um")
     m3.enclosing(capm, 0.14, euclidian).output(
-        "capm.3",
-        "capm.3 : min. m3 enclosure of capm : 0.14um"
+        "MR_capm.ENC.1",
+        "MR_capm.ENC.1 : min. m3 enclosure of capm : 0.14um"
     )
     capm.enclosing(via3, 0.14, euclidian).output(
-        "capm.4",
-        "capm.4 : min. capm enclosure of via3 : 0.14um"
+        "MR_capm.ENC.2",
+        "MR_capm.ENC.2 : min. capm enclosure of via3 : 0.14um"
     )
     capm.separation(via3, 0.14, euclidian).output(
-        "capm.5",
-        "capm.5 : min. capm spacing to via3 : 0.14um"
+        "MR_capm.SP.3",
+        "MR_capm.SP.3 : min. capm spacing to via3 : 0.14um"
     )
     (m3.not_interacting(capm)).separation(capm, 0.5, euclidian).output(
-        "capm.11",
-        "capm.11 : Min spacing of capm and met3 not overlapping capm : 0.5um"
+        "MR_capm.SP.2",
+        "MR_capm.SP.2 : Min spacing of capm and met3 not overlapping capm : 0.5um"
     )
     log("END: 89/44 (capm)")
 
     # CAP2M
     log("START: 97/44 (cap2m)")
     cap2m.width(1.0, euclidian).output(
-        "cap2m.1",
-        "cap2m.1 : min. cap2m width : 1.0um"
+        "MR_cap2m.WID.1",
+        "MR_cap2m.WID.1 : min. cap2m width : 1.0um"
     )
     cap2m.space(0.84, euclidian).output(
-        "cap2m.2a",
-        "cap2m.2a : min. cap2m spacing : 0.84um"
+        "MR_cap2m.SP.1",
+        "MR_cap2m.SP.1 : min. cap2m spacing : 0.84um"
     )
     m4
         .interacting(cap2m)
         .isolated(1.2, euclidian)
-        .output("cap2m.2b", "cap2m.2b : min. cap2m spacing : 1.2um")
+        .output("MR_cap2m.SP.2", "MR_cap2m.SP.2 : min. cap2m spacing : 1.2um")
     (m4.interacting(cap2m)).isolated(1.2, euclidian).output(
-        "cap2m.2b_a",
-        "cap2m.2b_a : min. spacing of m4_bot_plate : 1.2um"
+        "MR_cap2m.SP.2",
+        "MR_cap2m.SP.2 : min. spacing of m4_bot_plate : 1.2um"
     )
     cap2m
         .and(m4)
         .enclosing(m4, 0.14, euclidian)
-        .output("cap2m.3", "cap2m.3 : min. m4 enclosure of cap2m : 0.14um")
+        .output("MR_cap2m.ENC.1", "MR_cap2m.ENC.1 : min. m4 enclosure of cap2m : 0.14um")
     m4.enclosing(cap2m, 0.14, euclidian).output(
-        "cap2m.3_a",
-        "cap2m.3_a : min. m4 enclosure of cap2m : 0.14um"
+        "MR_cap2m.ENC.1",
+        "MR_cap2m.ENC.1 : min. m4 enclosure of cap2m : 0.14um"
     )
     cap2m.enclosing(via4, 0.2, euclidian).output(
-        "cap2m.4",
-        "cap2m.4 : min. cap2m enclosure of via4 : 0.2um"
+        "MR_cap2m.ENC.2",
+        "MR_cap2m.ENC.2 : min. cap2m enclosure of via4 : 0.2um"
     )
     cap2m.separation(via4, 0.2, euclidian).output(
-        "cap2m.5",
-        "cap2m.5 : min. cap2m spacing to via4 : 0.2um"
+        "MR_cap2m.SP.3",
+        "MR_cap2m.SP.3 : min. cap2m spacing to via4 : 0.2um"
     )
     (m4.not_interacting(cap2m)).separation(cap2m, 0.5, euclidian).output(
-        "cap2m.11",
-        "cap2m.11 : Min spacing of cap2m and met4 not overlapping cap2m : 0.5um"
+        "MR_cap2m.SP.2",
+        "MR_cap2m.SP.2 : Min spacing of cap2m and met4 not overlapping cap2m : 0.5um"
     )
     log("END: 97/44 (cap2m)")
 end #FEOL
@@ -942,55 +1082,55 @@ if BEOL
     end
     rectMCON_peri = rectMCON.outside(areaid_ce)
     rectMCON.non_rectangles.output(
-        "ct.1",
-        "ct.1: non-ring mcon should be rectangular"
+        "MR_mcon.ANG.1",
+        "MR_mcon.ANG.1: mcon must be rectangular"
     )
     # rectMCON_peri.edges.without_length(0.17).output("ct.1_a/b", "ct.1_a/b : minimum/maximum width of mcon : 0.17um")
-    rectMCON_peri.drc(width < 0.17).output(
-        "ct.1_a",
-        "ct.1_a : minimum width of mcon : 0.17um"
+    rectMCON_peri.drc(width(euclidian) < 0.17).output(
+        "MR_mcon.WID.1",
+        "MR_mcon.WID.1 : minimum width of mcon : 0.17um"
     )
     rectMCON_peri.drc(length > 0.17).output(
-        "ct.1_b",
-        "ct.1_b : maximum length of mcon : 0.17um"
+        "MR_mcon.LEN.1",
+        "MR_mcon.LEN.1 : maximum length of mcon : 0.17um"
     )
     mcon.space(0.19, euclidian).output(
-        "ct.2",
-        "ct.2 : min. mcon spacing : 0.19um"
+        "MR_mcon.SP.1",
+        "MR_mcon.SP.1 : min. mcon spacing : 0.19um"
     )
     if SEAL
         ringMCON.width(0.17, euclidian).output(
-            "ct.3",
-            "ct.3 : min. width of ring-shaped mcon : 0.17um"
+            "MR_mcon.WID.2",
+            "MR_mcon.WID.2 : min. width of ring-shaped mcon : 0.17um"
         )
-        ringMCON.drc(width >= 0.175).output(
-            "ct.3_a",
-            "ct.3_a : max. width of ring-shaped mcon : 0.175um"
+        ringMCON.drc(width(euclidian) >= 0.175).output(
+            "MR_mcon.WID.3",
+            "MR_mcon.WID.3 : max. width of ring-shaped mcon : 0.175um"
         )
         ringMCON.not(areaid_sl).output(
-            "ct.3_b",
-            "ct.3_b: ring-shaped mcon must be enclosed by areaid_sl"
+            "MR_mcon.CON.1",
+            "MR_mcon.CON.1: ring-shaped mcon must be enclosed by areaid_sl"
         )
     end
-    mconnotace.not(li).output("ct.4", "ct.4 : mcon should covered by li")
+    mconnotace.not(li).output("MR_mcon.CON.10", "MR_mcon.CON.10 : mcon should covered by li")
     log("END: 67/44 (mcon)")
 
     #   m1
     log("START: 68/20 (m1)")
-    m1.width(0.14, euclidian).output("m1.1", "m1.1 : min. m1 width : 0.14um")
+    m1.width(0.14, euclidian).output("MR_met1.WID.1", "MR_met1.WID.1 : min. m1 width : 0.14um")
     huge_m1 = m1.sized(-1.5).sized(1.5).snap(0.005) & m1
     non_huge_m1 = m1.edges - huge_m1
     huge_m1 = huge_m1.edges.outside_part(m1.merged)
 
     non_huge_m1.space(0.14, euclidian).output(
-        "m1.2",
-        "m1.2 : min. m1 spacing : 0.14um"
+        "MR_met1.SP.1",
+        "MR_met1.SP.1 : min. m1 spacing : 0.14um"
     )
 
     (
         huge_m1.separation(non_huge_m1, 0.28, euclidian) +
             huge_m1.space(0.28, euclidian)
-    ).output("m1.3ab", "m1.3ab : min. 3um.m1 spacing m1 : 0.28um")
+    ).output("MRW_met1.SP.2", "MRW_met1.SP.2 : min. 3um.m1 spacing m1 : 0.28um")
 
     #not_in_cell6 = layout(source.cell_obj).select("-s8cell_ee_plus_sseln_a", "-s8cell_ee_plus_sseln_b", "-s8cell_ee_plus_sselp_a", "-s8cell_ee_plus_sselp_b", "-s8fpls_pl8", "-s8fs_cmux4_fm")
     not_in_cell6 =
@@ -1004,12 +1144,12 @@ if BEOL
     not_in_cell6_m1 = not_in_cell6.input(m1_wildcard)
 
     not_in_cell6_m1.enclosing(mconnotace, 0.03, euclidian).output(
-        "791_m1.4",
-        "791_m1.4 : min. m1 enclosure of mcon : 0.03um"
+        "MR_met1.ENC.1",
+        "MR_met1.ENC.1 : min. m1 enclosure of mcon : 0.03um"
     )
     mconnotace.not(m1).output(
-        "m1.4",
-        "m1.4 : mcon periphery must be enclosed by m1"
+        "MR_met1.CON.1",
+        "MR_met1.CON.1 : mcon periphery must be enclosed by m1"
     )
     in_cell6 =
         layout(source.cell_obj).select(
@@ -1032,12 +1172,12 @@ if BEOL
         "m1.4a_a : mcon periph must be enclosed by met1 for specific cells"
     )
 
-    m1.with_area(0..0.083).output("m1.6", "m1.6 : min. m1 area : 0.083um²")
+    m1.with_area(0..0.083).output("MR_met1.AR.1", "MR_met1.AR.1 : min. m1 area : 0.083um²")
 
     m1
         .holes
         .with_area(0..0.14)
-        .output("m1.7", "m1.7 : min. m1 with holes area : 0.14um²")
+        .output("MR_met1.AR.2", "MR_met1.AR.2 : min. m1 with holes area : 0.14um²")
     if FLOATING_MET
         m1.not_interacting(via.or(mcon)).output(
             "m1.x",
@@ -1045,7 +1185,7 @@ if BEOL
         )
     end
 
-    if backend_flow = AL
+    if backend_flow == AL
         #Could flag false positive, fix would be to add .rectangles for m1
         mconnotace_edges_with_less_enclosure_m1 =
             m1.enclosing(mconnotace, 0.06, projection).second_edges
@@ -1062,7 +1202,7 @@ if BEOL
 
     #   via
     log("START: 68/44 (via)")
-    if backend_flow = AL
+    if backend_flow == AL
         if SEAL
             ringVIA = via.drc(with_holes > 0)
             rectVIA = via.not(ringVIA)
@@ -1096,7 +1236,7 @@ if BEOL
                 "via.3",
                 "via.3 : min. width of ring-shaped via : 0.2um"
             )
-            ringVIA.drc(width >= 0.205).output(
+            ringVIA.drc(width(euclidian) >= 0.205).output(
                 "via.3_a",
                 "via.3_a : max. width of ring-shaped via : 0.205um"
             )
@@ -1109,12 +1249,12 @@ if BEOL
         m1
             .edges
             .enclosing(rectVIA.drc(width == 0.15), 0.055, euclidian)
-            .output("via.4a", "via.4a : min. m1 enclosure of 0.15um via : 0.055um")
+            .output("MR_via1.ENC.1", "MR_via1.ENC.1 : min. m1 enclosure of 0.15um via : 0.055um")
         rectVIA
             .squares
             .drc(width == 0.15)
             .not(m1)
-            .output("via.4a_a", "via.4a_a : 0.15um via must be enclosed by met1")
+            .output("MR_via1.CON.1", "MR_via1.CON.1 : 0.15um via must be enclosed by met1")
 
         via1_edges_with_less_enclosure_m1 =
             m1
@@ -1134,7 +1274,7 @@ if BEOL
     #   m2
     log("START: 69/20 (m2)")
     via_inside_periphery = via.and(areaid_ce)
-    m2.width(0.14, euclidian).output("m2.1", "m2.1 : min. m2 width : 0.14um")
+    m2.width(0.14, euclidian).output("MR_met2.WID.1", "MR_met2.WID.1 : min. m2 width : 0.14um")
 
     huge_m2 = m2.sized(-1.5).sized(1.5).snap(0.005) & m2
     non_huge_m2 = m2.edges - huge_m2
@@ -1149,20 +1289,20 @@ if BEOL
     (
         huge_m2.separation(non_huge_m2, 0.28, euclidian) +
             huge_m2.space(0.28, euclidian)
-    ).output("m2.3ab", "m2.3ab : min. 3um.m2 spacing m2 : 0.28um")
+    ).output("MRW_met2.SP.2", "MRW_met2.SP.2 : min. 3um.m2 spacing m2 : 0.28um")
 
-    m2.with_area(0..0.0676).output("m2.6", "m2.6 : min. m2 area : 0.0676um²")
+    m2.with_area(0..0.0676).output("MR_met2.AR.1", "MR_met2.AR.1 : min. m2 area : 0.0676um²")
     m2
         .holes
         .with_area(0..0.14)
-        .output("m2.7", "m2.7 : min. m2 holes area : 0.14um²")
+        .output("MR_met2.AR.2", "MR_met2.AR.2 : min. m2 holes area : 0.14um²")
     if FLOATING_MET
         m2.not_interacting(via.or(via2)).output(
             "m2.x",
             "floating met2, must interact with via1 or via2"
         )
     end
-    if backend_flow = AL
+    if backend_flow == AL
         m2.enclosing(via_outside_periphery, 0.055, euclidian).output(
             "m2.4",
             "m2.4 : min. m2 enclosure of via : 0.055um"
@@ -1189,7 +1329,7 @@ if BEOL
 
     #   via2
     log("START: 69/44 (via2)")
-    if backend_flow = AL
+    if backend_flow == AL
         if SEAL
             ringVIA2 = via2.drc(with_holes > 0)
             rectVIA2 = via2.not(ringVIA2)
@@ -1209,7 +1349,7 @@ if BEOL
         via2_not_mt
             .edges
             .without_length(nil, 0.2 + 1.dbu)
-            .output("via2.1a_b", "via2.1a_b : maximum length of via2 : 0.2um")
+            .output("MR_via2.LEN.1", "MR_via2.LEN.1 : maximum length of via2 : 0.2um")
         via2.space(0.2, euclidian).output(
             "via2.2",
             "via2.2 : min. via2 spacing : 0.2um"
@@ -1220,7 +1360,7 @@ if BEOL
                 "via2.3",
                 "via2.3 : min. width of ring-shaped via2 : 0.2um"
             )
-            ringVIA2.drc(width >= 0.205).output(
+            ringVIA2.drc(width(euclidian) >= 0.205).output(
                 "via2.3_a",
                 "via2.3_a : max. width of ring-shaped via2 : 0.205um"
             )
@@ -1234,7 +1374,7 @@ if BEOL
             "via2.4",
             "via2.4 : min. m2 enclosure of via2 : 0.04um"
         )
-        via2.not(m2).output("via2.4_a", "via2.4_a : via must be enclosed by met2")
+        via2.not(m2).output("MR_via2.CON.1", "MR_via2.CON.1 : via must be enclosed by met2")
 
         via2_edges_with_less_enclosure =
             m2.enclosing(via2, 0.085, projection).second_edges
@@ -1250,7 +1390,7 @@ if BEOL
 
     #   m3
     log("START: 70/20 (m3)")
-    m3.width(0.3, euclidian).output("m3.1", "m3.1 : min. m3 width : 0.3um")
+    m3.width(0.3, euclidian).output("MR_met3.WID.1", "MR_met3.WID.1 : min. m3 width : 0.3um")
 
     huge_m3 = m3.sized(-1.5).sized(1.5).snap(0.005) & m3
     non_huge_m3 = m3.edges - huge_m3
@@ -1264,30 +1404,30 @@ if BEOL
     (
         huge_m3.separation(non_huge_m3, 0.4, euclidian) +
             huge_m3.space(0.4, euclidian)
-    ).output("m3.3cd", "m3.3cd : min. 3um.m3 spacing m3 : 0.4um")
+    ).output("MRW_met3.SP.2", "MRW_met3.SP.2 : min. 3um.m3 spacing m3 : 0.4um")
     if FLOATING_MET
         m3.not_interacting(via2.or(via3)).output(
             "m3.x",
             "floating met3, must interact with via2 or via3"
         )
     end
-    if backend_flow = AL
+    if backend_flow == AL
         m3.enclosing(via2, 0.065, euclidian).output(
             "m3.4",
             "m3.4 : min. m3 enclosure of via2 : 0.065um"
         )
-        via2.not(m3).output("m3.4_a", "m3.4_a : via2 must be enclosed by met3")
+        via2.not(m3).output("MR_met3.CON.1", "MR_met3.CON.1 : via2 must be enclosed by met3")
     end
-    m3.with_area(0..0.240).output("m3.6", "m3.6 : min. m3 area : 0.240um²")
+    m3.with_area(0..0.240).output("MR_met3.AR.1", "MR_met3.AR.1 : min. m3 area : 0.240um²")
     m3
         .holes
         .with_area(0..0.2)
-        .output("m3.7", "m3.7 : min. m3 holes area : 0.2um²")
+        .output("MR_met3.AR.2", "MR_met3.AR.2 : min. m3 holes area : 0.2um²")
     log("END: 70/20 (m3)")
 
     #   via3
     log("START: 70/44 (via3)")
-    if backend_flow = AL
+    if backend_flow == AL
         if SEAL
             ringVIA3 = via3.drc(with_holes > 0)
             rectVIA3 = via3.not(ringVIA3)
@@ -1307,7 +1447,7 @@ if BEOL
         via3_not_mt
             .edges
             .without_length(nil, 0.2 + 1.dbu)
-            .output("via3.1_b", "via3.1_b : maximum length of via3 : 0.2um")
+            .output("MR_via3.LEN.1", "MR_via3.LEN.1 : maximum length of via3 : 0.2um")
 
         via3.space(0.2, euclidian).output(
             "via3.2",
@@ -1336,7 +1476,7 @@ if BEOL
 
     #   m4
     log("START: 71/20 (m4)")
-    m4.width(0.3, euclidian).output("m4.1", "m4.1 : min. m4 width : 0.3um")
+    m4.width(0.3, euclidian).output("MR_met4.WID.1", "MR_met4.WID.1 : min. m4 width : 0.3um")
 
     huge_m4 = m4.sized(-1.5).sized(1.5).snap(0.005) & m4
     non_huge_m4 = m4.edges - huge_m4
@@ -1347,29 +1487,29 @@ if BEOL
         "m4.2 : min. m4 spacing : 0.3um"
     )
 
-    m4.with_area(0..0.240).output("m4.4a", "m4.4a : min. m4 area : 0.240um²")
+    m4.with_area(0..0.240).output("MR_met4.AR.1", "MR_met4.AR.1 : min. m4 area : 0.240um²")
 
     (
         huge_m4.separation(non_huge_m4, 0.4, euclidian) +
             huge_m4.space(0.4, euclidian)
-    ).output("m4.5ab", "m4.5ab : min. 3um.m4 spacing m4 : 0.4um")
+    ).output("MRW_met4.SP.2", "MRW_met4.SP.2 : min. 3um.m4 spacing m4 : 0.4um")
     if FLOATING_MET
         m4.not_interacting(via3.or(via4)).output(
             "m4.x",
             "floating met3, must interact with via3 or via4"
         )
     end
-    if backend_flow = AL
+    if backend_flow == AL
         m4.enclosing(via3, 0.065, euclidian).output(
             "m4.3",
             "m4.3 : min. m4 enclosure of via3 : 0.065um"
         )
-        via3.not(m4).output("m4.3_a", "m4.3_a : via3 must be enclosed by met4")
+        via3.not(m4).output("MR_met4.CON.1", "MR_met4.CON.1 : via3 must be enclosed by met4")
     end
     m4
         .holes
         .with_area(0..0.2)
-        .output("m4.7", "m4.7 : min. m4 holes area : 0.2um²")
+        .output("MR_met4.AR.2", "MR_met4.AR.2 : min. m4 holes area : 0.2um²")
     log("END: 71/20 (m4)")
 
     #   via4
@@ -1398,14 +1538,14 @@ if BEOL
     via4
         .space(0.8, euclidian)
         .polygons
-        .output("via4.2", "via4.2 : min. via4 spacing : 0.8um")
+        .output("MR_via4.SP.1", "MR_via4.SP.1 : min. via4 spacing : 0.8um")
 
     if SEAL
         ringVIA4.width(0.8, euclidian).output(
             "via4.3",
             "via4.3 : min. width of ring-shaped via4 : 0.8um"
         )
-        ringVIA4.drc(width >= 0.805).output(
+        ringVIA4.drc(width(euclidian) >= 0.805).output(
             "via4.3_a",
             "via4.3_a : max. width of ring-shaped via4 : 0.805um"
         )
@@ -1419,31 +1559,31 @@ if BEOL
         "via4.4",
         "via4.4 : min. m4 enclosure of via4 : 0.19um"
     )
-    rectVIA4.not(m4).output("via4.4_a", "via4.4_a : m4 must enclose all via4")
+    rectVIA4.not(m4).output("MR_via4.CON.1", "MR_via4.CON.1 : m4 must enclose all via4")
     log("END: 71/44 (via4)")
 
     #   m5
     log("START: 72/20 (m5)")
-    m5.width(1.6, euclidian).output("m5.1", "m5.1 : min. m5 width : 1.6um")
+    m5.width(1.6, euclidian).output("MR_met5.WID.1", "MR_met5.WID.1 : min. m5 width : 1.6um")
 
-    m5.space(1.6, euclidian).output("m5.2", "m5.2 : min. m5 spacing : 1.6um")
+    m5.space(1.6, euclidian).output("MR_met5.SP.1", "MR_met5.SP.1 : min. m5 spacing : 1.6um")
 
     m5.enclosing(via4, 0.31, euclidian).output(
         "m5.3",
         "m5.3 : min. m5 enclosure of via4 : 0.31um"
     )
-    via4.not(m5).output("m5.3_a", "m5.3_a : via must be enclosed by m5")
+    via4.not(m5).output("MR_met5.CON.1", "MR_met5.CON.1 : via must be enclosed by m5")
     if FLOATING_MET
         m5.not_interacting(via4).output(
             "m5.x",
             "floating met5, must interact with via4"
         )
     end
-    m5.with_area(0..4.0).output("m5.4", "m5.4 : min. m5 area : 4.0um²")
+    m5.with_area(0..4.0).output("MR_met5.AR.1", "MR_met5.AR.1 : min. m5 area : 4.0um²")
     m5
         .holes
         .with_area(0..0.14)
-        .output("m5.7", "m5.7 : min. m5 holes area : 0.14um²")
+        .output("MR_met5.AR.2", "MR_met5.AR.2 : min. m5 holes area : 0.14um²")
     log("END: 72/20 (m5)")
 
     #   pad
