@@ -5,7 +5,6 @@ dynamic = ["version"]
 dependencies = [
     "CairoSVG",
     "chevron",
-    "cocotb",
     "gdstk",
     "GitPython",
     "klayout<0.30.0,>=0.29.0",

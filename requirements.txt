@@ -20,8 +20,6 @@ chevron==0.14.0
     # via tt-support-tools (pyproject.toml)
 click==8.2.1
     # via yowasp-yosys
-cocotb==2.0.0
-    # via tt-support-tools (pyproject.toml)
 contourpy==1.3.3
     # via matplotlib
 cssselect2==0.8.0
@@ -34,8 +32,6 @@ distlib==0.4.0
     # via virtualenv
 filelock==3.18.0
     # via virtualenv
-find-libpython==0.4.1
-    # via cocotb
 fonttools==4.60.1
     # via matplotlib
 gdstk==0.9.60
