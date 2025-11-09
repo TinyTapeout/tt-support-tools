@@ -253,7 +253,11 @@ class ShuttleConfig:
             )
 
         # Copy power gate / analog switch macros:
-        for mux_macro in self.tech.mux_macros:
+        mux_macros = self.tech.mux_macros
+        if self.config.get("id") == "ttsky25a":
+            # Backward compatibility for ttsky25a shuttle mux with older pg macros
+            mux_macros = [m.replace("_hp_", "_") for m in mux_macros]
+        for mux_macro in mux_macros:
             self.copy_mux_macro(mux_macro, os.path.basename(mux_macro))
 
         # Copy logo & shuttle ID
