@@ -2,6 +2,7 @@ import json
 import logging
 import math
 import os
+import shutil
 from typing import List
 
 import chevron
@@ -12,7 +13,7 @@ import yaml
 from config import Config
 from doc_utils import DocsHelper
 from git_utils import get_first_remote
-from markdown_utils import rewrite_image_paths
+from markdown_utils import rewrite_image_paths, rewrite_image_paths_for_website
 from project import Project
 
 
@@ -267,3 +268,89 @@ class Docs:
             f.writelines(datasheet_manifest)
 
         DocsHelper.compile()
+
+    def build_hugo_content(self, hugo_root: str) -> None:
+        hugo_images = os.path.join(hugo_root, "images")
+        shutil.rmtree(hugo_root)
+        os.makedirs(hugo_root)
+        os.makedirs(hugo_images)
+
+        with open(
+            os.path.join(self.script_dir, "docs", "hugo_template.md.mustache")
+        ) as fh:
+            doc_template = fh.read()
+
+        with open(
+            os.path.join(self.script_dir, "docs", "hugo_index_template.md.mustache")
+        ) as fh:
+            index_template = fh.read()
+
+        # copy image
+        # TODO, need to get image from somewhere
+        # shutil.copyfile(
+        #    "tt/docs/pics/tinytapeout_numbered.png",
+        #    os.path.join(hugo_images, f'tinytapeout-{self.config["id"]}.png'),
+        # )
+
+        # index page
+        logging.info("building pages")
+        hugo_tag = {"hugo": lambda text, render: "{{" + render(text) + "}}"}
+        shuttle_info = {
+            "shuttle_name": self.config["name"],
+            "shuttle_id": self.config["id"],
+            "project_count": len(self.projects),
+            "end_date": self.config["end_date"],
+        }
+        with open(os.path.join(hugo_root, "_index.md"), "w") as fh:
+            shuttle_info.update(hugo_tag)
+            fh.write(chevron.render(index_template, shuttle_info))
+            fh.write("# All projects\n")
+            fh.write("| Index | Title | Author |\n")
+            fh.write("| ----- | ----- | -------|\n")
+            self.projects.sort(key=lambda x: x.mux_address)
+            for project in self.projects:
+                logging.info(project)
+                fh.write(project.get_hugo_row())
+
+                project_dir = os.path.join(hugo_root, f"{project.mux_address :03}")
+                project_image_dir = os.path.join(project_dir, "images")
+                os.makedirs(project_dir)
+                os.makedirs(project_image_dir)
+                yaml_data = project.get_project_docs_dict()
+                yaml_data.update(
+                    {
+                        "mux_address": project.mux_address,
+                        "index": project.index,
+                        "weight": project.index,
+                        "git_action": project.get_workflow_url_when_submitted(),
+                        "shuttle_id": self.config["id"],
+                        "user_docs": rewrite_image_paths_for_website(
+                            yaml_data["user_docs"],
+                            os.path.join(project.src_dir, "docs"),
+                            project_image_dir,
+                        ),
+                        "pins": [
+                            {
+                                "pin_index": str(i),
+                                "ui": project.info.pinout.ui[i],
+                                "uo": project.info.pinout.uo[i],
+                                "uio": project.info.pinout.uio[i],
+                            }
+                            for i in range(8)
+                        ],
+                        "analog_pins": [
+                            {
+                                "ua_index": str(i),
+                                "analog_index": str(project.analog_pins[i]),
+                                "desc": desc,
+                            }
+                            for i, desc in enumerate(project.info.pinout.ua)
+                        ],
+                        "is_analog": bool(project.info.pinout.ua),
+                    }
+                )
+
+                yaml_data.update(hugo_tag)
+                doc = chevron.render(doc_template, yaml_data)
+                with open(os.path.join(project_dir, "_index.md"), "w") as pfh:
+                    pfh.write(doc)
