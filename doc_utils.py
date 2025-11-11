@@ -250,7 +250,7 @@ class DocsHelper:
             "repo": project.git_url,
             "language": project.info.language,
             "macro": project.info.top_module,
-            "is_analog": project.info.is_analog,
+            "is_analog": project.is_analog_design(),
             "is_wokwi": project.is_wokwi(),
             "type": "project",
         }
@@ -264,7 +264,7 @@ class DocsHelper:
             info["pinout"].update({f"uo[{i}]": project.info.pinout.uo[i]})
             info["pinout"].update({f"uio[{i}]": project.info.pinout.uio[i]})
 
-        if project.info.is_analog:
+        if project.is_analog_design():
             info["analog_pins"] = project.analog_pins
             for i, desc in enumerate(project.info.pinout.ua):
                 info["pinout"].update({f"ua[{i}]": desc})
