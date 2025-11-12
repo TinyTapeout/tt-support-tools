@@ -264,7 +264,7 @@ class ShuttleConfig:
             f"{lastrun}/final/gds/{self.tt_top_macro}.gds",
             f"efabless/gds/{self.tt_top_macro}.gds",
         )
-        copy_print(
-            f"{lastrun}/final/lef/{self.tt_top_macro}.lef",
-            f"efabless/lef/{self.tt_top_macro}.lef",
-        )
+        # copy_print(
+        #     f"{lastrun}/final/lef/{self.tt_top_macro}.lef",
+        #     f"efabless/lef/{self.tt_top_macro}.lef",
+        # )
