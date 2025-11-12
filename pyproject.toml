@@ -3,20 +3,17 @@ name = "tt-support-tools"
 requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
-    "CairoSVG",
-    "chevron",
-    "cocotb",
-    "gdstk",
-    "GitPython",
-    "klayout<0.30.0,>=0.29.0",
-    "mistune",
+    "CairoSVG==2.7.0",
+    "chevron==0.14.0",
+    "gdstk==0.9.49",
+    "GitPython==3.1.40",
+    "mistune==3.0.1",
     "numpy<2",
-    "pre-commit",
-    "pytest",
-    "python-frontmatter",
-    "PyYAML",
-    "requests",
-    "yowasp-yosys",
+    "pre-commit==3.4.0",
+    "python-frontmatter==1.0.0",
+    "PyYAML==6.0",
+    "requests==2.31.0",
+    "yowasp-yosys==0.30.0.0.post538",
     "matplotlib"
 ]
 
