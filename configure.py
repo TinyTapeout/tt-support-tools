@@ -43,8 +43,6 @@ class Projects:
         ]
         if args.test:
             project_list = ["tt_um_chip_rom", "tt_um_factory_test"]
-        elif args.sta_projects:
-            project_list = ["tt_um_loopback"]
 
         for index, project_id in enumerate(project_list):
             project_dir = os.path.join(self.project_dir, project_id)
@@ -249,9 +247,6 @@ if __name__ == "__main__":
         "--test", help="use test projects", action="store_const", const=True
     )
     parser.add_argument(
-        "--sta-projects", help="use sta projects", action="store_const", const=True
-    )
-    parser.add_argument(
         "--debug",
         help="debug logging",
         action="store_const",
@@ -307,8 +302,6 @@ if __name__ == "__main__":
 
     if args.test:
         modules_yaml_name = "modules.test.yaml"
-    elif args.sta_projects:
-        modules_yaml_name = "modules.sta.yaml"
     else:
         modules_yaml_name = "modules.yaml"
 
