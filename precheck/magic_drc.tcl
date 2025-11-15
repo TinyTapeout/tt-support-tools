@@ -20,6 +20,7 @@ set PDK_PATH [lindex $argv 8]
 set DRC_REPORT [lindex $argv 9]
 set DRC_MAG [lindex $argv 10]
 
+gds maskhints yes
 gds read $GDS_UT_PATH
 
 set fout [open $DRC_REPORT w]
