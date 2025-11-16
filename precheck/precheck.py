@@ -9,7 +9,6 @@ import time
 import traceback
 import xml.etree.ElementTree as ET
 
-import brotli
 import gdstk
 import klayout.db as pya
 import klayout.rdb as rdb
@@ -282,17 +281,16 @@ def main():
         gds_stem = args.gds.removesuffix(".gds")
         gds_temp = None
         gds_file = args.gds
-    elif args.gds.endswith(".gds.br"):
-        gds_stem = args.gds.removesuffix(".gds.br")
+    elif args.gds.endswith(".oas"):
+        gds_stem = args.gds.removesuffix(".oas")
         gds_temp = tempfile.NamedTemporaryFile(suffix=".gds", delete=False)
         gds_file = gds_temp.name
-        logging.info(f"decompressing {args.gds} to {gds_file}")
-        with open(args.gds, "rb") as f:
-            data = f.read()
-        with open(gds_file, "wb") as f:
-            f.write(brotli.decompress(data))
+        logging.info(f"Converting {args.gds} to {gds_file}")
+        layout = pya.Layout()
+        layout.read(args.gds)
+        layout.write(gds_file)
     else:
-        raise PrecheckFailure("Layout file extension is neither .gds nor .gds.br")
+        raise PrecheckFailure("Layout file extension is neither .gds nor .oas")
 
     tech = args.tech
     if tech not in tech_names:

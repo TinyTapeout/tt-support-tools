@@ -3,7 +3,6 @@ name = "tt-precheck"
 requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
-    "brotli",
     "gdstk",
     "klayout>=0.28.17.post1,<0.29.0",
     "numpy<2",
