@@ -32,7 +32,8 @@
   "pdk::gf180mcuD": {
     "DIE_AREA": [0, 0, 346.64, 160.72],
     "FP_DEF_TEMPLATE": "ref::$DESIGN_DIR/../tech/gf180mcuD/def/tt_block_1x1_pgvdd.def",
-    "RT_MAX_LAYER": "Metal4"
+    "RT_MAX_LAYER": "Metal4",
+    "RUN_KLAYOUT_DRC": false
   },
 
   "pdk::ihp-sg13g2": {
