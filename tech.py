@@ -227,12 +227,7 @@ class GF180MCUDTech(Tech):
     scramble_cells = "gf180mcu_fd_sc_"
     mux_config_yaml_name = "gf180mcuD.yaml"
     mux_macros = [
-        "pg/gf180mcuD/tt_pg_1v8_hp_1",
-        "pg/gf180mcuD/tt_pg_1v8_hp_2",
-        "pg/gf180mcuD/tt_pg_1v8_hp_4",
-        "pg/gf180mcuD/tt_pg_1v8_ll_1",
-        "pg/gf180mcuD/tt_pg_1v8_ll_2",
-        "pg/gf180mcuD/tt_pg_1v8_ll_4",
+        # Currently none
     ]
     extra_logo_macros = []
     prboundary_layer = (0, 0)  # PR_bndry
