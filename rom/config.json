@@ -1,7 +1,7 @@
 {
   "DESIGN_NAME": "tt_um_chip_rom",
   "VERILOG_FILES": "dir::tt_um_chip_rom.v",
-  
+
   "FP_SIZING": "absolute",
 
   "FP_IO_HLENGTH": 2,
@@ -27,6 +27,12 @@
     "DIE_AREA": [0, 0, 161.0, 111.52],
     "FP_DEF_TEMPLATE": "ref::$DESIGN_DIR/../tech/sky130A/def/tt_block_1x1_pg.def",
     "RT_MAX_LAYER": "met4"
+  },
+
+  "pdk::gf180mcuD": {
+    "DIE_AREA": [0, 0, 346.64, 160.72],
+    "FP_DEF_TEMPLATE": "ref::$DESIGN_DIR/../tech/gf180mcuD/def/tt_block_1x1_pgvdd.def",
+    "RT_MAX_LAYER": "Metal4"
   },
 
   "pdk::ihp-sg13g2": {
