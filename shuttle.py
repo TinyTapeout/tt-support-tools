@@ -296,13 +296,14 @@ class ShuttleConfig:
                 dirs_exist_ok=True,
             )
 
-    def create_foundry_submission(self, foundry_name: str, copy_user_defines: bool):
+    def create_foundry_submission(self, foundry_name: str):
         logging.info(f"creating {foundry_name} submission directory:")
         target_dir = foundry_name
         lastrun = self.find_last_run("tt_top")
         copy_print("shuttle_index.md", f"{target_dir}/README.md")
         copy_print("shuttle_index.json", f"{target_dir}/shuttle_index.json")
-        if copy_user_defines:
+        if self.config["top_level_macro"] == "openframe_project_wrapper":
+            # Chipfoundry requires user_defines.v to be included
             copy_print(
                 f"verilog/rtl/user_defines.v",
                 f"{target_dir}/verilog/rtl/user_defines.v",
@@ -318,4 +319,8 @@ class ShuttleConfig:
         copy_print(
             f"{lastrun}/final/gds/{self.tt_top_macro}.gds",
             f"{target_dir}/gds/{self.tt_top_macro}.gds",
+        )
+        copy_print_convert(
+            f"{lastrun}/final/gds/{self.tt_top_macro}.gds",
+            f"{target_dir}/oas/{self.tt_top_macro}.oas",
         )

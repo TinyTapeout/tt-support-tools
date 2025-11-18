@@ -229,14 +229,8 @@ if __name__ == "__main__":
         const=True,
     )
     parser.add_argument(
-        "--create-chipfoundry-submission",
-        help="create ChipFoundry submission directory",
-        action="store_const",
-        const=True,
-    )
-    parser.add_argument(
-        "--create-ihp-submission",
-        help="create IHP submission directory",
+        "--create-foundry-submission",
+        help="create foundry_submission directory with the final GDS/OAS files",
         action="store_const",
         const=True,
     )
@@ -332,11 +326,8 @@ if __name__ == "__main__":
     if args.copy_final_results:
         shuttle.copy_final_results()
 
-    if args.create_chipfoundry_submission:
-        shuttle.create_foundry_submission("chipfoundry", True)
-
-    if args.create_ihp_submission:
-        shuttle.create_foundry_submission("ihp", False)
+    if args.create_foundry_submission:
+        shuttle.create_foundry_submission("foundry_submission")
 
     if args.update_image:
         docs.update_image()
