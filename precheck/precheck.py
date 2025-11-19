@@ -165,7 +165,7 @@ def power_pin_check(verilog: str, lef: str, uses_3v3: bool):
 
     # this looks for a line beginning with "PIN", captures the name of the pin and the body up until its "END"
     PIN_PATTERN = re.compile(
-        r"^\s+PIN (VPWR|VDPWR|VAPWR|VGND)\s+([\s\S]+?(?=^\s+END \1))",
+        r"^\s*PIN (VPWR|VDPWR|VAPWR|VGND)\s*([\s\S]+?(?=^\s*END \1))",
         flags=re.MULTILINE,
     )
 
