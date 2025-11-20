@@ -154,7 +154,7 @@ def boundary_check(gds: str, tech: str):
 
 
 def power_pin_check(verilog: str, lef: str, uses_3v3: bool):
-    """Ensure that VPWR / VGND are present,
+    """Ensure that VPWR / VGND are present and have USE definitions,
     and that VAPWR is present if and only if 'uses_3v3' is set."""
     verilog_s = open(verilog).read().replace("VPWR", "VDPWR")
     lef_s = open(lef).read().replace("VPWR", "VDPWR")
@@ -163,12 +163,37 @@ def power_pin_check(verilog: str, lef: str, uses_3v3: bool):
     verilog_s = re.sub("//.*", "", verilog_s)
     verilog_s = re.sub("/\\*.*?\\*/", "", verilog_s, flags=(re.DOTALL | re.MULTILINE))
 
+    # this looks for a line beginning with "PIN", captures the name of the pin and the body up until its "END"
+    PIN_PATTERN = re.compile(
+        r"^\s*PIN (VPWR|VDPWR|VAPWR|VGND)\s*([\s\S]+?(?=^\s*END \1))",
+        flags=re.MULTILINE,
+    )
+
     for ft, s in (("Verilog", verilog_s), ("LEF", lef_s)):
         for pwr, ex in (("VGND", True), ("VDPWR", True), ("VAPWR", uses_3v3)):
             if (pwr in s) and not ex:
                 raise PrecheckFailure(f"{ft} contains {pwr}")
             if not (pwr in s) and ex:
                 raise PrecheckFailure(f"{ft} doesn't contain {pwr}")
+
+    for match in PIN_PATTERN.finditer(lef_s):
+        pin, definition = match.groups()
+
+        match pin:
+            case "VPWR" | "VDPWR" | "VAPWR":
+                if "USE POWER" not in definition:
+                    raise PrecheckFailure(
+                        f"{pin} does not have a corresponding 'USE POWER ;'"
+                    )
+
+            case "VGND":
+                if "USE GROUND" not in definition:
+                    raise PrecheckFailure(
+                        f"{pin} does not have a corresponding 'USE GROUND ;'"
+                    )
+
+            case _:
+                raise PrecheckFailure(f"unhandled {pin}")
 
 
 def layer_check(gds: str, tech: str):

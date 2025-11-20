@@ -168,6 +168,94 @@ def verilog_lef_wrong_power_pins(tmp_path_factory: pytest.TempPathFactory):
 
 
 @pytest.fixture(scope="session")
+def verilog_lef_missing_use_power(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a Verilog & LEF file with wrong power pins."""
+    verilog_file = tmp_path_factory.mktemp("verilog") / "TEST_missing_use_power.v"
+    verilog_data = """
+        `default_nettype none
+        module TEST_wrong_power_pins (
+            input wire VGND,
+            input wire VDPWR
+        );
+        endmodule
+    """
+    open(verilog_file, "w").write(textwrap.dedent(verilog_data))
+    lef_file = tmp_path_factory.mktemp("lef") / "TEST_missing_use_power.lef"
+    lef_data = """
+        VERSION 5.7 ;
+        NOWIREEXTENSIONATPIN ON ;
+        DIVIDERCHAR "/" ;
+        BUSBITCHARS "[]" ;
+        MACRO TEST_missing_use_power
+        CLASS BLOCK ;
+        FOREIGN TEST_missing_use_power ;
+        ORIGIN 0.000 0.000 ;
+        SIZE 161.000 BY 111.520 ;
+        PIN VGND
+            DIRECTION INOUT ;
+            USE GROUND ;
+            PORT
+            LAYER met4 ;
+                RECT 21.580 2.480 23.180 109.040 ;
+            END
+        END VGND
+        PIN VDPWR
+            DIRECTION INOUT ;
+            PORT
+            LAYER met4 ;
+                RECT 18.280 2.480 19.880 109.040 ;
+            END
+        END VDPWR
+    """
+    open(lef_file, "w").write(textwrap.dedent(lef_data))
+    return str(verilog_file), str(lef_file)
+
+
+@pytest.fixture(scope="session")
+def verilog_lef_missing_use_ground(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a Verilog & LEF file with wrong power pins."""
+    verilog_file = tmp_path_factory.mktemp("verilog") / "TEST_missing_use_ground.v"
+    verilog_data = """
+        `default_nettype none
+        module TEST_wrong_power_pins (
+            input wire VGND,
+            input wire VDPWR
+        );
+        endmodule
+    """
+    open(verilog_file, "w").write(textwrap.dedent(verilog_data))
+    lef_file = tmp_path_factory.mktemp("lef") / "TEST_missing_use_ground.lef"
+    lef_data = """
+        VERSION 5.7 ;
+        NOWIREEXTENSIONATPIN ON ;
+        DIVIDERCHAR "/" ;
+        BUSBITCHARS "[]" ;
+        MACRO TEST_missing_use_ground
+        CLASS BLOCK ;
+        FOREIGN TEST_missing_use_ground ;
+        ORIGIN 0.000 0.000 ;
+        SIZE 161.000 BY 111.520 ;
+        PIN VGND
+            DIRECTION INOUT ;
+            PORT
+            LAYER met4 ;
+                RECT 21.580 2.480 23.180 109.040 ;
+            END
+        END VGND
+        PIN VDPWR
+            DIRECTION INOUT ;
+            USE POWER ;
+            PORT
+            LAYER met4 ;
+                RECT 18.280 2.480 19.880 109.040 ;
+            END
+        END VDPWR
+    """
+    open(lef_file, "w").write(textwrap.dedent(lef_data))
+    return str(verilog_file), str(lef_file)
+
+
+@pytest.fixture(scope="session")
 def gds_invalid_layer(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS with a layer/datatype not defined in sky130."""
     gds_file = tmp_path_factory.mktemp("gds") / "TEST_invalid_layer.gds"
@@ -529,6 +617,24 @@ def test_wrong_power_pins_2(verilog_lef_wrong_power_pins: tuple[str, str]):
     verilog_file, lef_file = verilog_lef_wrong_power_pins
     with pytest.raises(precheck.PrecheckFailure, match="LEF doesn't contain VAPWR"):
         precheck.power_pin_check(verilog_file, lef_file, uses_3v3=True)
+
+
+def test_missing_use_power(verilog_lef_missing_use_power: tuple[str, str]):
+    verilog_file, lef_file = verilog_lef_missing_use_power
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="VDPWR does not have a corresponding 'USE POWER ;'",
+    ):
+        precheck.power_pin_check(verilog_file, lef_file, uses_3v3=False)
+
+
+def test_missing_use_ground(verilog_lef_missing_use_ground: tuple[str, str]):
+    verilog_file, lef_file = verilog_lef_missing_use_ground
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="VGND does not have a corresponding 'USE GROUND ;'",
+    ):
+        precheck.power_pin_check(verilog_file, lef_file, uses_3v3=False)
 
 
 def test_invalid_layer(gds_invalid_layer: str):
