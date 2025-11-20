@@ -49,7 +49,7 @@ class Projects:
 
             commit_id_file = os.path.join(project_dir, "commit_id.json")
             if not os.path.exists(commit_id_file):
-                logging.warning(f"no commit_id.json in {project_dir}, skippinggi")
+                logging.warning(f"no commit_id.json in {project_dir}, skipping")
                 continue
 
             commit_id_data = json.load(open(commit_id_file))
