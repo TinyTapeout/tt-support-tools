@@ -10,6 +10,7 @@ import klayout.db as pya
 import yaml
 
 from config import Config
+from config_utils import merge_dicts
 from project import Project
 from shuttle_index import ShuttleIndex, ShuttleIndexLayout, ShuttleIndexProject
 from tech import tech_map
@@ -71,10 +72,16 @@ class ShuttleConfig:
             self.layout["muxes"][x][y] = ""
 
     def read_mux_config_file(self):
-        with open(
-            f"tt-multiplexer/cfg/{self.mux_config_yaml_name}", "r"
-        ) as mux_config_file:
-            self.mux_config = yaml.safe_load(mux_config_file)
+        self.mux_config: dict = {}
+        for cfg_file in self.mux_config_yaml_name.split(":"):
+            cfg_file_path = os.path.join("tt-multiplexer/cfg", cfg_file)
+            if not os.path.exists(cfg_file_path):
+                logging.error(f"mux config file {cfg_file_path} does not exist!")
+                exit(1)
+            with open(cfg_file_path, "r") as mux_config_file:
+                self.mux_config = merge_dicts(
+                    self.mux_config, yaml.safe_load(mux_config_file)
+                )
 
     def configure_mux(self):
         with open(self.modules_yaml_name, "r") as modules_file:

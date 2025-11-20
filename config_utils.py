@@ -65,3 +65,12 @@ def write_config(config: dict, basename: str, formats: Iterable[str] = ("json",)
             write_yaml_config(config, file)
         else:
             raise ConfigFileError("Unexpected configuration file format: {fmt}")
+
+
+def merge_dicts(a: dict, b: dict, path=[]):
+    for key in b:
+        if key in a and isinstance(a[key], dict) and isinstance(b[key], dict):
+            merge_dicts(a[key], b[key], path + [str(key)])
+        else:
+            a[key] = b[key]
+    return a
