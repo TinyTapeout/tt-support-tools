@@ -54,6 +54,11 @@
       "doc_name": "DFFRRx",
       "doc_ref" : 11
    },
+   "dfrbpq": {
+      "description" : "Delay flop, inverted reset, single output.",
+      "doc_name": "DFRBPQx",
+      "doc_ref" : 0
+   },
    "dlhq" : {
       "description" : "Delay latch, non-inverted enable, single output.",
       "doc_name": "DLHQ",
@@ -198,6 +203,16 @@
       "description" : "Scan delay flop, inverted set, inverted reset, non-inverted clock, complementary outputs.",
       "doc_name": "SDFRRS",
       "doc_ref" : 43
+   },
+   "sdfrbp": {
+      "description" : "Scan delay flop, inverted reset, non-inverted clock, complementary outputs.",
+      "doc_name": "SDFRBPx",
+      "doc_ref" : 0
+   },
+   "sdfrbpq": {
+      "description" : "Scan delay flop, inverted reset, non-inverted clock, single output.",
+      "doc_name": "SDFRBPQx",
+      "doc_ref" : 0
    },
    "sighold" : {
       "description" : "Cross-coupled inverters.",
