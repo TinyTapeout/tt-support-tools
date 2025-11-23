@@ -19,7 +19,7 @@ jobs:
       PDK_ROOT: /home/runner/pdk
       PROJECT_DIR: /home/runner/project
       LIBRELANE_VERSION: '2.4.2'
-      LIBRELANE_VERSION_DEV: '3.0.0.dev38'
+      LIBRELANE_VERSION_DEV: '3.0.0.dev44'
 
     steps:
       - name: Check out code
@@ -50,10 +50,6 @@ jobs:
       - name: Clone the factory test (ihp-sg13g2)
         if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
         run: git clone https://github.com/TinyTapeout/ttihp25b-factory-test ${PROJECT_DIR}
-
-      - name: Install IHP PDK
-        if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
-        run: git clone -b tt2025 --depth 1 https://github.com/TinyTapeout/IHP-Open-PDK ${PDK_ROOT}
 
       - name: Configure tt_tool.py args (IHP)
         if: "${{ matrix.pdk == 'ihp-sg13g2' }}"

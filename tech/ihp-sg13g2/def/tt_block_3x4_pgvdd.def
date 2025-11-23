@@ -196,8 +196,8 @@ TRACKS X 480 DO 1326 STEP 480 LAYER Metal2 ;
 TRACKS Y 420 DO 1691 STEP 420 LAYER Metal2 ;
 TRACKS X 480 DO 1326 STEP 480 LAYER Metal3 ;
 TRACKS Y 420 DO 1691 STEP 420 LAYER Metal3 ;
-TRACKS X 480 DO 1326 STEP 480 LAYER Metal5 ;
-TRACKS Y 420 DO 1691 STEP 420 LAYER Metal5 ;
+TRACKS X 480 DO 1326 STEP 480 LAYER Metal4 ;
+TRACKS Y 420 DO 1691 STEP 420 LAYER Metal4 ;
 TRACKS X 480 DO 1326 STEP 480 LAYER Metal5 ;
 TRACKS Y 420 DO 1691 STEP 420 LAYER Metal5 ;
 TRACKS X 1640 DO 279 STEP 2280 LAYER TopMetal1 ;
@@ -209,175 +209,175 @@ END COMPONENTS
 PINS 43 ;
     - clk + NET clk + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 187200 710140 ) N ;
     - ena + NET ena + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 191040 710140 ) N ;
     - rst_n + NET rst_n + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 183360 710140 ) N ;
     - ui_in[0] + NET ui_in[0] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 179520 710140 ) N ;
     - ui_in[1] + NET ui_in[1] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 175680 710140 ) N ;
     - ui_in[2] + NET ui_in[2] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 171840 710140 ) N ;
     - ui_in[3] + NET ui_in[3] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 168000 710140 ) N ;
     - ui_in[4] + NET ui_in[4] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 164160 710140 ) N ;
     - ui_in[5] + NET ui_in[5] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 160320 710140 ) N ;
     - ui_in[6] + NET ui_in[6] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 156480 710140 ) N ;
     - ui_in[7] + NET ui_in[7] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 152640 710140 ) N ;
     - uio_in[0] + NET uio_in[0] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 148800 710140 ) N ;
     - uio_in[1] + NET uio_in[1] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 144960 710140 ) N ;
     - uio_in[2] + NET uio_in[2] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 141120 710140 ) N ;
     - uio_in[3] + NET uio_in[3] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 137280 710140 ) N ;
     - uio_in[4] + NET uio_in[4] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 133440 710140 ) N ;
     - uio_in[5] + NET uio_in[5] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 129600 710140 ) N ;
     - uio_in[6] + NET uio_in[6] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 125760 710140 ) N ;
     - uio_in[7] + NET uio_in[7] + DIRECTION INPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 121920 710140 ) N ;
     - uio_oe[0] + NET uio_oe[0] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 56640 710140 ) N ;
     - uio_oe[1] + NET uio_oe[1] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 52800 710140 ) N ;
     - uio_oe[2] + NET uio_oe[2] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 48960 710140 ) N ;
     - uio_oe[3] + NET uio_oe[3] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 45120 710140 ) N ;
     - uio_oe[4] + NET uio_oe[4] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 41280 710140 ) N ;
     - uio_oe[5] + NET uio_oe[5] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 37440 710140 ) N ;
     - uio_oe[6] + NET uio_oe[6] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 33600 710140 ) N ;
     - uio_oe[7] + NET uio_oe[7] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 29760 710140 ) N ;
     - uio_out[0] + NET uio_out[0] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 87360 710140 ) N ;
     - uio_out[1] + NET uio_out[1] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 83520 710140 ) N ;
     - uio_out[2] + NET uio_out[2] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 79680 710140 ) N ;
     - uio_out[3] + NET uio_out[3] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 75840 710140 ) N ;
     - uio_out[4] + NET uio_out[4] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 72000 710140 ) N ;
     - uio_out[5] + NET uio_out[5] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 68160 710140 ) N ;
     - uio_out[6] + NET uio_out[6] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 64320 710140 ) N ;
     - uio_out[7] + NET uio_out[7] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 60480 710140 ) N ;
     - uo_out[0] + NET uo_out[0] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 118080 710140 ) N ;
     - uo_out[1] + NET uo_out[1] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 114240 710140 ) N ;
     - uo_out[2] + NET uo_out[2] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 110400 710140 ) N ;
     - uo_out[3] + NET uo_out[3] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 106560 710140 ) N ;
     - uo_out[4] + NET uo_out[4] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 102720 710140 ) N ;
     - uo_out[5] + NET uo_out[5] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 98880 710140 ) N ;
     - uo_out[6] + NET uo_out[6] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 95040 710140 ) N ;
     - uo_out[7] + NET uo_out[7] + DIRECTION OUTPUT + USE SIGNAL
       + PORT
-        + LAYER Metal5 ( -150 -500 ) ( 150 500 )
+        + LAYER Metal4 ( -150 -500 ) ( 150 500 )
         + PLACED ( 91200 710140 ) N ;
 END PINS
 SPECIALNETS 2 ;

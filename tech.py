@@ -2,8 +2,6 @@ import json
 import os
 from typing import Dict, List, Literal, Pattern, Protocol, Tuple, TypedDict, Union
 
-from git.repo import Repo
-
 TechName = Literal["sky130A", "ihp-sg13g2", "gf180mcuD"]
 
 
@@ -57,10 +55,12 @@ class Tech(Protocol):
         raise NotImplementedError()
 
 
-def parse_openpdks_pdk_version(sources_file: str) -> PDKVersionInfo:
+def parse_openpdks_pdk_version(
+    sources_file: str, expected_source: str = "open_pdks"
+) -> PDKVersionInfo:
     with open(sources_file) as f:
         pdk_source, pdk_version = f.read().strip().split(" ")
-        assert pdk_source == "open_pdks"
+        assert pdk_source == expected_source
         return PDKVersionInfo(source=pdk_source, version=pdk_version)
 
 
@@ -125,11 +125,11 @@ class Sky130Tech(Tech):
 
 class IHPTech(Tech):
     def_suffix = "pgvdd"
-    librelane_pdk_args = "--manual-pdk --pdk ihp-sg13g2"
+    librelane_pdk_args = "--pdk ihp-sg13g2"
     tt_corner = "nom_typ_1p20V_25C"
     cell_regexp = r"^\s*sg13g2_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
     netlist_type = "nl"
-    project_top_metal_layer = "Metal5"
+    project_top_metal_layer = "TopMetal1"
     librelane_config = {}
     label_layers = [
         (8, 1),  # Metal1.label
@@ -163,10 +163,8 @@ class IHPTech(Tech):
     logo_pixel_size = 0.25  # um
 
     def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
-        pdk_repo = Repo(pdk_root)
-        pdk_repo_name = list(pdk_repo.remotes[0].urls)[0].split("/")[-1]
-        pdk_commit = pdk_repo.commit().hexsha
-        return PDKVersionInfo(source=pdk_repo_name, version=pdk_commit)
+        pdk_sources_file = os.path.join(pdk_root, "ihp-sg13g2", "SOURCES")
+        return parse_openpdks_pdk_version(pdk_sources_file, "IHP-Open-PDK")
 
     def load_cell_definitions(self) -> Dict[str, CellDefinition]:
         URL_FORMAT = "https://raw.githubusercontent.com/IHP-GmbH/IHP-Open-PDK/refs/heads/main/ihp-sg13g2/libs.ref/sg13g2_stdcell/doc/sg13g2_stdcell_typ_1p20V_25C.pdf#{ref}"
