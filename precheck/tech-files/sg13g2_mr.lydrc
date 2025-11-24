@@ -97,6 +97,21 @@ class DRC::DRCLayer
         $drc_error_count += self.count()
         original_output(*args)
     end
+
+    def ext_merged(min_coherence, overlap_count)
+        args = [min_coherence, overlap_count]
+        return DRCLayer::new(@engine, @engine._tcmd(self.data, 0, self.data.class, :merged, *args))
+    end
+
+    def ext_merge(min_coherence, overlap_count)
+        args = [min_coherence, overlap_count]
+        if @engine.is_tiled?
+            self.data = @engine._tcmd(self.data, 0, self.data.class, :merged, *args)
+        else
+            @engine._tcmd(self.data, 0, self.data.class, :merge, *args)
+        end
+        return self
+    end
 end
 
 # Initial definitions of control flow variables
@@ -531,7 +546,7 @@ class DRC::DRCLayer
         end
         self.data.min_coherence = self_min_coherence_state
         if polygon_output
-            return output_layer.polygons.merge(true, 0)
+            return output_layer.polygons.ext_merge(true, 0)
         else
             return output_layer
         end
@@ -543,7 +558,7 @@ class DRC::DRCLayer
         output_layer = self.width(value)
         self.data.min_coherence = self_min_coherence_state
         if polygon_output
-            return output_layer.polygons.merge(true, 0)
+            return output_layer.polygons.ext_merge(true, 0)
         else
             return output_layer
         end
@@ -567,7 +582,7 @@ class DRC::DRCLayer
         if self.is_merged?
           merged_layer = self
         else
-          merged_layer = self.merged(true, 0)
+          merged_layer = self.ext_merged(true, 0)
         end
         origin = 'cc'
         tile_size = nil
@@ -905,9 +920,9 @@ end.().output("TM1.a", "Min. TopMetal1 width = 1.64")
 end.().output("TM1.b", "Min. TopMetal1 space or notch = 1.64")
 
 if $density
-	-&gt; do
-	    TM1_density.ext_with_density(0.0 .. 0.25, 'll')
-	end.().output("TM1.c", "Min. global TopMetal1 density [%] = 25.00")
+	#-&gt; do
+	#    TM1_density.ext_with_density(0.0 .. 0.25, 'll')
+	#end.().output("TM1.c", "Min. global TopMetal1 density [%] = 25.00")
 	-&gt; do
 	    TM1_density.ext_with_density(0.7 .. 1.0, 'll')
 	end.().output("TM1.d", "Max. global TopMetal1 density [%] = 70.00")
