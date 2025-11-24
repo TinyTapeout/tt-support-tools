@@ -328,7 +328,6 @@ def main():
             raise PrecheckFailure("info.yaml not found")
     yaml_file = f"{yaml_dir}/info.yaml"
     yaml_data = yaml.safe_load(open(yaml_file))
-    logging.info("info.yaml data:" + str(yaml_data))
 
     wokwi_id = yaml_data["project"].get("wokwi_id", 0)
     top_module = yaml_data["project"].get("top_module", f"tt_um_wokwi_{wokwi_id}")

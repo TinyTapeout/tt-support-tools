@@ -129,6 +129,7 @@ valid_lef_port_layers = {
         "Metal3.pin": (30, 2),
         "Metal4.pin": (50, 2),
         "Metal5.pin": (67, 2),
+        "TopMetal1.pin": (126, 2),
     },
 }
 forbidden_layers = {
@@ -138,9 +139,6 @@ forbidden_layers = {
         "met5.label",
     ],
     "ihp-sg13g2": [
-        "TopMetal1.drawing",
-        "TopMetal1.pin",
-        "TopMetal1.label",
         "TopMetal2.drawing",
         "TopMetal2.pin",
         "TopMetal2.label",
@@ -152,7 +150,7 @@ forbidden_layers = {
 }
 power_pins_layer = {
     "sky130A": "met4",
-    "ihp-sg13g2": "Metal5",
+    "ihp-sg13g2": "TopMetal1",
     "gf180mcuD": "Metal4",
 }
 boundary_layer = {
