@@ -231,7 +231,7 @@ class GF180MCUDTech(Tech):
     prboundary_layer = (0, 0)  # PR_bndry
     logo_layer = (46, 0)  # Metal4
     logo_layer_name = "Metal4"
-    logo_pixel_size = 0.5  # um
+    logo_pixel_size = 0.325  # um
 
     def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
         pdk_sources_file = os.path.join(pdk_root, "gf180mcuD", "SOURCES")
