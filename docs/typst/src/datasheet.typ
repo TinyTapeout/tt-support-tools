@@ -495,7 +495,7 @@
     #align(center, get_image_by_id("images", pinout_map.at(show_pinouts).at("diagram"), height: 60%))
 
     #callout("info", "Note")[
-      You will receive the chip mounted on a breakout board (#link("https://github.com/tinytapeout/breakout-pcb", text(white)[github.com/tinytapeout/breakout-pcb])).
+      You will receive the chip mounted on a breakout board (#link("https://github.com/tinytapeout/breakout-pcb")[github.com/tinytapeout/breakout-pcb]).
 
       The pinout is provided for advanced users, as most users will not need to solder the chip directly.
     ]
