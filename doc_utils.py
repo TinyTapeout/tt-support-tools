@@ -335,7 +335,7 @@ class DocsHelper:
         Prepare the datasheet.typ file with info from `config.yaml`
 
         The following keys can be used to configure the datasheet:
-        - `pinout`: set what pinout table is shown in multiplexer chapter (caravel or openframe)
+        - `pinout`: set what pinout table is shown in multiplexer chapter (see DatasheetConfig.pinout in config.py)
         - `theme_override_colour`: set a custom colour for the datasheet (rgb object)
         - `show_chip_viewer`*: toggle the chip viewer QR code (boolean)
         - `link_disable_colour`: disable link colouring (boolean)
@@ -399,9 +399,52 @@ class DocsHelper:
                 )
             else:
 
+                content["if_pinout"] = True
                 if "pinout" in datasheet_config:
-                    content["if_pinout"] = True
                     content["pinout"] = shuttle_config["datasheet_config"]["pinout"]
+                    logging.info(
+                        f"using pinout config verbatim ('{content['pinout']}')"
+                    )
+                else:
+                    # determine appropriate pinout table from pdk first, otherwise fall back to shuttle id
+                    if "pdk" in shuttle_config:
+                        match shuttle_config["pdk"]:
+
+                            case "sky130A":
+                                content["pinout"] = "openframe_sky130"
+                            case "ihp-sg13g2":
+                                content["pinout"] = "customframe_ihp_sg13g2"
+                            case "gf180mcuD":
+                                content["pinout"] = "customframe_gf180mcud"
+                            case _:
+                                logging.warning(
+                                    f"unable to determine appropriate pinout from PDK, falling back to 'openframe_sky130'"
+                                )
+                                content["pinout"] = "openframe_sky130"
+
+                        logging.info(f"PDK defined, using pinout '{content['pinout']}'")
+
+                    else:
+                        if shuttle_config["id"].startswith("ttsky"):
+                            content["pinout"] = "openframe_sky130"
+
+                        elif shuttle_config["id"].startswith("ttihp"):
+                            content["pinout"] = "customframe_ihp_sg13g2"
+
+                        elif shuttle_config["id"].startswith("ttgf"):
+                            content["pinout"] = "customframe_gf180mcud"
+                        else:
+                            logging.warning(
+                                f"unable to determine appropriate pinout, falling back to 'openframe_sky130'"
+                            )
+                            logging.warning(
+                                f"either define 'pinout' or 'pdk' in shuttle config"
+                            )
+                            content["pinout"] = "openframe_sky130"
+
+                        logging.info(
+                            f"PDK not defined, using '{content['pinout']}' pinout"
+                        )
 
                 if "theme_override_colour" in datasheet_config:
                     content["if_theme_override_colour"] = True
