@@ -478,19 +478,34 @@
 
   // add informational content
   // chip pinout diagram
-  page(include "../chapters/pinout.typ")
+
+  let pinout_map = (
+    caravel: (diagram: "chip_pinout_qfn64", table: pins.caravel),
+    openframe: (diagram: "chip_pinout_qfn64", table: pins.openframe),
+    openframe_sky130: (diagram: "chip_pinout_qfn64_sky130_openframe", table: pins.openframe_sky130),
+    customframe_ihp_sg13g2: (diagram: "chip_pinout_qfn64_ihp_sg13g2", table: pins.customframe_ihp_sg13g2),
+    customframe_gf180mcud: (diagram: "chip_pinout_qfn64_gf180mcud", table: pins.customframe_gf180mcud)
+  )
+
+  page[
+    = Pinout
+
+    The chip is packaged in a 64-pin QFN package. The pinout is shown below.
+
+    #align(center, get_image_by_id("images", pinout_map.at(show_pinouts).at("diagram"), height: 60%))
+
+    #callout("info", "Note")[
+      You will receive the chip mounted on a breakout board (#link("https://github.com/tinytapeout/breakout-pcb", text(white)[github.com/tinytapeout/breakout-pcb])).
+
+      The pinout is provided for advanced users, as most users will not need to solder the chip directly.
+    ]
+  ]
 
   // multiplexer infrastructure explanation
   page({
     include "../chapters/tt-multiplexer.typ"
 
-    if show_pinouts == "caravel" {
-      pins.caravel
-    } else if show_pinouts == "openframe" {
-      pins.openframe
-    } else {
-      panic([unknown pinout table referenced (#show_pinouts)])
-    }
+    pinout_map.at(show_pinouts).at("table")
   })
 
   // add funding/sponsor page
