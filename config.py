@@ -13,7 +13,13 @@ class ArtworkEntryType(TypedDict):
 class DatasheetConfig(TypedDict):
     """TypedDict for the datasheet config within Tiny Tapeout's config.yaml file"""
 
-    pinout: Literal["caravel", "openframe"]
+    pinout: Literal[
+        "caravel",
+        "openframe",
+        "openframe_sky130",
+        "customframe_ihp_sg13g2",
+        "customframe_gf180mcud",
+    ]
     theme_override_colour: str
     show_chip_viewer: bool
     link_disable_colour: bool
