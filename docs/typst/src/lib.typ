@@ -56,6 +56,7 @@
   }
 
   set text(white)
+  show link: set text(white)
 
   // make body first
   block(
