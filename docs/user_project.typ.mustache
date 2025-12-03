@@ -1,0 +1,45 @@
+#import "/tt/docs/typst/src/tt.typ" as tt
+#let horizontalrule = tt.lib.horizontalrule()
+#let blockquote = tt.lib.blockquote
+
+#show: tt.datasheet.project.with(
+    title: "{{&project_title}}",
+    author: {{&project_author}},
+    repo_link: "{{project_repo_link}}",
+    description: "{{&project_description}}",
+    address: "{{&project_address}}",
+    clock: "{{project_clock}}",
+    type: "{{project_type}}",
+    {{#is_wokwi}}
+    wokwi_id: "{{project_wokwi_id}}",
+    {{/is_wokwi}}
+    {{#is_dangerous}}
+    danger_level: "{{project_danger_level}}",
+    danger_reason: "{{project_danger_reason}}",
+    {{/is_dangerous}}
+)
+
+{{&project_doc_body}}
+
+= Project Pinout
+== Digital Pins
+#align(center)[#table(
+    columns: 4,
+    align: left,
+    table.header(
+        [\#], [Input], [Output], [Bidirectional]
+    ),
+    {{&digital_pins}}
+)]
+
+{{#is_analog}}
+== Analog Pins
+#align(center)[#table(
+    columns: 3,
+    align: left,
+    table.header(
+        [`ua`\#], [`analog`\#], [Description]
+    ),
+    {{&analog_pins}}
+)]
+{{/is_analog}}
