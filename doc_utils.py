@@ -398,7 +398,6 @@ class DocsHelper:
                     "datasheet config specified in config.yaml but has no entries"
                 )
             else:
-
                 content["if_pinout"] = True
                 if "pinout" in datasheet_config:
                     content["pinout"] = shuttle_config["datasheet_config"]["pinout"]
@@ -409,7 +408,6 @@ class DocsHelper:
                     # determine appropriate pinout table from pdk first, otherwise fall back to shuttle id
                     if "pdk" in shuttle_config:
                         match shuttle_config["pdk"]:
-
                             case "sky130A":
                                 content["pinout"] = "openframe_sky130"
                             case "ihp-sg13g2":
@@ -507,7 +505,6 @@ class DocsHelper:
 
     @staticmethod
     def project_is_disabled(config: DatasheetConfig, macro: str) -> bool:
-
         if config is not None:
             if "disabled" in config and config["disabled"] is not None:
                 return macro in config["disabled"]

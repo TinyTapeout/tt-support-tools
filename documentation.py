@@ -133,7 +133,6 @@ class Docs:
 
         temp_subtile_projects = {}
         for project in tapeout_index:
-
             logging.info(
                 f"processing datasheet for [{project['address']} : {project['repo']}]"
             )
@@ -165,7 +164,6 @@ class Docs:
                 continue
 
             elif info["type"] == "group":
-
                 # write group doc
                 group_md_path = f"projects/{info['macro']}/docs/info.md"
                 group_typ_path = f"projects/{info['macro']}/docs/doc.typ"
