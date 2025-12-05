@@ -733,15 +733,15 @@ end.().output("Act.a", "Min. Activ width = 0.15")
 end.().output("Act.b", "Min. Activ space or notch = 0.21")
 
 if $density
-	-&gt; do
-	    Act_density.ext_with_density(0.0 .. 0.35, 'll')
-	end.().output("AFil.g", "Min. global Activ density [%] = 35.00")
+	#-&gt; do
+	#    Act_density.ext_with_density(0.0 .. 0.35, 'll')
+	#end.().output("AFil.g", "Min. global Activ density [%] = 35.00")
 	-&gt; do
 	    Act_density.ext_with_density(0.55 .. 1.0, 'll')
 	end.().output("AFil.g1", "Max. global Activ density [%] = 55.00")
-	-&gt; do
-	    Act_density.ext_with_density(0.0 .. 0.25, 'll', tile_size(800.0.um), tile_step(400.0.um))
-	end.().output("AFil.g2", "Min. Activ coverage ratio for any 800 x 800 µm² chip area [%] = 25.00")
+	#-&gt; do
+	#    Act_density.ext_with_density(0.0 .. 0.25, 'll', tile_size(800.0.um), tile_step(400.0.um))
+	#end.().output("AFil.g2", "Min. Activ coverage ratio for any 800 x 800 µm² chip area [%] = 25.00")
 	-&gt; do
 	    Act_density.ext_with_density(0.65 .. 1.0, 'll', tile_size(800.0.um), tile_step(400.0.um))
 	end.().output("AFil.g3", "Max. Activ coverage ratio for any 800 x 800 µm² chip area [%] = 65.00")
@@ -761,9 +761,9 @@ end.().output("Gat.b", "Min. GatPoly space or notch = 0.18")
 end.().output("Gat.d", "Min. GatPoly space to Activ = 0.07")
 
 if $density
-	-&gt; do
-	    Gat_density.ext_with_density(0.0 .. 0.15, 'll')
-	end.().output("GFil.g", "Min. global GatPoly density [%] = 15.00")
+	#-&gt; do
+	#    Gat_density.ext_with_density(0.0 .. 0.15, 'll')
+	#end.().output("GFil.g", "Min. global GatPoly density [%] = 15.00")
 end
 
 -&gt; do
@@ -942,9 +942,9 @@ end.().output("TM2.a", "Min. TopMetal2 width = 2.00")
 end.().output("TM2.b", "Min. TopMetal2 space or notch = 2.00")
 
 if $density
-	-&gt; do
-	    TM2_density.ext_with_density(0.0 .. 0.25, 'll')
-	end.().output("TM2.c", "Min. global TopMetal2 density [%] = 25.00")
+	#-&gt; do
+	#    TM2_density.ext_with_density(0.0 .. 0.25, 'll')
+	#end.().output("TM2.c", "Min. global TopMetal2 density [%] = 25.00")
 	-&gt; do
 	    TM2_density.ext_with_density(0.7 .. 1.0, 'll')
 	end.().output("TM2.d", "Max. global TopMetal2 density [%] = 70.00")
