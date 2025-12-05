@@ -325,9 +325,10 @@ def pin_check(
         else:
             for layer, lx, by, rx, ty in lef_ports[current_pin]:
                 width = rx - lx
-                if layer != power_pins_layer[tech]:
+                expected_layer = power_pins_layer[tech]
+                if layer != expected_layer:
                     logging.error(
-                        f"Port {current_pin} has wrong layer in {lef}: {layer} != met4"
+                        f"Port {current_pin} has wrong layer in {lef}: {layer} != {expected_layer}"
                     )
                     lef_errors += 1
                 if width < 1200:
