@@ -19,6 +19,7 @@ dependencies = [
     "requests",
     "volare",
     "yowasp-yosys",
+    "matplotlib"
 ]
 
 [tool.setuptools]

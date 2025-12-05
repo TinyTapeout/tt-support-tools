@@ -19,6 +19,7 @@ from git.repo import Repo
 import git_utils
 from cells import Sky130Cell, load_ihp_cells, load_sky130_cells
 from config_utils import read_config, write_config
+from doc_utils import DocsHelper
 from markdown_utils import limit_markdown_headings
 from project_info import ProjectInfo, ProjectYamlError
 
@@ -843,8 +844,7 @@ class Project:
             logging.error("Missing 'How to test' section in docs/info.md")
             exit(1)
 
-    # use pandoc to create a single page PDF preview
-    def create_pdf(self):
+    def create_project_datasheet(self, template_version: str):
         template_args = copy.deepcopy(self.info.__dict__)
         template_args.update(
             {
@@ -870,32 +870,45 @@ class Project:
             }
         )
 
-        logging.info("Creating PDF")
-        with open(os.path.join(SCRIPT_DIR, "docs/project_header.md")) as fh:
-            doc_header = fh.read()
-        with open(os.path.join(SCRIPT_DIR, "docs/project_preview.md.mustache")) as fh:
-            doc_template = fh.read()
-        info_md = os.path.join(self.local_dir, "docs/info.md")
-        with open(info_md) as fh:
-            template_args["info"] = fh.read()
+        logging.info("creating project datasheet")
 
-        with open("datasheet.md", "w") as fh:
-            fh.write(doc_header)
+        with open(os.path.join(SCRIPT_DIR, "docs/user_project.typ.mustache")) as f:
+            project_template = f.read()
 
-            # now build the doc & print it
-            try:
-                doc = chevron.render(doc_template, template_args)
-                fh.write(doc)
-                fh.write("\n\\pagebreak\n")
-            except IndexError:
-                logging.warning("missing pins in info.yaml, skipping")
+        result = DocsHelper.get_docs_as_typst(
+            os.path.join(self.local_dir, "docs/info.md")
+        )
 
-        pdf_cmd = "pandoc --pdf-engine=xelatex --resource-path=docs -i datasheet.md -o datasheet.pdf"
-        logging.info(pdf_cmd)
-        p = subprocess.run(pdf_cmd, shell=True)
-        if p.returncode != 0:
-            logging.error("pdf generation failed")
-            raise RuntimeError(f"pdf generation failed with code {p.returncode}")
+        content = {
+            "template_version": template_version,
+            "project_title": template_args["title"].replace('"', '\\"'),
+            "project_author": f"({DocsHelper.format_authors(template_args['author'])})",
+            "project_repo_link": self.get_git_remote(),
+            "project_description": template_args["description"],
+            "project_address": "----",
+            "project_clock": DocsHelper.pretty_clock(self.info.clock_hz),
+            "project_type": DocsHelper.get_project_type(
+                template_args["language"], self.is_wokwi(), template_args["is_analog"]
+            ),
+            "project_doc_body": result,
+            "digital_pins": DocsHelper.format_digital_pins(template_args["pins"]),
+        }
+
+        if self.is_wokwi():
+            content["is_wokwi"] = True
+            content["project_wokwi_id"] = self.info.wokwi_id
+
+        if template_args["is_analog"]:
+            content["is_analog"] = True
+            content["analog_pins"] = DocsHelper.format_analog_pins(
+                template_args["analog_pins"]
+            )
+
+        with open(os.path.abspath(f"./docs/doc.typ"), "w") as f:
+            logging.info("writing datasheet to ./docs/doc.typ")
+            f.write(chevron.render(project_template, content))
+
+        DocsHelper.compile("./docs/doc.typ")
 
     # Read and return top-level GDS data from the final GDS file, using gdstk:
     def get_final_gds_top_cells(self):
