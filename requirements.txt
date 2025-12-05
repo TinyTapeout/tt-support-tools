@@ -24,7 +24,7 @@ chevron==0.14.0
     # via tt-support-tools (pyproject.toml)
 click==8.1.7
     # via yowasp-yosys
-cocotb==1.9.2
+cocotb==1.8.0
     # via tt-support-tools (pyproject.toml)
 contourpy==1.3.3
     # via matplotlib

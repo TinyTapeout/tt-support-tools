@@ -7,7 +7,7 @@ dependencies = [
     "brotli",
     "CairoSVG",
     "chevron",
-    "cocotb",
+    "cocotb==1.8.0",
     "gdstk",
     "GitPython",
     "klayout<0.30.0,>=0.29.0",
