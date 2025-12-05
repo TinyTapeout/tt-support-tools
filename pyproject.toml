@@ -17,6 +17,7 @@ dependencies = [
     "PyYAML",
     "requests",
     "yowasp-yosys",
+    "matplotlib"
 ]
 
 [tool.setuptools]

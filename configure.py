@@ -265,11 +265,20 @@ if __name__ == "__main__":
         "--dump-json", help="dump json of all project data to given file"
     )
     parser.add_argument(
-        "--dump-markdown", help="dump markdown of all project data to given file"
-    )
-    parser.add_argument("--dump-pdf", help="create pdf from the markdown")
-    parser.add_argument(
         "--metrics", help="print some project metrics", action="store_const", const=True
+    )
+    parser.add_argument(
+        "--build-datasheet",
+        help="build datasheet using the typst template",
+        action="store_const",
+        const=True,
+    )
+    parser.add_argument("--doc-tapeout-index", help="path to json tapeout index")
+    parser.add_argument(
+        "--template-version",
+        help="set typst template version (default 1.0.0)",
+        default="1.0.0",
+        nargs="?",
     )
 
     args = parser.parse_args()
@@ -324,6 +333,6 @@ if __name__ == "__main__":
     if args.update_image:
         docs.update_image()
 
-    if args.dump_markdown:
+    if args.build_datasheet:
         shuttle.configure_mux()
-        docs.write_datasheet(args.dump_markdown, args.dump_pdf)
+        docs.build_datasheet(args.template_version, args.doc_tapeout_index)
