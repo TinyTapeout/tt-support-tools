@@ -67,18 +67,27 @@ class LogoGenerator:
         cell.add(boundary)
 
         img = self.img
+        pixels = []
         for y in range(img.height):
             for x in range(img.width):
                 color: int = img.getpixel((x, y))  # type: ignore
                 if color < 16:
                     flipped_y = img.height - y - 1  # flip vertically
-                    rect = gdstk.rectangle(
-                        (x * self.pixel_size, flipped_y * self.pixel_size),
-                        ((x + 1) * self.pixel_size, (flipped_y + 1) * self.pixel_size),
-                        layer=LOGO_LAYER[0],
-                        datatype=LOGO_LAYER[1],
-                    )
-                    cell.add(rect)
+                    x1 = x * self.pixel_size
+                    y1 = flipped_y * self.pixel_size
+                    x2 = (x + 1) * self.pixel_size
+                    y2 = (flipped_y + 1) * self.pixel_size
+                    pixels += [gdstk.Polygon([(x1, y1), (x2, y1), (x2, y2), (x1, y2)])]
+
+        cell.add(
+            *gdstk.offset(
+                pixels,
+                0,
+                use_union=True,
+                layer=LOGO_LAYER[0],
+                datatype=LOGO_LAYER[1],
+            )
+        )
 
         if self.variant == "tr":
             nofill_poly = gdstk.Polygon(
