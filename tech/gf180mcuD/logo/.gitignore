@@ -1,4 +1,6 @@
+tt_logo_corner_tl.png
 tt_logo_corner_tr.png
 gds/tt_logo_corner_*.gds
+gds/*.lyrdb
 lef/tt_logo_corner_*.lef
 verilog/tt_logo_corner_*.v

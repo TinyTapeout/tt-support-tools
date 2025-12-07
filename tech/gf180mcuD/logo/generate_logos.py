@@ -5,10 +5,6 @@ import gdstk
 from cairosvg import svg2png
 from PIL import Image
 
-LOGO_WIDTH = 220
-LOGO_HEIGHT = 220
-PIXEL_SIZE = 1
-
 PRBOUNDARY_LAYER = (0, 0)
 LOGO_LAYER = (81, 0)
 NOFILL_LAYER = (152, 5)
@@ -42,82 +38,97 @@ TR_NOFILL_POLY_XY = [
 
 
 class LogoGenerator:
-    def __init__(self):
-        pass
+    def __init__(self, variant: str):
+        assert variant in ("tr", "tl")
+        self.variant = variant
+        self.macro_name = f"tt_logo_corner_{variant}"
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        png_file = os.path.join(script_dir, f"tt_logo_corner_{variant}.png")
+        svg2png(
+            url=f"{script_dir}/tt_logo_corner_{variant}.svg",
+            write_to=png_file,
+        )
+        self.img = Image.open(png_file).convert("L")
+        self.pixel_size = 1
+        if variant == "tl":
+            self.pixel_size = 0.82  # 164 um
+        self.width = self.img.width * self.pixel_size
+        self.height = self.img.height * self.pixel_size
 
-    def gen_logo(self, variant: str, gds_file: str, verilog_file: str):
-        assert variant in ("tr")
-        if variant == "tr":
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            png_file = os.path.join(script_dir, f"tt_logo_corner_{variant}.png")
-            svg2png(
-                url=f"{script_dir}/tt_logo_corner_{variant}.svg",
-                write_to=png_file,
-            )
-            img = Image.open(png_file).convert("L")
-
+    def gen_gds(self, gds_file: str):
         lib = gdstk.Library()
-        cell_name = f"tt_logo_corner_{variant}"
-        cell = lib.new_cell(cell_name)
+        cell = lib.new_cell(self.macro_name)
         boundary = gdstk.rectangle(
             (0, 0),
-            (img.width * PIXEL_SIZE, img.height * PIXEL_SIZE),
+            (self.width, self.height),
             layer=PRBOUNDARY_LAYER[0],
             datatype=PRBOUNDARY_LAYER[1],
         )
         cell.add(boundary)
 
+        img = self.img
         for y in range(img.height):
             for x in range(img.width):
                 color: int = img.getpixel((x, y))  # type: ignore
                 if color < 16:
                     flipped_y = img.height - y - 1  # flip vertically
                     rect = gdstk.rectangle(
-                        (x * PIXEL_SIZE, flipped_y * PIXEL_SIZE),
-                        ((x + 1) * PIXEL_SIZE, (flipped_y + 1) * PIXEL_SIZE),
+                        (x * self.pixel_size, flipped_y * self.pixel_size),
+                        ((x + 1) * self.pixel_size, (flipped_y + 1) * self.pixel_size),
                         layer=LOGO_LAYER[0],
                         datatype=LOGO_LAYER[1],
                     )
                     cell.add(rect)
 
-        if variant == "tr":
+        if self.variant == "tr":
             nofill_poly = gdstk.Polygon(
                 TR_NOFILL_POLY_XY, layer=NOFILL_LAYER[0], datatype=NOFILL_LAYER[1]
             )
             cell.add(nofill_poly)
+        else:
+            nofill_rect = gdstk.rectangle(
+                (0, 0),
+                (self.width, self.height),
+                layer=NOFILL_LAYER[0],
+                datatype=NOFILL_LAYER[1],
+            )
+            cell.add(nofill_rect)
 
         lib.write_gds(gds_file)
 
+    def gen_verilog(self, verilog_file: str):
         verilog_lines = [
             "`default_nettype none",
             "",
-            f"module {cell_name} ();",
+            f"module {self.macro_name} ();",
             "endmodule",
         ]
 
         with open(verilog_file, "w") as f:
             f.write("\n".join(verilog_lines) + "\n")
 
-    def gen_lef(self, variant: str, lef_file: str):
-        assert variant in ("tr")
-        width = PIXEL_SIZE * LOGO_WIDTH
-        height = PIXEL_SIZE * LOGO_HEIGHT
+    def gen_lef(self, lef_file: str):
         lef_lines = [
             f"VERSION 5.7 ;",
             f"  NOWIREEXTENSIONATPIN ON ;",
             f'  DIVIDERCHAR "/" ;',
             f'  BUSBITCHARS "[]" ;',
-            f"MACRO tt_logo_corner_{variant}",
+            f"MACRO {self.macro_name}",
             f"  CLASS BLOCK ;",
-            f"  FOREIGN tt_logo_corner_{variant} ;",
+            f"  FOREIGN {self.macro_name} ;",
             f"  ORIGIN 0.000 0.000 ;",
-            f"  SIZE {width:.3f} BY {height:.3f} ;",
-            f"END tt_logo_corner_{variant}",
+            f"  SIZE {self.width:.3f} BY {self.height:.3f} ;",
+            f"END {self.macro_name}",
             f"END LIBRARY",
         ]
 
         with open(lef_file, "w") as f:
             f.write("\n".join(lef_lines) + "\n")
+
+    def gen_logo(self, dir):
+        self.gen_gds(f"{dir}/gds/{self.macro_name}.gds")
+        self.gen_lef(f"{dir}/lef/{self.macro_name}.lef")
+        self.gen_verilog(f"{dir}/verilog/{self.macro_name}.v")
 
 
 if __name__ == "__main__":
@@ -129,12 +140,9 @@ if __name__ == "__main__":
         help="Directory to write the logo files to",
     )
     args = parser.parse_args()
-    generator = LogoGenerator()
     dir = args.output_dir
     os.makedirs(f"{dir}/gds", exist_ok=True)
     os.makedirs(f"{dir}/lef", exist_ok=True)
     os.makedirs(f"{dir}/verilog", exist_ok=True)
-    generator.gen_logo(
-        "tr", f"{dir}/gds/tt_logo_corner_tr.gds", f"{dir}/verilog/tt_logo_corner_tr.v"
-    )
-    generator.gen_lef("tr", f"{dir}/lef/tt_logo_corner_tr.lef")
+    LogoGenerator("tr").gen_logo(dir)
+    LogoGenerator("tl").gen_logo(dir)
