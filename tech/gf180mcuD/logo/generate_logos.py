@@ -6,7 +6,13 @@ from cairosvg import svg2png
 from PIL import Image
 
 PRBOUNDARY_LAYER = (0, 0)
-LOGO_LAYER = (81, 0)
+METAL_LAYERS = [
+    (34, 0),  # Metal1
+    (36, 0),  # Metal2
+    (42, 0),  # Metal3
+    (46, 0),  # Metal4
+    (81, 0),  # Metal5
+]
 NOFILL_LAYER = (152, 5)
 
 TR_NOFILL_POLY_XY = [
@@ -79,15 +85,15 @@ class LogoGenerator:
                     y2 = (flipped_y + 1) * self.pixel_size
                     pixels += [gdstk.Polygon([(x1, y1), (x2, y1), (x2, y2), (x1, y2)])]
 
-        cell.add(
-            *gdstk.offset(
+        for layer in METAL_LAYERS:
+            merged_pixels = gdstk.offset(
                 pixels,
                 0,
                 use_union=True,
-                layer=LOGO_LAYER[0],
-                datatype=LOGO_LAYER[1],
+                layer=layer[0],
+                datatype=layer[1],
             )
-        )
+            cell.add(*merged_pixels)
 
         if self.variant == "tr":
             nofill_poly = gdstk.Polygon(
