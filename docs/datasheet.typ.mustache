@@ -1,0 +1,32 @@
+#import "/tt/docs/typst/src/tt.typ" as tt
+
+#show: tt.datasheet.datasheet.with(
+    shuttle_id: "{{&shuttle_id_upper}}",
+    shuttle_name: "{{&shuttle_name}}",
+    repo_link: "{{&repo_link}}",
+    theme: "bold",
+    
+    {{#if_theme_override_colour}}
+    theme_override_colour: {{&theme_override_colour}},
+    {{/if_theme_override_colour}}
+    
+    projects: include "datasheet_manifest.typ",
+    
+    {{#if_pinout}}
+    show_pinouts: "{{&pinout}}",
+    {{/if_pinout}}
+    
+    {{#if_chip_viewer}}
+    chip_viewer_link: "https://tinytapeout.com/decap/{{shuttle_id}}",
+    {{/if_chip_viewer}}
+    
+    link_disable_colour: {{link_disable_colour}},
+
+    {{#if_link_override_colour}}
+    link_override_colour: {{&link_override_colour}},
+    {{/if_link_override_colour}}
+
+    qrcode_follows_theme: {{qrcode_follows_theme}},
+)
+
+{{&datasheet_body}}
