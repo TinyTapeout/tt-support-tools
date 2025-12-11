@@ -352,7 +352,13 @@ def main():
         template_def = f"{def_root}/tt_block_{tiles}_pg.def"
     logging.info(f"using def template {template_def}")
 
+    gds_dir = os.path.dirname(gds_stem)
     lef_file = gds_stem + ".lef"
+    lef_file_alt = os.path.join(
+        gds_dir, "..", "lef", os.path.basename(gds_stem) + ".lef"
+    )
+    if not os.path.exists(lef_file) and os.path.exists(lef_file_alt):
+        lef_file = lef_file_alt
     verilog_file = gds_stem + ".v"
 
     checks = [
