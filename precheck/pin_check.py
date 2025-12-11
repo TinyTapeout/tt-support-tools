@@ -7,7 +7,7 @@ from numbers import Real
 
 import gdstk
 from precheck_failure import PrecheckFailure
-from tech_data import power_pins_layer, valid_lef_port_layers
+from tech_data import power_pins_layer, power_pins_min_width, valid_lef_port_layers
 
 
 def canonicalize_rectangles(
@@ -331,9 +331,10 @@ def pin_check(
                         f"Port {current_pin} has wrong layer in {lef}: {layer} != {expected_layer}"
                     )
                     lef_errors += 1
-                if width < 1200:
+                expected_width = power_pins_min_width[tech]
+                if width < expected_width:
                     logging.error(
-                        f"Port {current_pin} has too small width in {lef}: {width/1000} < 1.2 um"
+                        f"Port {current_pin} has too small width in {lef}: {width/1000} < {expected_width/1000} um"
                     )
                     lef_errors += 1
                 if by > 10000:

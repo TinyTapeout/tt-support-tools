@@ -153,6 +153,11 @@ power_pins_layer = {
     "ihp-sg13g2": "TopMetal1",
     "gf180mcuD": "Metal4",
 }
+power_pins_min_width = {
+    "sky130A": 1200,  # 1.2 um
+    "ihp-sg13g2": 2100,  # 2.1 um
+    "gf180mcuD": 1200,  # 1.2 um
+}
 boundary_layer = {
     "sky130A": "prBoundary.boundary",
     "ihp-sg13g2": "prBoundary.boundary",
