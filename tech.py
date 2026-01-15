@@ -252,4 +252,5 @@ tech_map: dict[TechName, Tech] = {
     "ihp-sg13g2": IHPTech(),
     "gf180mcuD": GF180MCUDTech(),
     "sky130A": Sky130Tech(),
+    "fpgaUp5k": Sky130Tech(), # don't need this
 }
