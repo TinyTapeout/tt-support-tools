@@ -127,7 +127,7 @@ class ConfigFile:
 
 class TTDBConfig:
     
-    def __init__(self, port:str='/dev/ttyACM0'):
+    def __init__(self, port:str=DefaultPort):
         self.port = port
     
     @classmethod 
@@ -167,7 +167,7 @@ class TTDBConfig:
         
         subprocess.run(["mpremote", *commands], check=True)
         
-    def write_file(self, local_filepath:str, remote_filepath:str, do_reset:bool=True):
+    def write_file(self, local_filepath:str, remote_filepath:str, do_reset:bool=False):
         commands = ["connect", self.port, 
                     "+", "cp", local_filepath , f":{remote_filepath}"]
         

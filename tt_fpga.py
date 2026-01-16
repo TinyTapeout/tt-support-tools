@@ -1,4 +1,39 @@
 #!/usr/bin/env python3
+'''
+    tt_fpga -- FPGA breakout management tool
+    @author: Pat Deegan
+    
+    In a project based on a TT template, with a configured info.yaml, all you need
+    is to run
+    
+      python tt/tt_fpga.py harden
+    
+    to generate a bitstream in build/.  Then
+    
+      python tt/tt_fpga.py configure --upload
+      
+    will make the bitstream available through the tt.shuttle object in the DB REPL.
+    
+    You may also set this as the default project to load on startup and/or set the
+    auto-clocking rate through the configure command, e.g.
+    
+      python tt/tt_fpga.py configure --upload --set-default --clockrate 1000
+      
+    to do all three at once.
+    
+    
+    If you have no info.yaml template, the script will work anyway.  But you'll need
+    to specify more command line arguments.
+    
+    See
+        python tt/tt_fpga.py harden --help
+    and
+        python tt/tt_fpga.py configure --help
+    
+'''
+
+
+
 import argparse
 import logging
 import sys
@@ -7,9 +42,10 @@ import os
 import subprocess
 from tt_logging import setup_logging
 from project import Project, SCRIPT_DIR
+from tt_db_config import TTDBConfig, DefaultPort
 
 CommandHarden = 'harden'
-CommandConfig = 'configuration'
+CommandConfig = 'configure'
 
 def getParser():
     parser = argparse.ArgumentParser(
@@ -21,6 +57,7 @@ def getParser():
     parser.add_argument("--project-dir", help="location of the project", default=".")
     # parser.add_argument("--yaml", help="the project's yaml configuration file", default="info.yaml")
 
+    
     # Global options (available to all subcommands)
     parser.add_argument(
         "--debug",
@@ -31,6 +68,7 @@ def getParser():
         const=logging.DEBUG,
         default=logging.INFO,
     )
+    
     
     # Create subparsers
     subparsers = parser.add_subparsers(
@@ -46,12 +84,14 @@ def getParser():
         CommandHarden,
         help='Run hardening process'
     )
+    
     harden.add_argument(
         '--name',
         metavar='FILE',
         help='Output file and project name (default: top_module name)',
         default=''
     )
+    
     harden.add_argument(
         "--breakout-target",
         help="Select target breakout: classic (TT04), fabricfox (TT ETR db) default: fabricfox",
@@ -62,20 +102,20 @@ def getParser():
     harden.add_argument(
         '--source_dir',
         metavar='DIR',
-        help='Directory containing source verilog files'
+        help='Directory containing source verilog files (default from info.yaml)'
         )
     
     harden.add_argument(
         '--source',
         action='append',
         metavar='FILE',
-        help='Source file(s) to harden (specify multiple times for multiple source files)'
+        help='Source file(s) to harden (specify multiple times for multiple source files, default from info.yaml)'
     )
 
     harden.add_argument(
         '--top_module',
         metavar='TOP',
-        help='Name of the top module'
+        help='Name of the top module (default from info.yaml)'
         )
     
 
@@ -85,7 +125,23 @@ def getParser():
     # ----------------------
     config = subparsers.add_parser(
         CommandConfig,
-        help='Manage or generate configuration'
+        help='Upload bitstream and manage configuration'
+    )
+    config.add_argument('--port',
+                        metavar='COMPORT',
+                        type=str,
+                        default=DefaultPort,
+                        help=f'Port for uploads (default: {DefaultPort})')
+    
+    config.add_argument(
+        '--set-default',
+        action='store_true',
+        help='set this     project as the default on startup'
+    )
+    config.add_argument(
+        '--upload',
+        action='store_true',
+        help='upload the bitstream.bin from build/'
     )
     config.add_argument(
         '--clockrate',
@@ -94,10 +150,12 @@ def getParser():
         help='Clock rate in Hz',
         
     )
+    
     config.add_argument(
-        '--upload',
-        action='store_true',
-        help='Upload configuration after generation'
+        '--name',
+        metavar='FILE',
+        help='Output file and project name (default: top_module name)',
+        default=''
     )
 
     return parser
@@ -115,6 +173,8 @@ class TTFPGA:
     def get_name(self):
         base_name = self.args.name
         if not len(base_name):
+            if 'top_module' in self.args and self.args.top_module is not None and len(self.args.top_module):
+                return self.args.top_module
             if self.project is not None:
                 base_name = self.project.info.top_module
                 
@@ -124,16 +184,22 @@ class TTFPGA:
         return base_name
     
     @property 
+    def bitstream_filename(self):
+        return f'{self.get_name()}.bin'
+    @property 
     def top_module(self):
-        if self.args.top_module:
+        if 'top_module' in self.args and self.args.top_module:
             # command line overrides yaml
             return self.args.top_module 
         
         if self.project is not None:
             return self.project.info.top_module
         
-        if not self.args.top_module:
-            die_with_error("No project yaml, must specify top_module")
+        if 'top_module' in self.args:
+            if not self.args.top_module:
+                die_with_error("No project yaml, must specify top_module")
+        else:
+            return None
         return self.args.top_module
     
     @property 
@@ -170,7 +236,7 @@ class TTFPGA:
         if not self.args.source:
             die_with_error("No project yaml, must specify --source A.v --source B.v ...")
             
-        print(self.args.source)
+        # print(self.args.source)
         return self.args.source
         
             
@@ -236,6 +302,7 @@ class TTFPGA:
         logging.info(f"Bitstream created successfully: {build_dir}/{base_name}.bin")
 
 
+
 def yaml_file_exists(args):
     return  os.path.exists(os.path.join(os.path.realpath(args.project_dir), 'info.yaml'))
 
@@ -260,8 +327,34 @@ def main():
     fpga = TTFPGA(project, args)
     
     if args.command == CommandHarden:
-        fpga.create_fpga_bitstream()
-    
+        fpga.create_fpga_bitstream()  
+    elif args.command == CommandConfig:
+        conf_actions = 0
+        proj_name = fpga.get_name()
+        bitstream_name = f'{proj_name}.bin'
+        fname = f'build/{bitstream_name}'
+        if not os.path.exists(fname):
+            print(f"Can't find {fname}")
+            sys.exit(3)
+        ttdbconf = TTDBConfig(args.port)
+        if args.upload:
+            print(f"Uploading {fname}")
+            ttdbconf.write_file(fname, f'/bitstreams/{bitstream_name}')
+        if args.set_default or args.clockrate is not None:
+            cnf = ttdbconf.get_config_ini()
+            if args.set_default:
+                cnf.set_default_project(proj_name)
+            if args.clockrate is not None:
+                cnf.set_project_clockrate(proj_name, args.clockrate)
+            
+            
+            cnf.save() # save local file
+            # upload that config.ini
+            ttdbconf.upload_config_ini(cnf.filepath, do_reset=False)
+            ttdbconf.reset() # restart
+            
+        if not (args.upload or args.set_default or args.clockrate):
+            print("Did nothing.  Use configure with --upload, --set-default and/or --clockrate")
     
     
 if __name__ == '__main__':
