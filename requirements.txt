@@ -121,3 +121,6 @@ yowasp-runtime==1.78
     # via yowasp-yosys
 yowasp-yosys==0.55.0.0.post944
     # via tt-support-tools (pyproject.toml)
+configupdater==3.2
+
+mpremote
