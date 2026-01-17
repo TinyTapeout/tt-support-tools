@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import argparse
 import logging
-from tt_logging import setup_logging
-import sys
 
 from project import Project
 from project_checks import check_project_docs
 from tech import TechName
+from tt_logging import setup_logging
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="TT setup")
@@ -139,9 +138,9 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    
+
     setup_logging(args.loglevel)
-    
+
     pdk: TechName = "ihp-sg13g2" if args.ihp else "gf180mcuD" if args.gf else "sky130A"
 
     if args.check_docs:

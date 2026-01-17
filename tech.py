@@ -2,7 +2,7 @@ import json
 import os
 from typing import Dict, List, Literal, Pattern, Protocol, Tuple, TypedDict, Union
 
-TechName = Literal["sky130A", "ihp-sg13g2", "gf180mcuD"]
+TechName = Literal["sky130A", "ihp-sg13g2", "gf180mcuD", "fpgaUp5k"]
 
 
 class CellDefinition(TypedDict):
@@ -252,5 +252,5 @@ tech_map: dict[TechName, Tech] = {
     "ihp-sg13g2": IHPTech(),
     "gf180mcuD": GF180MCUDTech(),
     "sky130A": Sky130Tech(),
-    "fpgaUp5k": Sky130Tech(), # don't need this
+    "fpgaUp5k": Sky130Tech(),  # don't need this
 }
