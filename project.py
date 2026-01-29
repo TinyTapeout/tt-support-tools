@@ -58,6 +58,7 @@ class Project:
     analog_pins: tuple[int, ...]
     commit_id: str
     sort_id: int
+    args: typing.Optional[argparse.Namespace]
 
     def __init__(
         self,
