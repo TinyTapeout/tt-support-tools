@@ -107,6 +107,12 @@ if __name__ == "__main__":
 
     # Hardening and submission
     parser.add_argument(
+        "--no-docker",
+        help="Do not use Docker for LibreLane commands",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
         "--create-user-config",
         help="create the user_config.json file with top module and source files",
         action="store_const",
@@ -179,6 +185,7 @@ if __name__ == "__main__":
         check_project_docs(args.project_dir, pdk)
 
     project = Project(0, "unknown", args.project_dir, pdk, is_user_project=True)
+    project.args = args  # Pass args to project so it can check --no-docker
     project.post_clone_setup()
 
     if args.print_cell_summary or args.print_cell_category:

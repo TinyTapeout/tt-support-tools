@@ -83,6 +83,7 @@ class Project:
             if self.is_user_project
             else self.local_dir
         )
+        self.args = None  # Will be populated by tt_tool.py
 
         yaml_path = os.path.join(self.local_dir, "info.yaml")
         try:
@@ -523,7 +524,16 @@ class Project:
         arg_progress = "--hide-progress-bar" if "CI" in os.environ else ""
         arg_pdk_root = '--pdk-root "$PDK_ROOT"' if "PDK_ROOT" in os.environ else ""
         arg_pdk = self.tech.librelane_pdk_args
-        harden_cmd = f"python -m librelane {arg_pdk_root} --docker-no-tty --dockerized {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
+
+        # Nix/No-Docker support: Conditionally include docker flags
+        docker_args = (
+            ""
+            if getattr(self.args, "no_docker", False)
+            else "--docker-no-tty --dockerized"
+        )
+
+        harden_cmd = f"python -m librelane {arg_pdk_root} {docker_args} {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
+
         env = os.environ.copy()
         logging.debug(harden_cmd)
         p = subprocess.run(harden_cmd, shell=True, env=env)
@@ -612,7 +622,16 @@ class Project:
 
     def run_custom_librelane_flow(self, flow_name: str):
         logging.info(f"Running {flow_name} for {self}")
-        ll_cmd = f"python -m librelane --docker-no-tty --dockerized {self.tech.librelane_pdk_args} --run-tag wokwi --force-run-dir {self.local_dir}/runs/wokwi {self.local_dir}/src/config_merged.json --flow {flow_name}"
+
+        # Nix/No-Docker support: Conditionally include docker flags
+        docker_args = (
+            ""
+            if getattr(self.args, "no_docker", False)
+            else "--docker-no-tty --dockerized"
+        )
+
+        ll_cmd = f"python -m librelane {docker_args} {self.tech.librelane_pdk_args} --run-tag wokwi --force-run-dir {self.local_dir}/runs/wokwi {self.local_dir}/src/config_merged.json --flow {flow_name}"
+
         logging.debug(ll_cmd)
         p = subprocess.run(ll_cmd, shell=True)
         if p.returncode != 0:
