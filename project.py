@@ -527,13 +527,13 @@ class Project:
         arg_pdk = self.tech.librelane_pdk_args
 
         # Nix/No-Docker support: Conditionally include docker flags
-        docker_args = (
+        arg_docker = (
             ""
             if getattr(self.args, "no_docker", False)
-            else "--docker-no-tty --dockerized"
+            else "{arg_pdk_root} --docker-no-tty --dockerized"
         )
 
-        harden_cmd = f"python -m librelane {arg_pdk_root} {docker_args} {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
+        harden_cmd = f"python -m librelane {arg_docker} {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
 
         env = os.environ.copy()
         logging.debug(harden_cmd)
@@ -625,13 +625,13 @@ class Project:
         logging.info(f"Running {flow_name} for {self}")
 
         # Nix/No-Docker support: Conditionally include docker flags
-        docker_args = (
+        arg_docker = (
             ""
             if getattr(self.args, "no_docker", False)
             else "--docker-no-tty --dockerized"
         )
 
-        ll_cmd = f"python -m librelane {docker_args} {self.tech.librelane_pdk_args} --run-tag wokwi --force-run-dir {self.local_dir}/runs/wokwi {self.local_dir}/src/config_merged.json --flow {flow_name}"
+        ll_cmd = f"python -m librelane {arg_docker} {self.tech.librelane_pdk_args} --run-tag wokwi --force-run-dir {self.local_dir}/runs/wokwi {self.local_dir}/src/config_merged.json --flow {flow_name}"
 
         logging.debug(ll_cmd)
         p = subprocess.run(ll_cmd, shell=True)
