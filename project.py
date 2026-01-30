@@ -525,11 +525,7 @@ class Project:
         arg_pdk = self.tech.librelane_pdk_args
 
         # Nix/No-Docker support: Conditionally include docker flags
-        arg_docker = (
-            ""
-            if no_docker
-            else "{arg_pdk_root} --docker-no-tty --dockerized"
-        )
+        arg_docker = "" if no_docker else "{arg_pdk_root} --docker-no-tty --dockerized"
 
         harden_cmd = f"python -m librelane {arg_docker} {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
 
@@ -623,11 +619,7 @@ class Project:
         logging.info(f"Running {flow_name} for {self}")
 
         # Nix/No-Docker support: Conditionally include docker flags
-        arg_docker = (
-            ""
-            if no_docker
-            else "--docker-no-tty --dockerized"
-        )
+        arg_docker = "" if no_docker else "--docker-no-tty --dockerized"
 
         ll_cmd = f"python -m librelane {arg_docker} {self.tech.librelane_pdk_args} --run-tag wokwi --force-run-dir {self.local_dir}/runs/wokwi {self.local_dir}/src/config_merged.json --flow {flow_name}"
 
