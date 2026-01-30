@@ -525,7 +525,7 @@ class Project:
         arg_pdk = self.tech.librelane_pdk_args
 
         # Nix/No-Docker support: Conditionally include docker flags
-        arg_docker = "" if no_docker else "{arg_pdk_root} --docker-no-tty --dockerized"
+        arg_docker = "" if no_docker else f"{arg_pdk_root} --docker-no-tty --dockerized"
 
         harden_cmd = f"python -m librelane {arg_docker} {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
 
