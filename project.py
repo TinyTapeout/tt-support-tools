@@ -58,7 +58,6 @@ class Project:
     analog_pins: tuple[int, ...]
     commit_id: str
     sort_id: int
-    args: typing.Optional[argparse.Namespace]
 
     def __init__(
         self,
@@ -84,7 +83,6 @@ class Project:
             if self.is_user_project
             else self.local_dir
         )
-        self.args = None  # Will be populated by tt_tool.py
 
         yaml_path = os.path.join(self.local_dir, "info.yaml")
         try:
@@ -510,7 +508,7 @@ class Project:
         shutil.copyfile("golden_config.json", os.path.join(self.src_dir, "config.json"))
         self.harden()
 
-    def harden(self):
+    def harden(self, no_docker: bool = False):
         cwd = os.getcwd()
         os.chdir(self.local_dir)
 
@@ -529,7 +527,7 @@ class Project:
         # Nix/No-Docker support: Conditionally include docker flags
         arg_docker = (
             ""
-            if getattr(self.args, "no_docker", False)
+            if no_docker
             else "{arg_pdk_root} --docker-no-tty --dockerized"
         )
 
@@ -621,13 +619,13 @@ class Project:
             os.path.join(stats_dir, "synthesis-stats.txt"),
         )
 
-    def run_custom_librelane_flow(self, flow_name: str):
+    def run_custom_librelane_flow(self, flow_name: str, no_docker: bool = False):
         logging.info(f"Running {flow_name} for {self}")
 
         # Nix/No-Docker support: Conditionally include docker flags
         arg_docker = (
             ""
-            if getattr(self.args, "no_docker", False)
+            if no_docker
             else "--docker-no-tty --dockerized"
         )
 

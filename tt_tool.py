@@ -185,7 +185,6 @@ if __name__ == "__main__":
         check_project_docs(args.project_dir, pdk)
 
     project = Project(0, "unknown", args.project_dir, pdk, is_user_project=True)
-    project.args = args  # Pass args to project so it can check --no-docker
     project.post_clone_setup()
 
     if args.print_cell_summary or args.print_cell_category:
@@ -210,16 +209,16 @@ if __name__ == "__main__":
         project.create_user_config()
 
     if args.harden:
-        project.harden()
+        project.harden(no_docker=args.no_docker)
 
     if args.create_tt_submission:
         project.create_tt_submission()
 
     if args.open_in_klayout:
-        project.run_custom_librelane_flow("OpenInKLayout")
+        project.run_custom_librelane_flow("OpenInKLayout", no_docker=args.no_docker)
 
     if args.open_in_openroad:
-        project.run_custom_librelane_flow("OpenInOpenROAD")
+        project.run_custom_librelane_flow("OpenInOpenROAD", no_docker=args.no_docker)
 
     if args.create_pdf:
         project.create_project_datasheet(args.template_version)
