@@ -107,6 +107,12 @@ if __name__ == "__main__":
 
     # Hardening and submission
     parser.add_argument(
+        "--no-docker",
+        help="Do not use Docker for LibreLane commands",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
         "--create-user-config",
         help="create the user_config.json file with top module and source files",
         action="store_const",
@@ -203,16 +209,16 @@ if __name__ == "__main__":
         project.create_user_config()
 
     if args.harden:
-        project.harden()
+        project.harden(no_docker=args.no_docker)
 
     if args.create_tt_submission:
         project.create_tt_submission()
 
     if args.open_in_klayout:
-        project.run_custom_librelane_flow("OpenInKLayout")
+        project.run_custom_librelane_flow("OpenInKLayout", no_docker=args.no_docker)
 
     if args.open_in_openroad:
-        project.run_custom_librelane_flow("OpenInOpenROAD")
+        project.run_custom_librelane_flow("OpenInOpenROAD", no_docker=args.no_docker)
 
     if args.create_pdf:
         project.create_project_datasheet(args.template_version)

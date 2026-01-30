@@ -508,7 +508,7 @@ class Project:
         shutil.copyfile("golden_config.json", os.path.join(self.src_dir, "config.json"))
         self.harden()
 
-    def harden(self):
+    def harden(self, no_docker: bool = False):
         cwd = os.getcwd()
         os.chdir(self.local_dir)
 
@@ -523,7 +523,12 @@ class Project:
         arg_progress = "--hide-progress-bar" if "CI" in os.environ else ""
         arg_pdk_root = '--pdk-root "$PDK_ROOT"' if "PDK_ROOT" in os.environ else ""
         arg_pdk = self.tech.librelane_pdk_args
-        harden_cmd = f"python -m librelane {arg_pdk_root} --docker-no-tty --dockerized {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
+
+        # Nix/No-Docker support: Conditionally include docker flags
+        arg_docker = "" if no_docker else f"{arg_pdk_root} --docker-no-tty --dockerized"
+
+        harden_cmd = f"python -m librelane {arg_docker} {arg_pdk_root} {arg_pdk} --run-tag wokwi --force-run-dir runs/wokwi {arg_progress} src/config_merged.json"
+
         env = os.environ.copy()
         logging.debug(harden_cmd)
         p = subprocess.run(harden_cmd, shell=True, env=env)
@@ -610,9 +615,14 @@ class Project:
             os.path.join(stats_dir, "synthesis-stats.txt"),
         )
 
-    def run_custom_librelane_flow(self, flow_name: str):
+    def run_custom_librelane_flow(self, flow_name: str, no_docker: bool = False):
         logging.info(f"Running {flow_name} for {self}")
-        ll_cmd = f"python -m librelane --docker-no-tty --dockerized {self.tech.librelane_pdk_args} --run-tag wokwi --force-run-dir {self.local_dir}/runs/wokwi {self.local_dir}/src/config_merged.json --flow {flow_name}"
+
+        # Nix/No-Docker support: Conditionally include docker flags
+        arg_docker = "" if no_docker else "--docker-no-tty --dockerized"
+
+        ll_cmd = f"python -m librelane {arg_docker} {self.tech.librelane_pdk_args} --run-tag wokwi --force-run-dir {self.local_dir}/runs/wokwi {self.local_dir}/src/config_merged.json --flow {flow_name}"
+
         logging.debug(ll_cmd)
         p = subprocess.run(ll_cmd, shell=True)
         if p.returncode != 0:
