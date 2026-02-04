@@ -315,7 +315,16 @@ class TestProjectInfoPinoutSection:
         with pytest.raises(
             ProjectYamlError, match="Please fill in the 'pinout' section"
         ):
-            ProjectInfo(valid_yaml_data, tile_sizes)
+            ProjectInfo(valid_yaml_data, tile_sizes, require_pinout=True)
+
+    def test_all_empty_pinout_allowed_without_require_pinout(
+        self, valid_yaml_data, tile_sizes
+    ):
+        for pin in valid_yaml_data["pinout"]:
+            valid_yaml_data["pinout"][pin] = ""
+        # Should not raise an error when require_pinout is False (default)
+        info = ProjectInfo(valid_yaml_data, tile_sizes)
+        assert info.pinout is not None
 
     def test_invalid_pinout_keys(self, valid_yaml_data, tile_sizes):
         valid_yaml_data["pinout"]["invalid_key"] = "value"

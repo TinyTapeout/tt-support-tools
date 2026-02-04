@@ -41,7 +41,7 @@ def check_info_yaml(project_dir: str, pdk: str) -> list[str]:
         tile_sizes = yaml.safe_load(f)
 
     try:
-        _ = ProjectInfo(yaml_data, tile_sizes)
+        _ = ProjectInfo(yaml_data, tile_sizes, require_pinout=True)
     except Exception as e:
         if isinstance(e, ProjectYamlError):
             return e.errors

@@ -12,14 +12,16 @@ class ProjectYamlError(Exception):
 
 
 class PinoutSection:
-    def __init__(self, yaml_data: Dict[str, Any], errors: List[str]):
+    def __init__(
+        self, yaml_data: Dict[str, Any], errors: List[str], require_pinout: bool = False
+    ):
         self.__nonEmptyPins = 0
         yaml_data = yaml_data.copy()
         self.ui = self._pins(yaml_data, "ui", 8, errors)
         self.uo = self._pins(yaml_data, "uo", 8, errors)
         self.uio = self._pins(yaml_data, "uio", 8, errors)
         self.ua = self._pins(yaml_data, "ua", 6, errors, True)
-        if self.__nonEmptyPins == 0:
+        if require_pinout and self.__nonEmptyPins == 0:
             errors.append("Please fill in the 'pinout' section")
         if len(yaml_data) > 0:
             errors.append(
@@ -55,7 +57,12 @@ class ProjectInfo:
     top_module: str
     source_files: List[str]
 
-    def __init__(self, yaml_data: Dict[str, Any], tile_sizes: Dict[str, str]):
+    def __init__(
+        self,
+        yaml_data: Dict[str, Any],
+        tile_sizes: Dict[str, str],
+        require_pinout: bool = False,
+    ):
         errors: List[str] = []
 
         # Validate Version
@@ -179,7 +186,7 @@ class ProjectInfo:
         if "pinout" not in yaml_data:
             errors.append("Missing 'pinout' section")
         else:
-            self.pinout = PinoutSection(yaml_data["pinout"], errors)
+            self.pinout = PinoutSection(yaml_data["pinout"], errors, require_pinout)
 
         # Optional fields
         self.discord: Optional[str] = project_section.get("discord")
