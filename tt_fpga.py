@@ -158,7 +158,7 @@ def die_with_error(msg):
 
 class TTFPGA:
 
-    def __init__(self, proj: Project, args):
+    def __init__(self, proj: Project | None, args):
         self.project = proj
         self.args = args
 

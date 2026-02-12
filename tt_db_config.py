@@ -115,7 +115,7 @@ class ConfigFile:
         if name not in self.updater:
             self.updater.add_section(name)
 
-        self.updater[name]["clock_frequency"] = int(rate)
+        self.updater[name]["clock_frequency"] = str(rate)
 
 
 class TTDBConfig:
@@ -198,7 +198,7 @@ class TTDBConfig:
 
         subprocess.run(["mpremote", *commands], check=True)
 
-    def get_config_ini(self) -> ConfigUpdater:
+    def get_config_ini(self) -> ConfigFile:
         tmpfile = self.fetch_safe("/config.ini")
         return ConfigFile(tmpfile)
 
