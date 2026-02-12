@@ -13,9 +13,10 @@ set TEMPLATE_FILE      tt_analog_1x2.def
 set POWER_STRIPE_WIDTH 2.4um                 ;# The minimum width is 2.1um
 
 # Power stripes: NET name, x position. You can add additional power stripes for each net, as needed.
+# Min spacing: 1.64um.
 set POWER_STRIPES {
     VDPWR 1um
-    VGND  4um
+    VGND  6um
 }
 
 # Read in the pin positions
@@ -29,8 +30,8 @@ proc draw_power_stripe {name x} {
     global POWER_STRIPE_WIDTH
     box $x 5um $x 308um
     box width $POWER_STRIPE_WIDTH
-    paint met4
-    label $name FreeSans 0.25u -met4
+    paint met6
+    label $name FreeSans 0.25u -met6
     port make
     port use [expr {$name eq "VGND" ? "ground" : "power"}]
     port class bidirectional
