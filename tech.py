@@ -16,6 +16,7 @@ class PDKVersionInfo(TypedDict):
 
 
 class Tech(Protocol):
+    is_fpga: bool
     def_suffix: str
     librelane_pdk_args: str
     tt_corner: str
@@ -65,6 +66,7 @@ def parse_openpdks_pdk_version(
 
 
 class Sky130Tech(Tech):
+    is_fpga = False
     def_suffix = "pg"
     librelane_pdk_args = ""
     tt_corner = "nom_tt_025C_1v80"
@@ -124,6 +126,7 @@ class Sky130Tech(Tech):
 
 
 class IHPTech(Tech):
+    is_fpga = False
     def_suffix = "pgvdd"
     librelane_pdk_args = "--pdk ihp-sg13g2"
     tt_corner = "nom_typ_1p20V_25C"
@@ -177,6 +180,7 @@ class IHPTech(Tech):
 
 
 class GF180MCUDTech(Tech):
+    is_fpga = False
     def_suffix = "pgvdd"
     librelane_pdk_args = "--pdk gf180mcuD"
     tt_corner = "nom_tt_025C_3v30"
@@ -248,9 +252,33 @@ class GF180MCUDTech(Tech):
         return cells
 
 
+class FpgaTech(Tech):
+    is_fpga = True
+    # dummy values to keep the type checker happy
+    def_suffix = ""
+    librelane_pdk_args = ""
+    tt_corner = ""
+    cell_regexp = r""
+    netlist_type = "nl"
+    project_top_metal_layer = ""
+    librelane_config = {}
+    label_layers = []
+    buried_layers = []
+    scramble_cells = None
+    mux_config_yaml_name = ""
+    mux_macros = []
+    extra_logo_macros = []
+    prboundary_layer = (0, 0)
+    logo_layer = (0, 0)
+    logo_layer_name = ""
+    logo_pixel_size = 0
+    read_pdk_version = Tech.read_pdk_version
+    load_cell_definitions = Tech.load_cell_definitions
+
+
 tech_map: dict[TechName, Tech] = {
     "ihp-sg13g2": IHPTech(),
     "gf180mcuD": GF180MCUDTech(),
     "sky130A": Sky130Tech(),
-    "fpgaUp5k": Sky130Tech(),  # don't need this
+    "fpgaUp5k": FpgaTech(),
 }

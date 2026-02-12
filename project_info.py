@@ -99,13 +99,16 @@ class ProjectInfo:
         else:
             self.description: str = description
 
-        tiles = project_section.get("tiles")
-        if tiles is None:
-            errors.append("Missing key 'tiles' in 'project' section")
-        elif tiles not in tile_sizes.keys():
-            errors.append(f"Invalid value for 'tiles' in 'project' section: {tiles}")
-        else:
-            self.tiles: str = tiles
+        if tile_sizes:
+            tiles = project_section.get("tiles")
+            if tiles is None:
+                errors.append("Missing key 'tiles' in 'project' section")
+            elif tiles not in tile_sizes.keys():
+                errors.append(
+                    f"Invalid value for 'tiles' in 'project' section: {tiles}"
+                )
+            else:
+                self.tiles: str = tiles
 
         analog_pins = project_section.get("analog_pins", 0)
         if not isinstance(analog_pins, int):

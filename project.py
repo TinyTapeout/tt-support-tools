@@ -353,6 +353,8 @@ class Project:
             return os.path.join(self.local_dir, f"{self.info.top_module}.v")
 
     def get_tile_sizes(self):
+        if self.tech.is_fpga:
+            return {}
         tile_sizes_yaml = f"tech/{self.pdk}/tile_sizes.yaml"
         with open(
             os.path.join(os.path.dirname(__file__), tile_sizes_yaml), "r"
