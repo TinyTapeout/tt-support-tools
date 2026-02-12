@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import argparse
 import logging
-import sys
 
 from project import Project
 from project_checks import check_project_docs
 from tech import TechName
+from tt_logging import setup_logging
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="TT setup")
@@ -143,41 +143,9 @@ if __name__ == "__main__":
         const=True,
     )
 
-    # FPGA
-    parser.add_argument(
-        "--create-fpga-bitstream",
-        help="create the FPGA bitstream",
-        action="store_const",
-        const=True,
-    )
-    parser.add_argument(
-        "--fpga-breakout-target",
-        help="Select target breakout: classic (TT04) or fabricfox (TT06+)",
-        choices=["classic", "fabricfox"],
-        default="classic",
-    )
-    parser.add_argument(
-        "--fpga-bitstream-name",
-        help="Set the bitstream name",
-        default="",
-    )
-
     args = parser.parse_args()
 
-    # setup log
-    log_format = logging.Formatter(
-        "%(asctime)s - %(module)-10s - %(levelname)-8s - %(message)s"
-    )
-    # configure the client logging
-    log = logging.getLogger("")
-    # has to be set to debug as is the root logger
-    log.setLevel(args.loglevel)
-
-    # create console handler and set level to info
-    ch = logging.StreamHandler(sys.stdout)
-    # create formatter for console
-    ch.setFormatter(log_format)
-    log.addHandler(ch)
+    setup_logging(args.loglevel)
 
     pdk: TechName = "ihp-sg13g2" if args.ihp else "gf180mcuD" if args.gf else "sky130A"
 
@@ -228,6 +196,3 @@ if __name__ == "__main__":
 
     if args.create_svg:
         project.create_svg()
-
-    if args.create_fpga_bitstream:
-        project.create_fpga_bitstream(args)

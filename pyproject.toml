@@ -16,7 +16,9 @@ dependencies = [
     "PyYAML",
     "requests",
     "yowasp-yosys",
-    "matplotlib"
+    "matplotlib",
+    "configupdater",
+    "mpremote"
 ]
 
 [tool.setuptools]

@@ -353,6 +353,8 @@ class Project:
             return os.path.join(self.local_dir, f"{self.info.top_module}.v")
 
     def get_tile_sizes(self):
+        if self.tech.is_fpga:
+            return {}
         tile_sizes_yaml = f"tech/{self.pdk}/tile_sizes.yaml"
         with open(
             os.path.join(os.path.dirname(__file__), tile_sizes_yaml), "r"
@@ -628,62 +630,6 @@ class Project:
         if p.returncode != 0:
             logging.error("librelane failed")
             exit(1)
-
-    def create_fpga_bitstream(self, args):
-        logging.info(f"Creating FPGA bitstream for {self}")
-
-        target_map = {
-            "classic": {
-                "pcf": "tt_fpga_top.pcf",
-                "def_name": "tt_fpga",
-            },
-            "fabricfox": {"pcf": "tt_fpga_fabricfox.pcf", "def_name": "tt_ff_fpga"},
-        }
-        pcf_file = target_map[args.fpga_breakout_target]["pcf"]
-
-        base_name = args.fpga_bitstream_name
-        if not len(base_name):
-            base_name = target_map[args.fpga_breakout_target]["def_name"]
-
-        with open(os.path.join(SCRIPT_DIR, "fpga/tt_fpga_top.v"), "r") as f:
-            top_module_template = f.read()
-
-        with open(os.path.join(self.src_dir, "_tt_fpga_top.v"), "w") as f:
-            f.write(
-                top_module_template.replace("__tt_um_placeholder", self.info.top_module)
-            )
-
-        build_dir = os.path.join(self.local_dir, "build")
-        os.makedirs(build_dir, exist_ok=True)
-
-        sources = [os.path.join(self.src_dir, src) for src in self.sources]
-        source_list = " ".join(sources)
-
-        yosys_cmd = f"yosys -l {build_dir}/01-synth.log -DSYNTH -p 'synth_ice40 -top tt_fpga_top -json {build_dir}/{base_name}.json' src/_tt_fpga_top.v {source_list}"
-        logging.debug(yosys_cmd)
-        p = subprocess.run(yosys_cmd, shell=True)
-        if p.returncode != 0:
-            logging.error("synthesis failed")
-            exit(1)
-
-        seed = os.getenv("TT_FPGA_SEED", "10")
-        freq = os.getenv("TT_FPGA_FREQ", "12")
-
-        nextpnr_cmd = f"nextpnr-ice40 -l {build_dir}/02-nextpnr.log --pcf-allow-unconstrained --seed {seed} --freq {freq} --package sg48 --up5k --asc {build_dir}/{base_name}.asc --pcf {SCRIPT_DIR}/fpga/{pcf_file} --json {build_dir}/{base_name}.json"
-        logging.debug(nextpnr_cmd)
-        p = subprocess.run(nextpnr_cmd, shell=True)
-        if p.returncode != 0:
-            logging.error("placement failed")
-            exit(1)
-
-        icepack_cmd = f"icepack {build_dir}/{base_name}.asc {build_dir}/{base_name}.bin"
-        logging.debug(icepack_cmd)
-        p = subprocess.run(icepack_cmd, shell=True)
-        if p.returncode != 0:
-            logging.error("bitstream creation failed failed")
-            exit(1)
-
-        logging.info(f"Bitstream created successfully: {build_dir}/{base_name}.bin")
 
     def create_project_datasheet(self, template_version: str):
         template_args = copy.deepcopy(self.info.__dict__)
