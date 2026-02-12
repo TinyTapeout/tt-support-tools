@@ -424,6 +424,7 @@ def main():
             "check": lambda: analog_pin_check(
                 gds_file, tech, is_analog, uses_3v3, analog_pins, pinout
             ),
+            "techs": ["sky130A"],
         },
     ]
 

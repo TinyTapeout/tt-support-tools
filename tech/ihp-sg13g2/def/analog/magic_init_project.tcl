@@ -4,12 +4,12 @@
 # Description: This script initializes a new Magic project for an analog design on Tiny Tapeout.
 
 # Important: before running this script, download the the .def file from
-# https://raw.githubusercontent.com/TinyTapeout/tt-support-tools/main/tech/ihp-sg13g2/def/analog/tt_block_1x2_pgvdd_ana.def
+# https://raw.githubusercontent.com/TinyTapeout/tt-support-tools/main/tech/ihp-sg13g2/def/analog/tt_analog_1x2.def
 
 # Change the settings below to match your design:
 # ------------------------------------------------
 set TOP_LEVEL_CELL     tt_um_analog_example
-set TEMPLATE_FILE      tt_block_1x2_pgvdd_ana.def
+set TEMPLATE_FILE      tt_analog_1x2.def
 set POWER_STRIPE_WIDTH 2.4um                 ;# The minimum width is 2.1um
 
 # Power stripes: NET name, x position. You can add additional power stripes for each net, as needed.
