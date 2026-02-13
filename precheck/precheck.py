@@ -74,7 +74,13 @@ def magic_drc(gds: str, toplevel: str):
         raise PrecheckFailure("Magic DRC failed")
 
 
-def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc", extra_vars=[]):
+def klayout_drc(
+    gds: str,
+    check: str,
+    script=f"{PDK_NAME}_mr.drc",
+    script_dir="tech-files",
+    extra_vars=[],
+):
     logging.info(f"Running klayout {check} on {gds}")
     report_file = f"{REPORTS_PATH}/drc_{check}.xml"
     script_vars = [
@@ -83,7 +89,7 @@ def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc", extra_vars=[]
         f"report={report_file}",
         f"report_file={report_file}",
     ]
-    klayout_args = ["klayout", "-b", "-r", f"tech-files/{script}"]
+    klayout_args = ["klayout", "-b", "-r", f"{script_dir}/{script}"]
     for v in script_vars + extra_vars:
         klayout_args.extend(["-rd", v])
     klayout = subprocess.run(klayout_args)
@@ -105,6 +111,15 @@ def klayout_zero_area(gds: str):
 
 def klayout_sg13g2(gds: str):
     return klayout_drc(gds, "sg13g2", "sg13g2_mr.lydrc", extra_vars=[f"in_gds={gds}"])
+
+
+def klayout_gf180mcuD_antenna(gds: str):
+    return klayout_drc(
+        gds,
+        "antenna",
+        "antenna.drc",
+        script_dir=f"{PDK_ROOT}/{PDK_NAME}/libs.tech/klayout/drc/rule_decks",
+    )
 
 
 def klayout_checks(gds: str, expected_name: str, tech: str):
@@ -418,6 +433,11 @@ def main():
             "name": "urpm/nwell check",
             "check": lambda: urpm_nwell_check(gds_file, top_module),
             "techs": ["sky130A"],
+        },
+        {
+            "name": "Antenna check",
+            "check": lambda: klayout_gf180mcuD_antenna(gds_file),
+            "techs": ["gf180mcuD"],
         },
         {
             "name": "Analog pin check",
