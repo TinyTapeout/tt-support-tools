@@ -74,18 +74,15 @@ def magic_drc(gds: str, toplevel: str):
         raise PrecheckFailure("Magic DRC failed")
 
 
-def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc", extra_vars=[]):
-    logging.info(f"Running klayout {check} on {gds}")
+def klayout_custom_drc(
+    check: str, script_path: str, script_vars: dict[str, str], report_vars: list[str]
+):
     report_file = f"{REPORTS_PATH}/drc_{check}.xml"
-    script_vars = [
-        f"{check}=true",
-        f"input={gds}",
-        f"report={report_file}",
-        f"report_file={report_file}",
-    ]
-    klayout_args = ["klayout", "-b", "-r", f"tech-files/{script}"]
-    for v in script_vars + extra_vars:
-        klayout_args.extend(["-rd", v])
+    klayout_args = ["klayout", "-b", "-r", script_path]
+    for k, v in script_vars.items():
+        klayout_args.extend(["-rd", f"{k}={v}"])
+    for k in report_vars:
+        klayout_args.extend(["-rd", f"{k}={report_file}"])
     klayout = subprocess.run(klayout_args)
     if klayout.returncode != 0:
         raise PrecheckFailure(f"Klayout {check} failed")
@@ -97,6 +94,18 @@ def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc", extra_vars=[]
         raise PrecheckFailure(
             f"Klayout {check} failed with {report.num_items()} DRC violations"
         )
+
+
+def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc", extra_vars=[]):
+    logging.info(f"Running klayout {check} on {gds}")
+    if "/" not in script:
+        script = f"tech-files/{script}"
+    script_vars = {
+        check: "true",
+        "input": gds,
+    }
+    script_vars.update(extra_vars)
+    klayout_custom_drc(check, script, script_vars, ["report", "report_file"])
 
 
 def klayout_zero_area(gds: str):
@@ -234,7 +243,7 @@ def cell_name_check(gds: str):
 
 def urpm_nwell_check(gds: str, top_module: str):
     """Run a DRC check for urpm to nwell spacing."""
-    extra_vars = [f"thr={os.cpu_count()}", f"top_cell={top_module}"]
+    extra_vars = {"thr": os.cpu_count(), "top_cell": top_module}
     klayout_drc(
         gds=gds, check="nwell_urpm", script="nwell_urpm.drc", extra_vars=extra_vars
     )
