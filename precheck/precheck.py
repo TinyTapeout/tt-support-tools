@@ -113,7 +113,11 @@ def klayout_zero_area(gds: str):
 
 
 def klayout_sg13g2(gds: str):
-    return klayout_drc(gds, "sg13g2", "sg13g2_mr.lydrc", extra_vars=[f"in_gds={gds}"])
+    return klayout_drc(
+        gds,
+        "sg13g2",
+        f"{PDK_ROOT}/{PDK_NAME}/libs.tech/klayout/tech/drc/ihp-sg13g2.drc",
+    )
 
 
 def klayout_checks(gds: str, expected_name: str, tech: str):
