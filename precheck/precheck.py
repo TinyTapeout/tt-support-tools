@@ -17,10 +17,9 @@ from klayout_tools import parse_lyp_layers
 from pin_check import pin_check
 from precheck_failure import PrecheckFailure
 from tech_data import (
-    analog_pin_pos,
+    analog_pin_rects,
     boundary_layer,
     forbidden_layers,
-    layer_map,
     lyp_filename,
     tech_names,
     valid_layers,
@@ -261,42 +260,50 @@ def analog_pin_check(
     if is_analog:
         lib = gdstk.read_gds(gds)
         top = lib.top_level()[0]
-        met4 = top.copy("test_met4")
-        met4.flatten()
-        met4.filter([layer_map[tech]["met4"]], False)
-        via3 = top.copy("test_via3")
-        via3.flatten()
-        via3.filter([layer_map[tech]["via3"]], False)
+        filtered = {}
 
-        for pin in range(8):
-            x = analog_pin_pos[tech](pin, uses_3v3)
-            pin_over = gdstk.rectangle((x, 0), (x + 0.9, 1.0))
-            pin_around = gdstk.boolean(
-                gdstk.offset(pin_over, 0.5), gdstk.offset(pin_over, 0.1), "not"
+        for pin, (rect, pin_layer, via_layers) in enumerate(
+            analog_pin_rects(tech, uses_3v3)
+        ):
+            for layer in [pin_layer] + via_layers:
+                if layer not in filtered:
+                    i = len(filtered)
+                    lf = top.copy(f"test_lf_{i}")
+                    lf.flatten()
+                    lf.filter([layer], False)
+                    filtered[layer] = lf
+
+            pin_rect = gdstk.rectangle(*rect)
+            pin_ring = gdstk.boolean(
+                gdstk.offset(pin_rect, 0.5), gdstk.offset(pin_rect, 0.1), "not"
             )
 
-            via3_over = gdstk.boolean(via3.polygons, pin_over, "and")
-            met4_around = gdstk.boolean(met4.polygons, pin_around, "and")
-            connected = bool(via3_over) or bool(met4_around)
+            pin_layer_polygons = filtered[pin_layer].polygons
+            connected = bool(gdstk.boolean(pin_layer_polygons, pin_ring, "and"))
+            for via_layer in via_layers:
+                via_layer_polygons = filtered[via_layer].polygons
+                connected = connected or bool(
+                    gdstk.boolean(via_layer_polygons, pin_rect, "and")
+                )
 
             expected_pc = pin < analog_pins
             expected_pd = bool(pinout.get(f"ua[{pin}]", ""))
 
             if connected and not expected_pc:
                 raise PrecheckFailure(
-                    f"Analog pin `ua[{pin}]` is connected to some metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either increase `analog_pins` to at least {pin+1}, or remove any metal4 or via3 adjacent to `ua[{pin}]`."
+                    f"Analog pin `ua[{pin}]` is connected to some metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either increase `analog_pins` to at least {pin+1}, or remove any metal or via adjacent to `ua[{pin}]`."
                 )
             elif connected and not expected_pd:
                 raise PrecheckFailure(
-                    f"Analog pin `ua[{pin}]` is connected to some metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is empty. Either add a description or remove any metal4 or via3 adjacent to `ua[{pin}]`."
+                    f"Analog pin `ua[{pin}]` is connected to some metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is empty. Either add a description or remove any metal or via adjacent to `ua[{pin}]`."
                 )
             elif not connected and expected_pc:
                 raise PrecheckFailure(
-                    f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either wire up `ua[{pin}]` to your design using metal4 or via3, or decrease `analog_pins` to {pin}."
+                    f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either wire up `ua[{pin}]` to your design or decrease `analog_pins` to {pin}."
                 )
             elif not connected and expected_pd:
                 raise PrecheckFailure(
-                    f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is non-empty. Either wire up `ua[{pin}]` to your design using metal4 or via3, or remove the description for the disconnected pin."
+                    f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is non-empty. Either wire up `ua[{pin}]` to your design or remove the description for the disconnected pin."
                 )
 
 
@@ -437,7 +444,7 @@ def main():
             "check": lambda: analog_pin_check(
                 gds_file, tech, is_analog, uses_3v3, analog_pins, pinout
             ),
-            "techs": ["sky130A"],
+            "techs": ["sky130A", "ihp-sg13g2"],
         },
     ]
 

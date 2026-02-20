@@ -1,3 +1,5 @@
+tech_names = ["sky130A", "ihp-sg13g2", "gf180mcuD"]
+
 # fmt: off
 valid_layers_sky130A = [
     'cldntm.mask', 'ldntm.drawing', 'cncm.mask', 'ctunm.mask', 'cnwm.mask', 'cnsm.mask', 'cfom.drawing', 'cfom.maskAdd',
@@ -93,15 +95,34 @@ valid_layers_gf180mcuD = [
 ]
 # fmt: on
 
-# layers used for the analog pin check
-layer_map_sky130A = {
-    "met4": (71, 20),
-    "via3": (70, 44),
-}
 
-
-def analog_pin_pos_sky130A(pin_number: int, uses_3v3: bool):
-    return 151.81 - 19.32 * pin_number - (15.64 if uses_3v3 else 0)
+def analog_pin_rects(tech: str, uses_3v3: bool):
+    if tech == "sky130A":
+        pin_layer = (71, 20)  # met4
+        via_layers = [(70, 44)]  # via3
+        for pin_number in range(8):
+            if uses_3v3:
+                x1, y1 = 136.17 - 19.32 * pin_number, 0.0
+            else:
+                x1, y1 = 151.81 - 19.32 * pin_number, 0.0
+            x2, y2 = x1 + 0.9, y1 + 1.0
+            rect = ((x1, y1), (x2, y2))
+            yield (rect, pin_layer, via_layers)
+    elif tech == "ihp-sg13g2":
+        pin_layer = (126, 0)  # TopMetal1
+        via_layers = [(125, 0)]  # TopVia1
+        for pin_number in range(8):
+            if uses_3v3:
+                raise NotImplementedError
+            else:
+                x1, y1 = 190.165 - 24.48 * pin_number, 0.0
+            x2, y2 = x1 + 1.75, y1 + 2.0
+            rect = ((x1, y1), (x2, y2))
+            yield (rect, pin_layer, via_layers)
+    elif tech in tech_names:
+        raise NotImplementedError
+    else:
+        raise ValueError(f"unexpected tech {tech}")
 
 
 valid_layers = {
@@ -109,8 +130,6 @@ valid_layers = {
     "ihp-sg13g2": valid_layers_ihp_sg13g2,
     "gf180mcuD": valid_layers_gf180mcuD,
 }
-layer_map = {"sky130A": layer_map_sky130A}
-analog_pin_pos = {"sky130A": analog_pin_pos_sky130A}
 lyp_filename = {
     "sky130A": "sky130A.lyp",
     "ihp-sg13g2": "sg13g2.lyp",
@@ -165,5 +184,3 @@ boundary_layer = {
     "ihp-sg13g2": "prBoundary.boundary",
     "gf180mcuD": "PR_bndry",
 }
-
-tech_names = ["sky130A", "ihp-sg13g2", "gf180mcuD"]
