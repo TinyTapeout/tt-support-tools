@@ -129,7 +129,9 @@ class Docs:
 
         if total_available_art is not None:
             if total_available_art > 0:
-                insert_art_after = math.floor(len(self.projects) / total_available_art)
+                insert_art_after = max(
+                    1, math.floor(len(self.projects) / total_available_art)
+                )
 
         temp_subtile_projects = {}
         for project in tapeout_index:
