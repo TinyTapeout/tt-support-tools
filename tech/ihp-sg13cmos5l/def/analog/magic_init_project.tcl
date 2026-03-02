@@ -4,7 +4,7 @@
 # Description: This script initializes a new Magic project for an analog design on Tiny Tapeout.
 
 # Important: before running this script, download the the .def file from
-# https://raw.githubusercontent.com/TinyTapeout/tt-support-tools/main/tech/ihp-sg13g2/def/analog/tt_analog_1x2.def
+# https://raw.githubusercontent.com/TinyTapeout/tt-support-tools/main/tech/ihp-sg13cmos5l/def/analog/tt_analog_1x2.def
 
 # Change the settings below to match your design:
 # ------------------------------------------------

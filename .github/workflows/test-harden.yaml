@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pdk: [sky130A, ihp-sg13g2, gf180mcuD]
+        pdk: [sky130A, ihp-sg13cmos5l, gf180mcuD]
         
     runs-on: ubuntu-24.04
 
@@ -35,24 +35,24 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Install librelane
-        if: "${{ matrix.pdk != 'ihp-sg13g2' }}"
+        if: "${{ matrix.pdk != 'ihp-sg13cmos5l' }}"
         run: pip install librelane==${LIBRELANE_VERSION}
 
-      # LibreLane 2.4.2 does not support ihp-sg13g2. Remove once 3.0.0 is released.
+      # LibreLane 2.4.2 does not support ihp-sg13cmos5l. Remove once 3.0.0 is released.
       - name: Install librelane 3 dev (IHP only)
-        if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
+        if: "${{ matrix.pdk == 'ihp-sg13cmos5l' }}"
         run: pip install librelane==${LIBRELANE_VERSION_DEV}
 
       - name: Clone the factory test
-        if: "${{ matrix.pdk != 'ihp-sg13g2' }}"
+        if: "${{ matrix.pdk != 'ihp-sg13cmos5l' }}"
         run: git clone https://github.com/tinytapeout/ttsky25a-factory-test ${PROJECT_DIR}
 
-      - name: Clone the factory test (ihp-sg13g2)
-        if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
+      - name: Clone the factory test (ihp-sg13cmos5l)
+        if: "${{ matrix.pdk == 'ihp-sg13cmos5l' }}"
         run: git clone https://github.com/TinyTapeout/ttihp25b-factory-test ${PROJECT_DIR}
 
       - name: Configure tt_tool.py args (IHP)
-        if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
+        if: "${{ matrix.pdk == 'ihp-sg13cmos5l' }}"
         run: echo "TT_TOOL_ARGS=--ihp" >> $GITHUB_ENV
 
       - name: Configure tt_tool.py args (gf180mcuD)

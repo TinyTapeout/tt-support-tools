@@ -1,4 +1,4 @@
-tech_names = ["sky130A", "ihp-sg13g2", "gf180mcuD"]
+tech_names = ["sky130A", "ihp-sg13cmos5l", "gf180mcuD"]
 
 # fmt: off
 valid_layers_sky130A = [
@@ -56,7 +56,7 @@ valid_layers_sky130A = [
     (235, 0), (235, 250), (235, 252), (236, 0),
 ]
 
-valid_layers_ihp_sg13g2 = [
+valid_layers_ihp_sg13cmos5l = [
     "Substrate.drawing", "Substrate.text", "Activ.drawing", "Activ.label", "Activ.nofill", "Activ.pin", "GatPoly.drawing",
     "GatPoly.label", "GatPoly.nofill", "GatPoly.pin", "PolyRes.drawing", "PolyRes.label", "PolyRes.pin", "NWell.drawing",
     "NWell.label", "NWell.pin", "nBuLay.drawing", "nBuLay.label", "nBuLay.pin", "nBuLay.block", "PWell.block",
@@ -65,17 +65,14 @@ valid_layers_ihp_sg13g2 = [
     "Metal2.drawing", "Metal2.label", "Metal2.nofill", "Metal2.pin", "Metal2.slit", "Metal2.text", "Metal2.res",
     "Via2.drawing", "Via2.net", "Via2.boundary", "Metal3.drawing", "Metal3.label", "Metal3.nofill", "Metal3.pin",
     "Metal3.slit", "Metal3.text", "Metal3.res", "MIM.drawing", "Vmim.drawing", "Via3.drawing", "Metal4.drawing",
-    "Metal4.label", "Metal4.nofill", "Metal4.pin", "Metal4.slit", "Metal4.text", "Metal4.res", "Via4.drawing",
-    "Metal5.drawing", "Metal5.label", "Metal5.nofill", "Metal5.pin", "Metal5.slit", "Metal5.text", "Metal5.res",
-    "TopVia1.drawing", "TopMetal1.drawing", "TopMetal1.label", "TopMetal1.nofill", "TopMetal1.pin", "TopMetal1.slit",
-    "TopMetal1.text", "TopMetal1.res", "TopMetal2.nofill", "IND.drawing", "IND.pin", "IND.boundary", "IND.text",
-    "TEXT.drawing", "Recog.drawing", "Recog.pin", "Recog.esd", "Recog.diode", "Recog.tsv", "Recog.pdiode", "Recog.mom",
-    "DigiBnd.drawing", "DigiBnd.drawing0", "RES.drawing", "RES.label", "SRAM.drawing", "SRAM.label", "SRAM.boundary",
-    "DigiSub.drawing", "HeatRes.drawing", "NoRCX.drawing", "NoRCX.m2m3", "NoRCX.m2m4", "NoRCX.m2m5", "NoRCX.m2tm1",
-    "NoRCX.m2tm2", "NoRCX.m3m4", "NoRCX.m3m5", "NoRCX.m3tm1", "NoRCX.m3tm2", "NoRCX.m4m5", "NoRCX.m4tm1", "NoRCX.m4tm2",
-    "NoRCX.m5tm1", "NoRCX.m5tm2", "NoRCX.tm1tm2", "NoRCX.m1sub", "NoRCX.m2sub", "NoRCX.m3sub", "NoRCX.m4sub", "NoRCX.m5sub",
-    "NoRCX.tm1sub", "Varicap.drawing", "EXTBlock.drawing", "prBoundary.drawing", "prBoundary.label", "prBoundary.boundary",
-    "isoNWell.drawing",
+    "Metal4.label", "Metal4.nofill", "Metal4.pin", "Metal4.slit", "Metal4.text", "Metal4.res", "TopMetal1.nofill",
+    "IND.drawing", "IND.pin", "IND.boundary", "IND.text", "TEXT.drawing", "Recog.drawing", "Recog.pin", "Recog.esd",
+    "Recog.diode", "Recog.tsv", "Recog.pdiode", "Recog.mom", "DigiBnd.drawing", "DigiBnd.drawing0", "RES.drawing",
+    "RES.label", "SRAM.drawing", "SRAM.label", "SRAM.boundary", "DigiSub.drawing", "HeatRes.drawing", "NoRCX.drawing",
+    "NoRCX.m2m3", "NoRCX.m2m4", "NoRCX.m2m5", "NoRCX.m2tm1", "NoRCX.m2tm2", "NoRCX.m3m4", "NoRCX.m3m5", "NoRCX.m3tm1",
+    "NoRCX.m3tm2", "NoRCX.m4m5", "NoRCX.m4tm1", "NoRCX.m4tm2", "NoRCX.m5tm1", "NoRCX.m5tm2", "NoRCX.tm1tm2", "NoRCX.m1sub",
+    "NoRCX.m2sub", "NoRCX.m3sub", "NoRCX.m4sub", "NoRCX.m5sub", "NoRCX.tm1sub", "Varicap.drawing", "EXTBlock.drawing",
+    "prBoundary.drawing", "prBoundary.label", "prBoundary.boundary", "isoNWell.drawing",
 ]
 
 valid_layers_gf180mcuD = [
@@ -108,7 +105,7 @@ def analog_pin_rects(tech: str, uses_3v3: bool):
             x2, y2 = x1 + 0.9, y1 + 1.0
             rect = ((x1, y1), (x2, y2))
             yield (rect, pin_layer, via_layers)
-    elif tech == "ihp-sg13g2":
+    elif tech == "ihp-sg13cmos5l":
         pin_layer = (126, 0)  # TopMetal1
         via_layers = [(125, 0)]  # TopVia1
         for pin_number in range(8):
@@ -127,12 +124,12 @@ def analog_pin_rects(tech: str, uses_3v3: bool):
 
 valid_layers = {
     "sky130A": valid_layers_sky130A,
-    "ihp-sg13g2": valid_layers_ihp_sg13g2,
+    "ihp-sg13cmos5l": valid_layers_ihp_sg13cmos5l,
     "gf180mcuD": valid_layers_gf180mcuD,
 }
 lyp_filename = {
     "sky130A": "sky130A.lyp",
-    "ihp-sg13g2": "sg13g2.lyp",
+    "ihp-sg13cmos5l": "sg13cmos5l.lyp",
     "gf180mcuD": "gf180mcu.lyp",
 }
 
@@ -144,13 +141,11 @@ valid_lef_port_layers = {
         "met3.pin": (70, 16),
         "met4.pin": (71, 16),
     },
-    "ihp-sg13g2": {
+    "ihp-sg13cmos5l": {
         "Metal1.pin": (8, 2),
         "Metal2.pin": (10, 2),
         "Metal3.pin": (30, 2),
         "Metal4.pin": (50, 2),
-        "Metal5.pin": (67, 2),
-        "TopMetal1.pin": (126, 2),
     },
 }
 forbidden_layers = {
@@ -159,10 +154,10 @@ forbidden_layers = {
         "met5.pin",
         "met5.label",
     ],
-    "ihp-sg13g2": [
-        "TopMetal2.drawing",
-        "TopMetal2.pin",
-        "TopMetal2.label",
+    "ihp-sg13cmos5l": [
+        "TopMetal1.drawing",
+        "TopMetal1.pin",
+        "TopMetal1.label",
     ],
     "gf180mcuD": [
         "Metal5",
@@ -171,16 +166,16 @@ forbidden_layers = {
 }
 power_pins_layer = {
     "sky130A": "met4",
-    "ihp-sg13g2": "TopMetal1",
+    "ihp-sg13cmos5l": "Metal4",
     "gf180mcuD": "Metal4",
 }
 power_pins_min_width = {
     "sky130A": 1200,  # 1.2 um
-    "ihp-sg13g2": 2100,  # 2.1 um
+    "ihp-sg13cmos5l": 2100,  # 2.1 um
     "gf180mcuD": 1200,  # 1.2 um
 }
 boundary_layer = {
     "sky130A": "prBoundary.boundary",
-    "ihp-sg13g2": "prBoundary.boundary",
+    "ihp-sg13cmos5l": "prBoundary.boundary",
     "gf180mcuD": "PR_bndry",
 }

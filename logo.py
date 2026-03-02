@@ -119,7 +119,7 @@ if __name__ == "__main__":
         "--pdk",
         type=str,
         default="sky130A",
-        choices=["sky130A", "ihp-sg13g2", "gf180mcuD"],
+        choices=["sky130A", "ihp-sg13cmos5l", "gf180mcuD"],
     )
     parser.add_argument("--top", action="store_true")
     parser.add_argument("--bottom", action="store_true")

@@ -8,7 +8,7 @@ MACRO tt_logo_corner
   ORIGIN 0.000 0.000 ;
   SIZE 100.000 BY 100.000 ;
   OBS
-      LAYER TopMetal2 ;
+      LAYER TopMetal1 ;
         RECT 45.000 99.500 55.000 100.000 ;
         RECT 41.500 99.000 58.500 99.500 ;
         RECT 39.000 98.500 61.000 99.000 ;

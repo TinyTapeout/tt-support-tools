@@ -36,9 +36,9 @@
     "RUN_KLAYOUT_DRC": false
   },
 
-  "pdk::ihp-sg13g2": {
+  "pdk::ihp-sg13cmos5l": {
     "DIE_AREA": [0, 0, 202.08, 154.98],
-    "FP_DEF_TEMPLATE": "ref::$DESIGN_DIR/../tech/ihp-sg13g2/def/tt_block_1x1_pgvdd.def",
-    "RT_MAX_LAYER": "Metal5"
+    "FP_DEF_TEMPLATE": "ref::$DESIGN_DIR/../tech/ihp-sg13cmos5l/def/tt_block_1x1_pgvdd.def",
+    "RT_MAX_LAYER": "Metal4"
   }
 }

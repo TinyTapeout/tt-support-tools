@@ -54,7 +54,7 @@ def parse_lyp_layers(lyp_file: str, only_valid: bool = True):
 
         if " " in source:
             assert source.count(" ") == 1
-            # sky130A and sg13g2 has the name in the "name" field
+            # sky130A and sg13cmos5l has the name in the "name" field
             # gf180mcuD has the name as part of the "source" field
             # if a future PDK has it in both places, we'll trigger the
             #     assertion below to decide which one has priority

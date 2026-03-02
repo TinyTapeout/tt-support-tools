@@ -147,7 +147,9 @@ if __name__ == "__main__":
 
     setup_logging(args.loglevel)
 
-    pdk: TechName = "ihp-sg13g2" if args.ihp else "gf180mcuD" if args.gf else "sky130A"
+    pdk: TechName = (
+        "ihp-sg13cmos5l" if args.ihp else "gf180mcuD" if args.gf else "sky130A"
+    )
 
     if args.check_docs:
         check_project_docs(args.project_dir, pdk)

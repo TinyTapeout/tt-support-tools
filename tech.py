@@ -2,7 +2,7 @@ import json
 import os
 from typing import Dict, List, Literal, Pattern, Protocol, Tuple, TypedDict, Union
 
-TechName = Literal["sky130A", "ihp-sg13g2", "gf180mcuD", "fpgaUp5k"]
+TechName = Literal["sky130A", "ihp-sg13cmos5l", "gf180mcuD", "fpgaUp5k"]
 
 
 class CellDefinition(TypedDict):
@@ -128,16 +128,16 @@ class Sky130Tech(Tech):
 class IHPTech(Tech):
     is_fpga = False
     def_suffix = "pgvdd"
-    librelane_pdk_args = "--pdk ihp-sg13g2"
+    librelane_pdk_args = "--pdk ihp-sg13cmos5l --manual-pdk"
     tt_corner = "nom_typ_1p20V_25C"
-    cell_regexp = r"^\s*sg13g2_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+    cell_regexp = r"^\s*sg13cmos5l_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
     netlist_type = "nl"
-    project_top_metal_layer = "TopMetal1"
+    project_top_metal_layer = "Metal4"
     librelane_config = {}
     label_layers = [
         (8, 1),  # Metal1.label
         (8, 25),  # Metal1.text
-        (67, 25),  # Metal5.text
+        (50, 25),  # Metal4.text
         (126, 25),  # TopMetal1.text
     ]
     buried_layers = [
@@ -147,32 +147,32 @@ class IHPTech(Tech):
         (51, 0),  # HeatTrans.drawing
         (189, 4),  # prBoundary.boundary
     ]
-    scramble_cells = "sg13g2_"
-    mux_config_yaml_name = "ihp-sg13g2.yaml"
+    scramble_cells = "sg13cmos5l_"
+    mux_config_yaml_name = "ihp-sg13cmos5l.yaml"
     mux_macros = [
-        "pg/ihp-sg13g2/tt_pg_1v5_hp_1",
-        "pg/ihp-sg13g2/tt_pg_1v5_hp_2",
-        "pg/ihp-sg13g2/tt_pg_1v5_hp_4",
-        "pg/ihp-sg13g2/tt_pg_1v5_ll_1",
-        "pg/ihp-sg13g2/tt_pg_1v5_ll_2",
-        "pg/ihp-sg13g2/tt_pg_1v5_ll_4",
+        "pg/ihp-sg13cmos5l/tt_pg_1v5_hp_1",
+        "pg/ihp-sg13cmos5l/tt_pg_1v5_hp_2",
+        "pg/ihp-sg13cmos5l/tt_pg_1v5_hp_4",
+        "pg/ihp-sg13cmos5l/tt_pg_1v5_ll_1",
+        "pg/ihp-sg13cmos5l/tt_pg_1v5_ll_2",
+        "pg/ihp-sg13cmos5l/tt_pg_1v5_ll_4",
     ]
     extra_logo_macros = [
-        "tech/ihp-sg13g2/tt_logo_corner",
+        "tech/ihp-sg13cmos5l/tt_logo_corner",
     ]
     prboundary_layer = (189, 4)  # prBoundary.boundary
-    logo_layer = (67, 0)  # Metal5.drawing
-    logo_layer_name = "Metal5"
+    logo_layer = (50, 0)  # Metal4.drawing
+    logo_layer_name = "Metal4"
     logo_pixel_size = 0.25  # um
 
     def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
-        pdk_sources_file = os.path.join(pdk_root, "ihp-sg13g2", "SOURCES")
+        pdk_sources_file = os.path.join(pdk_root, "ihp-sg13cmos5l", "SOURCES")
         return parse_openpdks_pdk_version(pdk_sources_file, "IHP-Open-PDK")
 
     def load_cell_definitions(self) -> Dict[str, CellDefinition]:
-        URL_FORMAT = "https://raw.githubusercontent.com/IHP-GmbH/IHP-Open-PDK/refs/heads/main/ihp-sg13g2/libs.ref/sg13g2_stdcell/doc/sg13g2_stdcell_typ_1p20V_25C.pdf#{ref}"
+        URL_FORMAT = "https://raw.githubusercontent.com/IHP-GmbH/IHP-Open-PDK/refs/heads/main/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/doc/sg13cmos5l_stdcell_typ_1p20V_25C.pdf#{ref}"
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(script_dir, "tech/ihp-sg13g2/cells.json")) as fh:
+        with open(os.path.join(script_dir, "tech/ihp-sg13cmos5l/cells.json")) as fh:
             cells = json.load(fh)
         for cell in cells.values():
             cell["url"] = URL_FORMAT.format(ref=cell["doc_ref"])
@@ -277,7 +277,7 @@ class FpgaTech(Tech):
 
 
 tech_map: dict[TechName, Tech] = {
-    "ihp-sg13g2": IHPTech(),
+    "ihp-sg13cmos5l": IHPTech(),
     "gf180mcuD": GF180MCUDTech(),
     "sky130A": Sky130Tech(),
     "fpgaUp5k": FpgaTech(),

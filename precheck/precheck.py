@@ -112,11 +112,11 @@ def klayout_zero_area(gds: str):
     return klayout_drc(gds, "zero_area", "zeroarea.rb.drc")
 
 
-def klayout_sg13g2(gds: str):
+def klayout_sg13cmos5l(gds: str):
     return klayout_drc(
         gds,
-        "sg13g2",
-        f"{PDK_ROOT}/{PDK_NAME}/libs.tech/klayout/tech/drc/ihp-sg13g2.drc",
+        "sg13cmos5l",
+        f"{PDK_ROOT}/{PDK_NAME}/libs.tech/klayout/tech/drc/ihp-sg13cmos5l.drc",
     )
 
 
@@ -367,7 +367,7 @@ def main():
             template_def = f"{def_root}/analog/tt_analog_{tiles}_3v3.def"
         else:
             template_def = f"{def_root}/analog/tt_analog_{tiles}.def"
-    elif tech == "ihp-sg13g2" or tech == "gf180mcuD":
+    elif tech == "ihp-sg13cmos5l" or tech == "gf180mcuD":
         template_def = f"{def_root}/tt_block_{tiles}_pgvdd.def"
     else:
         template_def = f"{def_root}/tt_block_{tiles}_pg.def"
@@ -413,8 +413,8 @@ def main():
         },
         {
             "name": "KLayout SG13G2 DRC",
-            "check": lambda: klayout_sg13g2(gds_file),
-            "techs": ["ihp-sg13g2"],
+            "check": lambda: klayout_sg13cmos5l(gds_file),
+            "techs": ["ihp-sg13cmos5l"],
         },
         {"name": "KLayout zero area", "check": lambda: klayout_zero_area(gds_file)},
         {
@@ -445,7 +445,7 @@ def main():
             "check": lambda: analog_pin_check(
                 gds_file, tech, is_analog, uses_3v3, analog_pins, pinout
             ),
-            "techs": ["sky130A", "ihp-sg13g2"],
+            "techs": ["sky130A", "ihp-sg13cmos5l"],
         },
     ]
 

@@ -227,7 +227,7 @@
   ]
 }
 
-#let customframe_ihp_sg13g2 = {
+#let customframe_ihp_sg13cmos5l = {
   align(center,
     table(
       columns: 4,
