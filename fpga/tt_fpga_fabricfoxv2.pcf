@@ -33,5 +33,3 @@ set_io -nowarn uo_out[4] 45
 set_io -nowarn uo_out[5] 46
 set_io -nowarn uo_out[6] 47
 set_io -nowarn uo_out[7] 48
-
-set_frequency clk  24.0
