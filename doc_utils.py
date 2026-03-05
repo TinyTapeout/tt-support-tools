@@ -9,6 +9,9 @@ import matplotlib as mpl
 
 from config import Config, DatasheetConfig
 
+# look for both literal escape characters and in-text escape characters
+ESCAPE_CHARACTERS_RE = re.compile(r"\n|\\n|\r|\\r|\t|\\t")
+
 
 class DocsHelper:
     @staticmethod
@@ -78,11 +81,25 @@ class DocsHelper:
         """
         Helper function to escape characters in strings
 
-        - Escapes double quotation mark
-        - Removes newlines, carrige returns
+        - Escapes double quotation marks, backslashes
+        - Removes newlines, carrige returns, tabs
         """
+        return (
+            ESCAPE_CHARACTERS_RE.sub("", text).replace("\\", "\\\\").replace('"', '\\"')
+        )
 
-        return text.replace('"', '\\"').replace("\n", "").replace("\r", "")
+    @staticmethod
+    def _as_str_or_content(text: str) -> str:
+        """
+        Return empty Typst content block or format given string as Typst string
+
+        Empty cells in pinout tables are formatted to show a faint dash when there is no content, but this cannot
+        happen when we pass a Typst `str()` object. If `text == ""` then return Typst content block.
+        """
+        if text == "":
+            return "[]"
+        else:
+            return f'str("{text}")'
 
     @staticmethod
     def format_digital_pins(pins: dict) -> str:
@@ -91,11 +108,18 @@ class DocsHelper:
         """
         pin_table = ""
         for pin in pins:
-            ui_text = DocsHelper._escape_characters_in_content(pin["ui"])
-            uo_text = DocsHelper._escape_characters_in_content(pin["uo"])
-            uio_text = DocsHelper._escape_characters_in_content(pin["uio"])
+            ui_text = DocsHelper._as_str_or_content(
+                DocsHelper._escape_characters_in_string(pin["ui"])
+            )
+            uo_text = DocsHelper._as_str_or_content(
+                DocsHelper._escape_characters_in_string(pin["uo"])
+            )
+            uio_text = DocsHelper._as_str_or_content(
+                DocsHelper._escape_characters_in_string(pin["uio"])
+            )
+
             pin_table += (
-                f"[`{pin['pin_index']}`], [{ui_text}], [{uo_text}], [{uio_text}],\n"
+                f'raw("{pin["pin_index"]}"), {ui_text}, {uo_text}, {uio_text},\n'
             )
 
         return pin_table
@@ -107,10 +131,10 @@ class DocsHelper:
         """
         pin_table = ""
         for pin in pins:
-            desc_text = DocsHelper._escape_characters_in_content(pin["desc"])
-            pin_table += (
-                f"[`{pin['ua_index']}`], [`{pin['analog_index']}`], [{desc_text}],\n"
+            desc_text = DocsHelper._as_str_or_content(
+                DocsHelper._escape_characters_in_string(pin["desc"])
             )
+            pin_table += f'raw("{pin["ua_index"]}"), raw("{pin["analog_index"]}"), str("{desc_text}"),\n'
         return pin_table
 
     @staticmethod
@@ -292,12 +316,10 @@ class DocsHelper:
         """
         content = {
             "template_version": template_version,
-            "project_title": DocsHelper._escape_characters_in_string(info["title"]),
+            "project_title": f'str("{DocsHelper._escape_characters_in_string(info["title"])}")',
             "project_author": f"({DocsHelper.format_authors(info['author'])})",
             "project_repo_link": info["git_url"],
-            "project_description": DocsHelper._escape_characters_in_string(
-                info["description"]
-            ),
+            "project_description": f'str("{DocsHelper._escape_characters_in_string(info["description"])}")',
             "project_address": DocsHelper.pretty_address(info["address"]),
             "project_clock": DocsHelper.pretty_clock(info["clock_hz"]),
             "project_type": DocsHelper.get_project_type(
