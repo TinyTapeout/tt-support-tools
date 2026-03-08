@@ -668,10 +668,10 @@ class Project:
 
         content = {
             "template_version": template_version,
-            "project_title": template_args["title"].replace('"', '\\"'),
+            "project_title": f'str("{DocsHelper._escape_characters_in_string(template_args["title"])}")',
             "project_author": f"({DocsHelper.format_authors(template_args['author'])})",
             "project_repo_link": self.get_git_remote(),
-            "project_description": template_args["description"],
+            "project_description": f'str("{DocsHelper._escape_characters_in_string(template_args["description"])}")',
             "project_address": "----",
             "project_clock": DocsHelper.pretty_clock(self.info.clock_hz),
             "project_type": DocsHelper.get_project_type(
