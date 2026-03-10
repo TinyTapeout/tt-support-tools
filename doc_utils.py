@@ -134,7 +134,7 @@ class DocsHelper:
             desc_text = DocsHelper._as_str_or_content(
                 DocsHelper._escape_characters_in_string(pin["desc"])
             )
-            pin_table += f'raw("{pin["ua_index"]}"), raw("{pin["analog_index"]}"), str("{desc_text}"),\n'
+            pin_table += f'raw("{pin["ua_index"]}"), raw("{pin["analog_index"]}"), {desc_text},\n'
         return pin_table
 
     @staticmethod
