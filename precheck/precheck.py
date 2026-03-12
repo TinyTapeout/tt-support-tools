@@ -102,6 +102,7 @@ def klayout_drc(gds: str, check: str, script=f"{PDK_NAME}_mr.drc", extra_vars=[]
     script_vars = {
         check: "true",
         "input": gds,
+        "thr": "1",  # single-threaded operation in sky130A_mr.drc to work around klayout bug
     }
     script_vars.update(extra_vars)
     klayout_custom_drc(check, script, script_vars, ["report", "report_file"])
