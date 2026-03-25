@@ -141,7 +141,10 @@ class Project:
     def run_yosys(self, command: str, no_output: bool = False):
         env = os.environ.copy()
         env["YOSYS_CMD"] = command
-        yosys_cmd = 'yowasp-yosys -qp "$YOSYS_CMD"'
+        # Use yowasp-yosys if available (Docker/pip-based flow), fall back to
+        # native yosys (Nix-based flow where yowasp-yosys is not present)
+        yosys_bin = "yowasp-yosys" if shutil.which("yowasp-yosys") else "yosys"
+        yosys_cmd = f'{yosys_bin} -qp "$YOSYS_CMD"'
         return subprocess.run(yosys_cmd, shell=True, env=env, capture_output=no_output)
 
     def check_ports(self, include_power_ports: bool = False):
