@@ -35,6 +35,7 @@ def render_svg(
     scramble_cells=None,
 ):
     import gdstk  # type: ignore
+
     library = gdstk.read_gds(gds)
     top_cells = library.top_level()
     assert len(top_cells) == 1

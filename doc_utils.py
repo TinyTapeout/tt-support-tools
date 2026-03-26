@@ -29,6 +29,7 @@ class DocsHelper:
         Format the clock with engineering notation
         """
         import matplotlib as mpl
+
         if clock == 0:
             return "No Clock"
         else:
