@@ -5,7 +5,6 @@ import re
 import subprocess
 
 import cairosvg  # type: ignore
-import gdstk  # type: ignore
 
 
 # Custom exception for convert_svg_to_png()
@@ -35,6 +34,8 @@ def render_svg(
     filter_layers=None,
     scramble_cells=None,
 ):
+    import gdstk  # type: ignore
+
     library = gdstk.read_gds(gds)
     top_cells = library.top_level()
     assert len(top_cells) == 1
