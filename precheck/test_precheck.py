@@ -537,6 +537,31 @@ def gds_lef_analog_pin_example(tmp_path_factory: pytest.TempPathFactory):
     return str(gds_file), str(lef_file)
 
 
+@pytest.fixture(scope="session")
+def verilog_syntax_ok(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a Verilog file with correct syntax."""
+    verilog_file = tmp_path_factory.mktemp("verilog") / "TEST_verilog_syntax_ok.v"
+    verilog_data = """
+        module TEST_verilog_syntax_ok ();
+        endmodule
+    """
+    open(verilog_file, "w").write(textwrap.dedent(verilog_data))
+    return str(verilog_file)
+
+
+@pytest.fixture(scope="session")
+def verilog_syntax_error(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a Verilog file with incorrect syntax."""
+    verilog_file = tmp_path_factory.mktemp("verilog") / "TEST_verilog_syntax_error.v"
+    verilog_data = """
+        module TEST_verilog_syntax_error ();
+        syntax error
+        endmodule
+    """
+    open(verilog_file, "w").write(textwrap.dedent(verilog_data))
+    return str(verilog_file)
+
+
 def test_magic_drc_pass(gds_valid: str):
     precheck.magic_drc(gds_valid, "TEST_valid")
 
@@ -822,3 +847,15 @@ def test_analog_more_ua_entries(gds_lef_analog_pin_example: tuple[str, str]):
             2,
             {"ua[0]": "x", "ua[1]": "x", "ua[2]": "x"},
         )
+
+
+def test_verilog_syntax_ok(verilog_syntax_ok: str):
+    precheck.verilog_syntax_check(verilog_syntax_ok)
+
+
+def test_verilog_syntax_error(verilog_syntax_error: str):
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match="Verilog syntax check failed",
+    ):
+        precheck.verilog_syntax_check(verilog_syntax_error)

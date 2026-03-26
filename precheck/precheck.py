@@ -308,6 +308,27 @@ def analog_pin_check(
                 )
 
 
+def verilog_syntax_check(verilog: str):
+    """Load the Verilog file into Yosys to verify it can be read successfully."""
+
+    logging.info(f"Running Verilog syntax check on {verilog}")
+    verilog_dir = os.path.dirname(verilog)
+    yowasp_env = os.environ.copy()
+    yowasp_env["YOWASP_MOUNT"] = f"{verilog_dir}={verilog_dir}"
+
+    yosys = subprocess.run(
+        [
+            "yowasp-yosys",
+            "-p",
+            f'read_verilog -sv "{verilog}"',
+        ],
+        env=yowasp_env,
+    )
+
+    if yosys.returncode != 0:
+        raise PrecheckFailure("Verilog syntax check failed")
+
+
 def main():
     default_tech = PDK_NAME
     if default_tech not in tech_names:
@@ -446,6 +467,10 @@ def main():
                 gds_file, tech, is_analog, uses_3v3, analog_pins, pinout
             ),
             "techs": ["sky130A", "ihp-sg13g2"],
+        },
+        {
+            "name": "Verilog syntax check",
+            "check": lambda: verilog_syntax_check(verilog_file),
         },
     ]
 

@@ -8,6 +8,7 @@ dependencies = [
     "numpy<2",
     "pytest",
     "PyYAML",
+    "yowasp-yosys",
 ]
 
 [tool.setuptools]
