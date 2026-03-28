@@ -357,7 +357,9 @@ def interactive_doc_checker():
         return
 
     # mock yaml structure (see comment below re intermediate file)
-    tmp_yaml = {"datasheet_config": {"disabled": docs}}
+    tmp_yaml: dict[str, dict[str, list] | str] = {
+        "datasheet_config": {"disabled": docs}
+    }
 
     # save progress for next time
     if decision == "end":
