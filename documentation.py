@@ -2,6 +2,8 @@ import json
 import logging
 import math
 import os
+import subprocess
+from pathlib import Path
 from typing import List
 
 import chevron
@@ -271,3 +273,100 @@ class Docs:
             f.writelines(datasheet_manifest)
 
         DocsHelper.compile()
+
+
+def interactive_doc_checker():
+    """
+    Launch the interactive document checker.
+
+    This will go through every project and display the project's documentation (`info.md`) in `nano`, prompting you to
+    either leave or remove the project datasheet from the shuttle datasheet after closing the `nano` editor.
+
+    There are some commands which you can use:
+        - "y": remove the project from the datasheet
+        - "n" (default): leave the project in the datasheet
+        - "e"/"end": save progress to return to later
+
+    The results are saved into a separate file (`doc_check.yaml`) - copy the `datasheet_config.disabled` array over to
+    `config.yaml`. This file does not need to be commited to the repo and can be deleted after.
+
+    If `doc_check.yaml` exists, and a `_skip_to_project` key is present, the function will attempt to skip over all
+    the projects until it encounters the one specified by `_skip_to_project` - this allows for easy resuming and does
+    not require you to audit every project immediately.
+    """
+
+    docs = []
+    # check if we have saved progress
+    if Path("doc_check.yaml").is_file():
+        with open("doc_check.yaml", "r") as f:
+            tmp = yaml.safe_load(f)
+
+        if "_skip_to_project" in tmp:
+            skip_to = tmp["_skip_to_project"]
+            skip_projects = True
+
+        # get in-progress list of disabled projects
+        docs += tmp["datasheet_config"]["disabled"]
+    else:
+        skip_projects = False
+        skip_to = None
+
+    with open("config.yaml") as f:
+        shuttle_config = yaml.safe_load(f)
+
+    if "datasheet_config" in shuttle_config:
+        if "disabled" in shuttle_config["datasheet_config"]:
+            docs += shuttle_config["datasheet_config"]["disabled"]
+
+    for project in Path("projects").glob("*/docs/info.md"):
+        name = project.parts[1]
+
+        if name in docs:
+            logging.info(f"skipping {name} (already disabled)")
+            continue
+
+        if skip_projects:
+            if name != skip_to:
+                continue
+            else:
+                skip_projects = False
+
+        # inspect docs with nano in read-only mode
+        subprocess.call(["nano", "-v", project])
+
+        while True:
+            decision = str(input(f"\nremove {name} (y/N)? ")).lower()
+
+            if decision == "y":
+                logging.info(f"removing {name}")
+                docs.append(name)
+                break
+            elif (decision == "n") or (decision == ""):
+                logging.info(f"not removing {name}")
+                break
+            elif (decision == "e") or (decision == "end"):
+                break
+
+        # break out of both loops and save progress
+        if decision == "end":
+            skip_to = name
+            break
+
+    if len(docs) == 0:
+        logging.info("no projects disabled, nothing written")
+        return
+
+    # mock yaml structure (see comment below re intermediate file)
+    tmp_yaml = {"datasheet_config": {"disabled": docs}}
+
+    # save progress for next time
+    if decision == "end":
+        tmp_yaml["_skip_to_project"] = name
+
+    # NOTE: have to use an intermediate file since writing back to config.yaml would wreck the existing formatting
+    # a potential upgrade: https://pypi.org/project/ruamel.yaml/
+    with open("doc_check.yaml", "w+") as f:
+        logging.info(
+            "writing to doc_check.yaml -- please copy list of disabled projects to config.yaml"
+        )
+        yaml.safe_dump(tmp_yaml, f, default_flow_style=False)

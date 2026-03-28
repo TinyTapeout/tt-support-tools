@@ -14,7 +14,7 @@ from typing import Dict, List, TypedDict
 import yaml
 
 from config import Config
-from documentation import Docs
+from documentation import Docs, interactive_doc_checker
 from logo import LogoGenerator
 from project import Project
 from rom import ROMFile
@@ -276,6 +276,12 @@ if __name__ == "__main__":
         default="1.0.0",
         nargs="?",
     )
+    parser.add_argument(
+        "--doc-check",
+        help="interactive project document checker",
+        action="store_const",
+        const=True,
+    )
 
     args = parser.parse_args()
 
@@ -335,3 +341,6 @@ if __name__ == "__main__":
     if args.build_datasheet:
         shuttle.configure_mux()
         docs.build_datasheet(args.template_version, args.doc_tapeout_index)
+
+    if args.doc_check:
+        interactive_doc_checker()
