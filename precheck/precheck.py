@@ -412,7 +412,7 @@ def main():
             ),
         },
         {
-            "name": "KLayout SG13G2 DRC",
+            "name": "KLayout SG13CMOS5L DRC",
             "check": lambda: klayout_sg13cmos5l(gds_file),
             "techs": ["ihp-sg13cmos5l"],
         },
