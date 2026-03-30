@@ -296,6 +296,8 @@ def interactive_doc_checker():
     """
 
     docs = []
+    skip_projects = False
+    skip_to = None
     # check if we have saved progress
     if Path("doc_check.yaml").is_file():
         with open("doc_check.yaml", "r") as f:
@@ -307,9 +309,6 @@ def interactive_doc_checker():
 
         # get in-progress list of disabled projects
         docs += tmp["datasheet_config"]["disabled"]
-    else:
-        skip_projects = False
-        skip_to = None
 
     with open("config.yaml") as f:
         shuttle_config = yaml.safe_load(f)
