@@ -330,8 +330,9 @@ def interactive_doc_checker():
             else:
                 skip_projects = False
 
-        # inspect docs with nano in read-only mode
-        subprocess.call(["nano", "-v", project])
+        # inspect docs with text editor - configure with $PAGER, defaults to `less`
+        pager = os.environ.get("PAGER", "less")
+        subprocess.call(f"{pager} '{project}'", shell=True)
 
         while True:
             decision = str(input(f"\nremove {name} (y/N)? ")).lower()
