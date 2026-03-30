@@ -74,7 +74,7 @@ valid_layers_ihp_sg13g2 = [
     "DigiSub.drawing", "HeatRes.drawing", "NoRCX.drawing", "NoRCX.m2m3", "NoRCX.m2m4", "NoRCX.m2m5", "NoRCX.m2tm1",
     "NoRCX.m2tm2", "NoRCX.m3m4", "NoRCX.m3m5", "NoRCX.m3tm1", "NoRCX.m3tm2", "NoRCX.m4m5", "NoRCX.m4tm1", "NoRCX.m4tm2",
     "NoRCX.m5tm1", "NoRCX.m5tm2", "NoRCX.tm1tm2", "NoRCX.m1sub", "NoRCX.m2sub", "NoRCX.m3sub", "NoRCX.m4sub", "NoRCX.m5sub",
-    "NoRCX.tm1sub", "Varicap.drawing", "EXTBlock.drawing", "prBoundary.drawing", "prBoundary.label", "prBoundary.boundary",
+    "NoRCX.tm1sub", "Varicap.drawing", "EXTBlock.drawing", "prBoundary.label", "prBoundary.boundary",
     "isoNWell.drawing",
 ]
 
