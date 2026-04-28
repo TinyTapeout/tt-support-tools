@@ -46,6 +46,9 @@ from tt_logging import setup_logging
 CommandHarden = "harden"
 CommandConfig = "configure"
 
+FpgaTargetIce40Up5k = "ice40up5k"
+FpgaTargetUlx3sEcp5 = "ulx3s-ecp5"
+
 
 def getParser():
     parser = argparse.ArgumentParser(
@@ -91,6 +94,40 @@ def getParser():
         help="Select target breakout: classic (TT04), fabricfox (TT ETR db) default: fabricfox",
         choices=["classic", "fabricfox"],
         default="fabricfox",
+    )
+
+    harden.add_argument(
+        "--fpga-target",
+        help="Select FPGA target",
+        choices=[FpgaTargetIce40Up5k, FpgaTargetUlx3sEcp5],
+        default=FpgaTargetIce40Up5k,
+    )
+
+    harden.add_argument(
+        "--lpf",
+        metavar="FILE",
+        help="LPF constraints file for the ulx3s-ecp5 target",
+    )
+
+    harden.add_argument(
+        "--ecp5-device",
+        choices=["12k", "25k", "45k", "85k"],
+        default="85k",
+        help="ECP5 device size for ULX3S",
+    )
+
+    harden.add_argument(
+        "--ecp5-package",
+        default="CABGA381",
+        help="ECP5 package for ULX3S",
+    )
+
+    harden.add_argument(
+        "--define",
+        action="append",
+        default=[],
+        metavar="NAME",
+        help="Verilog preprocessor define to pass to Yosys. May be specified multiple times.",
     )
 
     harden.add_argument(
@@ -156,6 +193,14 @@ def die_with_error(msg):
     sys.exit(2)
 
 
+def run_command(cmd, fail_msg):
+    logging.debug(cmd)
+    p = subprocess.run(cmd, shell=True)
+    if p.returncode != 0:
+        logging.error(fail_msg)
+        exit(1)
+
+
 class TTFPGA:
 
     def __init__(self, proj: Project | None, args):
@@ -181,6 +226,9 @@ class TTFPGA:
 
     @property
     def bitstream_filename(self):
+        if self.args.command == CommandHarden and self.args.fpga_target == FpgaTargetUlx3sEcp5:
+            return f"{self.get_name()}.bit"
+
         return f"{self.get_name()}.bin"
 
     @property
@@ -255,7 +303,12 @@ class TTFPGA:
 
         base_name = self.get_name()
 
-        with open(os.path.join(SCRIPT_DIR, "fpga/tt_fpga_top.v"), "r") as f:
+        if args.fpga_target == "ulx3s-ecp5":
+            top_template_name = "ulx3s/tt_fpga_top_ulx3s.v"
+        else:
+            top_template_name = "tt_fpga_top.v"
+
+        with open(os.path.join(SCRIPT_DIR, "fpga", top_template_name), "r") as f:
             top_module_template = f.read()
 
         with open(os.path.join(self.source_dir, "_tt_fpga_top.v"), "w") as f:
@@ -267,31 +320,63 @@ class TTFPGA:
         sources = [os.path.join(self.source_dir, src) for src in self.sources]
         source_list = " ".join(sources)
 
-        yosys_cmd = f"yosys -l {build_dir}/01-synth.log -DSYNTH -p 'read_verilog -sv src/_tt_fpga_top.v {source_list}; synth_ice40 -top tt_fpga_top -json {build_dir}/{base_name}.json'"
-        logging.debug(yosys_cmd)
-        p = subprocess.run(yosys_cmd, shell=True)
-        if p.returncode != 0:
-            logging.error("synthesis failed")
-            exit(1)
-
         seed = os.getenv("TT_FPGA_SEED", "10")
         freq = os.getenv("TT_FPGA_FREQ", "12")
 
-        nextpnr_cmd = f"nextpnr-ice40 -l {build_dir}/02-nextpnr.log --pcf-allow-unconstrained --seed {seed} --freq {freq} --package sg48 --up5k --asc {build_dir}/{base_name}.asc --pcf {SCRIPT_DIR}/fpga/{pcf_file} --json {build_dir}/{base_name}.json"
-        logging.debug(nextpnr_cmd)
-        p = subprocess.run(nextpnr_cmd, shell=True)
-        if p.returncode != 0:
-            logging.error("placement failed")
-            exit(1)
+        generated_top = os.path.join(self.source_dir, "_tt_fpga_top.v")
+        define_args = " ".join([f"-D{name}" for name in args.define])
 
-        icepack_cmd = f"icepack {build_dir}/{base_name}.asc {build_dir}/{base_name}.bin"
-        logging.debug(icepack_cmd)
-        p = subprocess.run(icepack_cmd, shell=True)
-        if p.returncode != 0:
-            logging.error("bitstream creation failed failed")
-            exit(1)
+        if args.fpga_target == FpgaTargetIce40Up5k:
+            json_file = os.path.join(build_dir, f"{base_name}.json")
+            asc_file = os.path.join(build_dir, f"{base_name}.asc")
+            bin_file = os.path.join(build_dir, f"{base_name}.bin")
 
-        logging.info(f"Bitstream created successfully: {build_dir}/{base_name}.bin")
+            yosys_cmd = (
+                f"yosys -l {build_dir}/01-synth.log -DSYNTH {define_args} "
+                f"-p 'read_verilog -sv {generated_top} {source_list}; "
+                f"synth_ice40 -top tt_fpga_top -json {json_file}'"
+            )
+
+            nextpnr_cmd = (
+                f"nextpnr-ice40 -l {build_dir}/02-nextpnr.log "
+                f"--pcf-allow-unconstrained --seed {seed} --freq {freq} "
+                f"--package sg48 --up5k --asc {asc_file} "
+                f"--pcf {SCRIPT_DIR}/fpga/{pcf_file} --json {json_file}"
+            )
+
+            pack_cmd = f"icepack {asc_file} {bin_file}"
+
+        elif args.fpga_target == FpgaTargetUlx3sEcp5:
+            if not args.lpf:
+                die_with_error("ulx3s-ecp5 requires --lpf path/to/ulx3s.lpf")
+
+            json_file = os.path.join(build_dir, f"{base_name}.json")
+            config_file = os.path.join(build_dir, f"{base_name}.config")
+            bit_file = os.path.join(build_dir, f"{base_name}.bit")
+
+            yosys_cmd = (
+                f"yosys -l {build_dir}/01-synth.log -DSYNTH {define_args} "
+                f"-p 'read_verilog -sv {generated_top} {source_list}; "
+                f"synth_ecp5 -top tt_fpga_top -json {json_file}'"
+            )
+
+            nextpnr_cmd = (
+                f"nextpnr-ecp5 -l {build_dir}/02-nextpnr.log "
+                f"--seed {seed} --freq {freq} --{args.ecp5_device} "
+                f"--package {args.ecp5_package} --json {json_file} "
+                f"--lpf {args.lpf} --textcfg {config_file}"
+            )
+
+            pack_cmd = f"ecppack {config_file} {bit_file}"
+
+        else:
+            die_with_error(f"Unsupported FPGA target: {args.fpga_target}")
+
+        run_command(yosys_cmd, "synthesis failed")
+        run_command(nextpnr_cmd, "placement failed")
+        run_command(pack_cmd, "bitstream creation failed")
+
+        logging.info(f"Bitstream created successfully: {build_dir}/{self.bitstream_filename}")
 
 
 def yaml_file_exists(args):
