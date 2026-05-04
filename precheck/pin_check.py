@@ -96,7 +96,7 @@ def parse_fp3(value: str):
     # parse fixed-point numbers with 3 digits after the decimal point
     # e.g. '20.470' to 20470
     ip, fp = value.split(".")
-    mul = ip + fp[:3].rjust(3, "0")
+    mul = ip + fp[:3].ljust(3, "0")
     return int(mul)
 
 
