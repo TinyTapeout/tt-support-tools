@@ -898,12 +898,12 @@ if FEOL
     )
     
     # MR_licon.SP.6: poly_licon minimum space to psdm (overlap prohibited) ≥ 0.11
-    poly_licon_all = licon.and(poly)
-    poly_licon_all.separation(psdm, 0.11, euclidian).output(
+    poly_licon_not_prec_resistor = licon_not_prec_resistor.and(poly)
+    poly_licon_not_prec_resistor.separation(psdm, 0.11, euclidian).output(
         "MR_licon.SP.6",
         "MR_licon.SP.6 : poly_licon minimum space to psdm (overlap prohibited) : 0.11um"
     )
-    poly_licon_all.interacting(psdm).output(
+    poly_licon_not_prec_resistor.interacting(psdm).output(
         "MR_licon.SP.6_overlap",
         "MR_licon.SP.6 : licon and psdm must not overlap"
     )
