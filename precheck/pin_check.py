@@ -95,8 +95,11 @@ def canonicalize_rectangles(
 def parse_fp3(value: str):
     # parse fixed-point numbers with 3 digits after the decimal point
     # e.g. '20.470' to 20470
-    ip, fp = value.split(".")
-    mul = ip + fp[:3].ljust(3, "0")
+    if "." in value:
+        ip, fp = value.split(".")
+        mul = ip + fp[:3].ljust(3, "0")
+    else:
+        mul = value + "000"
     return int(mul)
 
 
