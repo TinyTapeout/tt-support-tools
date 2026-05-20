@@ -749,22 +749,31 @@ class Project:
                 print(f"* {warning}")
 
     def print_stats(self):
-        util_glob = "runs/wokwi/*-openroad-globalplacement/openroad-globalplacement.log"
-        util_log = glob.glob(os.path.join(self.local_dir, util_glob))[0]
-        util_regexp = r"^\[INFO GPL-0019\] (Util|Utilization):"
-        util_line = next(line for line in open(util_log) if re.match(util_regexp, line))
-        util = re.sub(util_regexp, "", util_line).strip()
-
         try:
-            wire_length = self.metrics["route__wirelength"]  # OpenROAD #2047
-        except KeyError:
-            wire_length = self.metrics["detailedroute__route__wirelength"]
+            util_glob = (
+                "runs/wokwi/*-openroad-globalplacement/openroad-globalplacement.log"
+            )
+            util_log = glob.glob(os.path.join(self.local_dir, util_glob))[0]
+            util_regexp = r"^\[INFO GPL-0019\] (Util|Utilization):"
+            util_line = next(
+                line for line in open(util_log) if re.match(util_regexp, line)
+            )
+            util = re.sub(util_regexp, "", util_line).strip()
 
-        print("# Routing stats")
-        print()
-        print("| Utilisation (%) | Wire length (um) |")
-        print("|-------------|------------------|")
-        print("| {} | {} |".format(util, wire_length))
+            try:
+                wire_length = self.metrics["route__wirelength"]  # OpenROAD #2047
+            except KeyError:
+                wire_length = self.metrics["detailedroute__route__wirelength"]
+
+        except (IndexError, KeyError, StopIteration):
+            print("Failed to retrieve routing stats")
+
+        else:
+            print("# Routing stats")
+            print()
+            print("| Utilisation (%) | Wire length (um) |")
+            print("|-------------|------------------|")
+            print("| {} | {} |".format(util, wire_length))
 
     # Print the summaries
     def summarize(self, print_cell_category: bool, print_cell_summary: bool):
