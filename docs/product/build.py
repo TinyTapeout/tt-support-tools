@@ -111,14 +111,19 @@ def load_config(path: Path) -> dict:
         detail = getattr(error, "problem", str(error))
         if mark is None:
             raise SystemExit(f"{path}: {detail}")
-        line = (
-            text.splitlines()[mark.line] if mark.line < len(text.splitlines()) else ""
-        )
-        raise SystemExit(
-            f"{path}:{mark.line + 1}: {detail}\n"
-            f"  {line.strip()}\n"
-            '  hint: inside a "quoted" value, HTML quotes must be escaped as \\"'
-        )
+        lines = text.splitlines()
+        line = lines[mark.line] if mark.line < len(lines) else ""
+
+        # Only offer a hint that matches the actual failure; a generic one is noise.
+        if "\\t" in detail or line.startswith("\t"):
+            hint = "YAML forbids tabs for indentation — use spaces"
+        elif "expected ',' or ']'" in detail or "'\"'" in detail:
+            hint = 'inside a "quoted" value, HTML quotes must be escaped as \\"'
+        else:
+            hint = None
+
+        report = f"{path}:{mark.line + 1}: {detail}\n  {line.strip()}"
+        raise SystemExit(f"{report}\n  hint: {hint}" if hint else report)
 
 
 def walk_strings(node, path: str = ""):

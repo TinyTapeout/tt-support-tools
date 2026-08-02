@@ -56,37 +56,36 @@ hero:
   photo_caption: ""
 
 features:
-  - kicker: 01 · Cohort
+  - kicker: Cohort
     title: One board serves many
     body: >-
       A single demoboard selects any project on the die over USB, so a class
       shares hardware instead of buying one board per student.
-  - kicker: 02 · IT footprint
-    title: Nothing to install
+  - kicker: IT footprint
+    title: No install needed
     body: >-
       The flow can run in a GitHub Action. Any student laptop with a browser is
       enough. A Docker image is available for local development.
-  - kicker: 03 · Process
+  - kicker: Process
     title: Three PDKs, no NDAs
     body: >-
       SkyWater SKY130, IHP sg13g2 and GlobalFoundries gf180mcu — 10+ shuttles a
       year across the three open-source PDKs.
-  - kicker: 04 · I/O
+  - kicker: I/O
     title: 26 pins, plus analog
     body: >-
       Clock, reset, 8 dedicated inputs, 8 dedicated outputs and 8 bidirectional
-      pins — plus up to 6 analog pins for mixed signal support.
-  - kicker: 05 · Flexibility
+      pins — plus up to 6 analog pins where the process allows.
+  - kicker: Flexibility
     title: Use your own EDA tools
     body: >-
       Any toolchain, commercial or open source, as long as the GDS and LEF can
-      be published. Verilog officially supported, VHDL and Chisel by the
-      community.
-  - kicker: 06 · Curriculum
-    title: Teaching material included
+      be published.
+  - kicker: Resources
+    title: Teach it your way
     body: >-
-      Workshops, a digital design guide, HDL templates and worked testbenches,
-      plus open IP to teach from: a RISC-V CPU, an FPGA and an analog FPGA.
+      Bring your own course. Workshops, HDL templates and open IP — a RISC-V
+      CPU, an FPGA and an analog FPGA — are there if you want them.
 
 quotes:
   heading: ""                # blank keeps the quotes as a band with no heading
@@ -129,8 +128,8 @@ pricing:
   footnote: >-
     <b>A class of 25, each submitting one design, sharing 5 demoboards for
     testing: 25 tiles (€1,750) + 5 boards (€1,500) + postage (5 × €15) = €3,325,
-    or €133 a student.</b> Every extra student after that is €70. Orders over
-    €10,000 receive 10% off. Price your own cohort at
+    or €133 a student.</b> Every extra student after that is €70. Price your
+    own cohort at
     <b><a href="https://app.tinytapeout.com/calculator">app.tinytapeout.com/calculator</a></b>,
     or email
     <b><a href="mailto:education@tinytapeout.com">education@tinytapeout.com</a></b>
@@ -143,9 +142,9 @@ faq:
     - q: How does this fit our academic calendar?
       a: >-
         Fabrication takes 6–9 months and delivery up to a year, so a design
-        submitted in one academic year may return in the next. Universities use it
-	to create a bring-up module: students test parts documented by
-        their peers, growing lab skills and highlighting the importance of DFT.
+        submitted in one academic year may return in the next. Students can work
+        with the previous year’s submissions in a bring-up module that grows lab
+        skills and demonstrates why documentation matters.
     - q: How do we pay?
       a: >-
         We invoice institutions directly, accept purchase orders and issue
@@ -153,7 +152,7 @@ faq:
         available.
     - q: Do our students need prior experience?
       a: >-
-        No. Guides and videos take beginners through creating designs to submission.
+        No. Guides and videos take beginners from first design to submission.
         Thousands of past projects are already published to learn from.
     - q: Who owns the work?
       a: >-
