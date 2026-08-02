@@ -164,10 +164,28 @@ def validate_markup(content: dict) -> None:
         raise SystemExit("\n".join(f"{p}" for p in problems))
 
 
+MIME_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg"}
+
+
 def as_data_uri_payload(path: Path) -> str:
     if not path.is_file():
         raise SystemExit(f"missing asset: {path}")
     return base64.b64encode(path.read_bytes()).decode()
+
+
+def prepare_supporters(supporters: dict, assets: Path) -> None:
+    """Inline each supporter logo and work out its per-item sizing."""
+    height = supporters.get("logo_height", "8.5mm")
+    for item in supporters.get("items") or []:
+        path = assets / "supporters" / item["file"]
+        suffix = path.suffix.lower()
+        if suffix not in MIME_TYPES:
+            raise SystemExit(f"{path}: expected one of {', '.join(MIME_TYPES)}")
+        item["data_uri"] = (
+            f"data:{MIME_TYPES[suffix]};base64,{as_data_uri_payload(path)}"
+        )
+        scale = item.get("scale", 1)
+        item["style"] = f"height: calc({height} * {scale})"
 
 
 def find_chrome() -> str:
@@ -195,6 +213,8 @@ window.addEventListener("load", () => setTimeout(() => {
 
 
 def run_chrome(*flags: str, page: Path) -> bytes:
+    # Deliberately no --user-data-dir: combined with --print-to-pdf, Chrome
+    # writes the PDF correctly and then never exits.
     result = subprocess.run(
         [
             find_chrome(),
@@ -206,6 +226,7 @@ def run_chrome(*flags: str, page: Path) -> bytes:
         ],
         check=True,
         capture_output=True,
+        timeout=120,
     )
     return result.stdout
 
@@ -234,8 +255,13 @@ def check_fit(html_path: Path) -> bool:
 
     found = re.search(rb'<div id="fit-report">([^<]*)</div>', dom)
     if not found or found.group(1) == b"pending":
-        logging.warning("could not measure sheet fit — skipping check")
-        return True
+        # Fail closed: reporting success without having measured anything is how
+        # clipped content ships unnoticed.
+        logging.error(
+            "could not measure sheet fit — Chrome returned no report. "
+            "Re-run, or pass --no-check to build without verifying the fit"
+        )
+        return False
 
     overflowed = False
     for entry in found.group(1).decode().split(","):
@@ -297,6 +323,8 @@ def main() -> None:
     assets = HERE / "assets"
     content["font_b64"] = as_data_uri_payload(assets / content["assets"]["font"])
     content["photo_b64"] = as_data_uri_payload(assets / content["assets"]["photo"])
+    if "supporters" in content:
+        prepare_supporters(content["supporters"], assets)
 
     with open(HERE / "datasheet.html.mustache", encoding="utf-8") as fh:
         rendered = chevron.render(

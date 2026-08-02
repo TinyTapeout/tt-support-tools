@@ -26,8 +26,8 @@ doc:
   wordmark: Tiny Tapeout
   wordmark_sub: ""           # strapline under the wordmark on page 1; blank to hide
   tag: PRODUCT DATASHEET
-  ref: DOC TT-DS-2026 · REV A
-  page2_title: Electrical &amp; Mechanical Specifications
+  ref: ""                    # document reference code; blank to hide on both pages
+  page2_title: Electrical Specifications
 
 # Colours and the two page-level type sizes. Everything else scales from these.
 theme:
@@ -52,19 +52,33 @@ assets:
   photo: demoboard.jpg
   font: archivo.woff2
 
+# Supporter logo strip at the foot of page 2. Currently off — uncomment to
+# restore it; the logos are still in assets/supporters/. Note it needs about
+# 16mm, so page 2 will have to give up spacing elsewhere to fit.
+# supporters:
+#   heading: Supported by
+#   logo_height: 7.5mm
+#   items:
+#     - {name: ChipFoundry, file: chipfoundry.png}
+#     - {name: wafer.space, file: waferspace.png}
+#     - {name: Tillitis, file: tillitis.png}
+#     - {name: WIT, file: WIT.png, scale: 0.82}
+#     - {name: SwissChips, file: swisschips.png, scale: 0.88}
+#     - {name: Texplained, file: texplained.jpg}
+
 # --------------------------------------------------------------------------
 # PAGE 1
 # --------------------------------------------------------------------------
 
 hero:
-  eyebrow: Shared multi project chip · SKY130 / IHP SG13G2 / GF180MCU
-  heading: From idea to chip design in minutes
+  eyebrow: Multi project chip · SKY130 / IHP SG13G2 / GF180MCU
+  heading: Custom chips from €385
   body: >-
     Tiny Tapeout makes it more accessible than ever to get designs manufactured on a real chip. 
     Submit from a
-    GitHub repository and we handle integration, tapeout, packaging and delivery.
+    GitHub repository and we handle tapeout, packaging, development board and delivery.
   photo_alt: Tiny Tapeout ETR demoboard with a QFN-64 packaged ASIC on a breakout board
-  photo_caption: Demoboard with QFN-64 packaged die on breakout carrier.
+  photo_caption: ""          # caption under the hero photo, with a rule above it; blank to hide both
 
 features:
   - kicker: 01 · Toolchain
@@ -75,8 +89,8 @@ features:
   - kicker: 02 · Languages
     title: HDL agnostic
     body: >-
-      Any language that can produce Verilog. Project templates and CI are
-      supplied for Verilog, with community provided VHDL and Chisel.
+      Any language that can produce Verilog. Official support for Verilog, 
+      community provided templates for VHDL and Chisel.
   - kicker: 03 · I/O
     title: 26 pins, plus analog
     body: >-
@@ -100,7 +114,7 @@ features:
 
 pricing:
   heading: Pricing
-  note: INDICATIVE FROM-PRICES · EUR
+  note: ""                   # small grey text right of the heading; blank to hide
   columns:
     - {label: Item, width: "27%", style: name}
     - {label: What it buys you}
@@ -111,15 +125,19 @@ pricing:
        "€70"]
     - ["Analog pin",
        "Multiplexed analog pad access for mixed signal designs. Minimum project size of 2 tiles applies.",
-       "€100 <span class=\"t-sub\">/ pin</span>"]
+       "€100 <span class=\"t-sub\">/ pin, up to a maximum of 6</span>"]
     - ["Demoboard PCB",
        "Optional add-on: packaged chip on an RP2350 powered demoboard.",
-       "€100 <span class=\"t-sub\">first 80 boards for individuals are subsidised</span><br>€300 <span class=\"t-sub\">academic &amp; industry</span>"]
+       "€300"]
+    - ["Postage &amp; packing",
+       "Flat rate worldwide, charged once per order.",
+       "€15"]
   footnote: >-
-    <b>Silicon area and the demoboard are billed separately.</b> Buying area gets
-    your design manufactured on the chip — on its own it does not get you a
-    physical chip. To receive a physical chip, add the demoboard PCB. Confirm
-    current figures at
+    <b>The €385 headline is one tile (€70) plus a demoboard (€300) plus postage
+    (€15)</b> — the smallest order that puts a physical chip in your hand.
+    Silicon area and the demoboard are billed separately, so buying area alone
+    gets your design manufactured but does not get you a chip. Confirm current
+    figures at
     <b><a href="https://app.tinytapeout.com/calculator">app.tinytapeout.com/calculator</a></b>.
 
 faq:
@@ -140,15 +158,13 @@ faq:
         packaged chip, an RP2350 demoboard and a breakout board. Bare chips are not available separately.
     - q: Which processes can I use?
       a: >-
-        SkyWater SKY130 (130 nm), IHP sg13g2 (130 nm BiCMOS) and GlobalFoundries
-        gf180mcu (180 nm), each on its own shuttle schedule.
-    - q: Is it only open to individuals?
+        SkyWater SKY130, IHP sg13g2 and GlobalFoundries gf180mcu, each on its own shuttle schedule.
+    - q: Why would I only order area?
       a: >-
-        No. Universities, schools and companies run group submissions, and dozens
-        of institutions already teach with Tiny Tapeout.
+        Share the cost of 1 board between a group submitting multiple projects. Save costs by asking us to remotely test your design.
     - q: What are the licence terms?
       a: >-
-        Every design is published publicly under Apache-2.0. The minimum
+        Every design must be published publicly under Apache-2.0. The minimum
         submission is GDS + LEF, produced with any toolchain you like. For full terms see <a href="https://tinytapeout.com/terms">tinytapeout.com/terms</a>.
 
 institutions:
@@ -163,6 +179,9 @@ institutions:
     - Technical University of Denmark
     - Linköping University
     - Graz University of Technology
+    - IEEE
+    - SwissChips
+    - UK Semiconductor Centre
 
 # --------------------------------------------------------------------------
 # PAGE 2
@@ -172,18 +191,20 @@ process:
   heading: Process &amp; fabrication
   note: TILE DIMENSIONS PER PDK
   columns:
-    - {label: PDK, width: "22%", style: name}
-    - {label: Foundry, width: "26%"}
-    - {label: Node, width: "22%", style: num}
-    - {label: 1×1 tile area, style: mono}
+    - {label: PDK, width: "19%", style: name}
+    - {label: Foundry, width: "21%"}
+    - {label: Node, width: "20%", style: num}
+    - {label: 1×1 tile area, width: "24%", style: mono}
+    - {label: Analog support}
   rows:
-    - ["SKY130A", "SkyWater", "130 nm", "161.00 × 111.52 µm"]
-    - ["ihp-sg13g2", "IHP", "130 nm BiCMOS", "202.08 × 154.98 µm"]
-    - ["gf180mcuD", "GlobalFoundries", "180 nm", "346.64 × 160.72 µm"]
+    - ["SKY130A", "SkyWater", "130 nm", "161.00 × 111.52 µm", "Full"]
+    - ["ihp-sg13g2", "IHP", "130 nm BiCMOS", "202.08 × 154.98 µm", "Partial"]
+    - ["gf180mcuD", "GlobalFoundries", "180 nm", "346.64 × 160.72 µm", "Partial"]
   footnote: >-
     One tile holds approximately <b>1,000 standard cells</b>. Larger designs are
-    built from multi-tile blocks from 1×2 up to 8×4; the available sizes differ
-    per PDK. Analog projects require a minimum height of 2 tiles.
+    built from multi-tile blocks, up to <b>8×4</b> on SKY130A and ihp-sg13g2 and
+    up to <b>4×4</b> on gf180mcuD; the sizes available in between differ per PDK.
+    Analog projects require a minimum height of 2 tiles.
 
 ratings:
   heading: Absolute maximum ratings
@@ -240,7 +261,6 @@ analog:
     - ["VDPWR digital supply", "1.8 V"]
     - ["VAPWR analog supply", "3.3 V"]
   linkline: >-
-    ALLOCATED IN ORDER ·
     <b><a href="https://tinytapeout.com/specs/analog/">TINYTAPEOUT.COM/SPECS/ANALOG</a></b>
 
 ordering:

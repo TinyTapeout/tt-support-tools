@@ -265,6 +265,10 @@ tbody tr:last-child td { border-bottom: 0; }
 
 .faq > div { border-top: 1px solid var(--rule); padding-top: 1.8mm; }
 
+/* The first row sits just under the heading's own 2px rule; a second hairline
+   that close reads as a printing error. Keep the padding so rows stay aligned. */
+.faq > div:nth-child(-n + 2) { border-top: 0; }
+
 .faq h3 {
   margin: 0 0 1.2mm;
   font-size: var(--t-body);
@@ -291,6 +295,18 @@ tbody tr:last-child td { border-bottom: 0; }
 }
 
 .linkline b { color: var(--red); font-weight: 700; }
+
+/* ---------- supporter logos ---------- */
+
+.supporters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5mm;
+  padding-top: 0.4mm;
+}
+
+.supporters img { width: auto; max-width: 32mm; object-fit: contain; display: block; }
 
 a { color: inherit; text-decoration: none; }
 a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
@@ -365,7 +381,7 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
     {{> logo}}
     <div class="bar__word">{{&doc.wordmark}}{{#doc.wordmark_sub}}<span>{{&doc.wordmark_sub}}</span>{{/doc.wordmark_sub}}</div>
     <div class="bar__tag">{{&doc.tag}}</div>
-    <div class="bar__ref">{{&doc.ref}}</div>
+    {{#doc.ref}}<div class="bar__ref">{{&doc.ref}}</div>{{/doc.ref}}
   </header>
 
   <div class="body">
@@ -378,7 +394,7 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
       </div>
       <figure>
         <img src="data:image/jpeg;base64,{{&photo_b64}}" alt="{{hero.photo_alt}}">
-        <figcaption>{{&hero.photo_caption}}</figcaption>
+        {{#hero.photo_caption}}<figcaption>{{&hero.photo_caption}}</figcaption>{{/hero.photo_caption}}
       </figure>
     </div>
 
@@ -430,7 +446,7 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
   <header class="bar bar--p2">
     {{> logo}}
-    <div class="bar__word">{{&doc.wordmark}}<span>{{&doc.ref}}</span></div>
+    <div class="bar__word">{{&doc.wordmark}}{{#doc.ref}}<span>{{&doc.ref}}</span>{{/doc.ref}}</div>
     <div class="bar__title">{{&doc.page2_title}}</div>
   </header>
 
@@ -466,6 +482,17 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
     <div class="block">
       {{#ordering}}{{> secthead}}{{> table}}{{> footnote}}{{/ordering}}
     </div>
+
+    {{#supporters}}
+    <div class="block">
+      {{> secthead}}
+      <div class="supporters">
+        {{#items}}
+        <img src="{{&data_uri}}" alt="{{name}}" style="{{&style}}">
+        {{/items}}
+      </div>
+    </div>
+    {{/supporters}}
 
   </div>
 
