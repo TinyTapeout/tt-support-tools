@@ -49,45 +49,44 @@ hero:
   eyebrow: ""                # short line above the headline; blank to hide
   heading: Put your class on silicon from €70 a student
   body: >-
-    Students submit designs onto regular shuttles with a few clicks. Hundreds of
-    designs are combined into a multi project chip and manufactured on an open
-    source PDK. The cohort shares a set of easy to use demoboards to test their
-    designs.
+    Students submit designs onto regular shuttles with a few clicks. Hundreds
+    are combined into a multi project chip and manufactured on an open source
+    PDK. The cohort shares a set of easy to use demoboards for bring-up and test.
   photo_alt: Tiny Tapeout demoboard with a QFN-64 packaged ASIC on a breakout board
   photo_caption: ""
 
 features:
-  - kicker: 01 · Curriculum
-    title: Teaching material included
-    body: >-
-      Workshops, a digital design guide, HDL templates and worked testbenches,
-      plus open IP to teach from: a RISC-V CPU, an FPGA and an analog FPGA.
-  - kicker: 02 · IT footprint
-    title: Nothing to install
-    body: >-
-      The flow runs in GitHub Actions. Any student laptop with a browser is
-      enough — no lab images, no EDA seats, no licence server.
-  - kicker: 03 · Cohort
+  - kicker: 01 · Cohort
     title: One board serves many
     body: >-
       A single demoboard selects any project on the die over USB, so a class
       shares hardware instead of buying one board per student.
-  - kicker: 04 · Process
+  - kicker: 02 · IT footprint
+    title: Nothing to install
+    body: >-
+      The flow can run in a GitHub Action. Any student laptop with a browser is
+      enough. A Docker image is available for local development.
+  - kicker: 03 · Process
     title: Three PDKs, no NDAs
     body: >-
       SkyWater SKY130, IHP sg13g2 and GlobalFoundries gf180mcu — 10+ shuttles a
       year across the three open-source PDKs.
-  - kicker: 05 · I/O
+  - kicker: 04 · I/O
     title: 26 pins, plus analog
     body: >-
       Clock, reset, 8 dedicated inputs, 8 dedicated outputs and 8 bidirectional
-      pins — plus up to 6 analog pins where the process allows.
-  - kicker: 06 · Flexibility
+      pins — plus up to 6 analog pins for mixed signal support.
+  - kicker: 05 · Flexibility
     title: Use your own EDA tools
     body: >-
       Any toolchain, commercial or open source, as long as the GDS and LEF can
       be published. Verilog officially supported, VHDL and Chisel by the
       community.
+  - kicker: 06 · Curriculum
+    title: Teaching material included
+    body: >-
+      Workshops, a digital design guide, HDL templates and worked testbenches,
+      plus open IP to teach from: a RISC-V CPU, an FPGA and an analog FPGA.
 
 quotes:
   heading: ""                # blank keeps the quotes as a band with no heading
@@ -144,10 +143,9 @@ faq:
     - q: How does this fit our academic calendar?
       a: >-
         Fabrication takes 6–9 months and delivery up to a year, so a design
-        submitted in one academic year returns in the next. That return becomes
-        a bring-up module in its own right: students test parts documented by
-        their peers, where gaps in testing and documentation show up
-        immediately.
+        submitted in one academic year may return in the next. Universities use it
+	to create a bring-up module: students test parts documented by
+        their peers, growing lab skills and highlighting the importance of DFT.
     - q: How do we pay?
       a: >-
         We invoice institutions directly, accept purchase orders and issue
@@ -155,8 +153,8 @@ faq:
         available.
     - q: Do our students need prior experience?
       a: >-
-        No. The guided workshops take a beginner from logic gates to a submitted
-        design, and thousands of past projects are public to learn from.
+        No. Guides and videos take beginners through creating designs to submission.
+        Thousands of past projects are already published to learn from.
     - q: Who owns the work?
       a: >-
         Every design is published publicly under Apache-2.0, so Tiny Tapeout
