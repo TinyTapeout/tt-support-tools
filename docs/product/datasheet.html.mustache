@@ -12,6 +12,8 @@
 :root {
   --navy: {{theme.navy}};
   --red: {{theme.red}};
+  --tag-bg: {{theme.tag_bg}};
+  --tag-fg: {{theme.tag_fg}};
   --ink: {{theme.ink}};
   --ink-mid: {{theme.ink_mid}};
   --ink-faint: {{theme.ink_faint}};
@@ -88,8 +90,8 @@ body {
 
 .bar__tag {
   margin-left: auto;
-  background: var(--red);
-  color: #fff;
+  background: var(--tag-bg);
+  color: var(--tag-fg);
   font-size: var(--t-fine);
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -109,6 +111,10 @@ body {
   flex-direction: column;
   min-height: 0;
 }
+
+/* Page 2 opens straight onto a section heading, so it needs the top margin
+   that page 1 gets from the hero's own padding. */
+.body--specs { padding-top: 5.5mm; }
 
 .label {
   font-size: var(--t-micro);
@@ -146,8 +152,7 @@ body {
   display: grid;
   grid-template-columns: 1.32fr 1fr;
   gap: 7mm;
-  padding: 4.6mm 0 4.2mm;
-  border-bottom: 2px solid var(--rule-hard);
+  padding: 4.6mm 0 5.4mm;
 }
 
 .hero h1 {
@@ -167,8 +172,6 @@ body {
   max-width: 62ch;
 }
 
-.hero .rule { height: 2px; background: var(--red); width: 22mm; margin-top: 3.2mm; }
-
 .hero figure { margin: 0; display: flex; flex-direction: column; }
 
 .hero img { width: 100%; height: 44mm; object-fit: cover; display: block; }
@@ -187,16 +190,10 @@ body {
 .features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  border-bottom: 2px solid var(--rule-hard);
+  column-gap: 7mm;
+  row-gap: 4.4mm;
+  padding: 0 0 5.4mm;
 }
-
-.feature {
-  padding: 2.8mm 4mm 2.9mm 0;
-  border-right: 1px solid var(--rule);
-}
-
-.feature:nth-child(3n) { border-right: 0; padding-right: 0; }
-.feature:nth-child(n + 4) { border-top: 1px solid var(--rule); }
 
 .feature h3 {
   margin: 1.6mm 0 1.4mm;
@@ -256,8 +253,8 @@ tbody tr:last-child td { border-bottom: 0; }
 
 /* ---------- pricing / faq blocks ---------- */
 
-.block { padding: 3.2mm 0; border-bottom: 2px solid var(--rule-hard); }
-.block:last-of-type { border-bottom: 0; }
+.block { padding: 0 0 5.4mm; }
+.block:last-of-type { padding-bottom: 0; }
 
 .faq {
   display: grid;
@@ -366,7 +363,7 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
   <header class="bar">
     {{> logo}}
-    <div class="bar__word">{{&doc.wordmark}}<span>{{&doc.wordmark_sub}}</span></div>
+    <div class="bar__word">{{&doc.wordmark}}{{#doc.wordmark_sub}}<span>{{&doc.wordmark_sub}}</span>{{/doc.wordmark_sub}}</div>
     <div class="bar__tag">{{&doc.tag}}</div>
     <div class="bar__ref">{{&doc.ref}}</div>
   </header>
@@ -378,7 +375,6 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
         <div class="label">{{&hero.eyebrow}}</div>
         <h1>{{&hero.heading}}</h1>
         <p>{{&hero.body}}</p>
-        <div class="rule"></div>
       </div>
       <figure>
         <img src="data:image/jpeg;base64,{{&photo_b64}}" alt="{{hero.photo_alt}}">
@@ -438,7 +434,7 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
     <div class="bar__title">{{&doc.page2_title}}</div>
   </header>
 
-  <div class="body">
+  <div class="body body--specs">
 
     <div class="block">
       {{#process}}{{> secthead}}{{> table}}{{> footnote}}{{/process}}

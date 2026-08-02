@@ -101,6 +101,69 @@ def prepare_table(name: str, table: dict) -> None:
     table["has_footnote"] = bool(table.get("footnote"))
 
 
+def load_config(path: Path) -> dict:
+    """Parse the content YAML, reporting syntax errors against the offending line."""
+    text = path.read_text(encoding="utf-8")
+    try:
+        return yaml.safe_load(text)
+    except yaml.YAMLError as error:
+        mark = getattr(error, "problem_mark", None)
+        detail = getattr(error, "problem", str(error))
+        if mark is None:
+            raise SystemExit(f"{path}: {detail}")
+        line = (
+            text.splitlines()[mark.line] if mark.line < len(text.splitlines()) else ""
+        )
+        raise SystemExit(
+            f"{path}:{mark.line + 1}: {detail}\n"
+            f"  {line.strip()}\n"
+            '  hint: inside a "quoted" value, HTML quotes must be escaped as \\"'
+        )
+
+
+def walk_strings(node, path: str = ""):
+    """Yield (dotted-path, text) for every string in the loaded config."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            yield from walk_strings(value, f"{path}.{key}" if path else str(key))
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            yield from walk_strings(value, f"{path}[{index}]")
+    elif isinstance(node, str):
+        yield path, node
+
+
+def validate_markup(content: dict) -> None:
+    """Catch the two easy ways to write broken HTML in the config.
+
+    YAML only processes \\" as an escape inside "quoted" values. In a >- folded
+    or plain value the backslash survives into the page and breaks the markup,
+    so a loaded string should never still contain one.
+    """
+    problems = []
+    for path, text in walk_strings(content):
+        if '\\"' in text:
+            problems.append(
+                f'{path}: contains a literal \\" — in a >- or plain value write '
+                "the quote on its own, with no backslash"
+            )
+        for tag in ("b", "a", "span"):
+            opened = len(re.findall(rf"<{tag}\b", text))
+            closed = len(re.findall(rf"</{tag}>", text))
+            if opened != closed:
+                problems.append(
+                    f"{path}: {opened} <{tag}> but {closed} </{tag}> — unbalanced tag"
+                )
+        # An unterminated href swallows the rest of the tag, which still leaves
+        # <a> and </a> balanced, so check the attribute closes its own quotes.
+        if len(re.findall(r"href=", text)) != len(re.findall(r'href="[^"]*"', text)):
+            problems.append(
+                f'{path}: malformed link — href="..." is missing its closing quote'
+            )
+    if problems:
+        raise SystemExit("\n".join(f"{p}" for p in problems))
+
+
 def as_data_uri_payload(path: Path) -> str:
     if not path.is_file():
         raise SystemExit(f"missing asset: {path}")
@@ -223,8 +286,8 @@ def main() -> None:
         level=logging.INFO, format="%(levelname)-8s %(message)s", stream=sys.stdout
     )
 
-    with open(args.config, encoding="utf-8") as fh:
-        content = yaml.safe_load(fh)
+    content = load_config(args.config)
+    validate_markup(content)
 
     for key in TABLE_KEYS:
         if key not in content:
