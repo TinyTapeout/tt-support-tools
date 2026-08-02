@@ -1,4 +1,4 @@
 # Build outputs — regenerate with build.py
-tt-datasheet.html
-tt-datasheet.pdf
-.tt-datasheet.chrome.html
+tt-datasheet*.html
+tt-datasheet*.pdf
+.tt-datasheet*.chrome.html

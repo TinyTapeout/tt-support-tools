@@ -10,7 +10,7 @@
 }
 
 :root {
-  --navy: {{theme.navy}};
+  --brand: {{theme.brand}};
   --red: {{theme.red}};
   --tag-bg: {{theme.tag_bg}};
   --tag-fg: {{theme.tag_fg}};
@@ -68,14 +68,31 @@ body {
 /* ---------- masthead ---------- */
 
 .bar {
-  background: var(--navy);
+  background: var(--brand);
   color: #fff;
   display: flex;
   align-items: center;
   gap: 5mm;
   padding: 4.2mm 12mm;
   flex: none;
+  position: relative;
+  overflow: hidden;
 }
+
+/* Chip-layout texture over the bar. The traces are black, so they darken the
+   bar and push contrast with the white type up rather than down. */
+{{#bar_texture_b64}}
+.bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url(data:image/png;base64,{{&bar_texture_b64}}) center / cover no-repeat;
+  opacity: {{theme.bar_texture_opacity}};
+  pointer-events: none;
+}
+
+.bar > * { position: relative; }
+{{/bar_texture_b64}}
 
 .bar__logo { width: 11mm; height: 11mm; flex: none; display: block; }
 
@@ -86,7 +103,7 @@ body {
   line-height: 1;
 }
 
-.bar__word span { display: block; font-size: var(--t-micro); font-weight: 600; letter-spacing: 0.14em; color: #9a99d6; margin-top: 1.1mm; }
+.bar__word span { display: block; font-size: var(--t-micro); font-weight: 600; letter-spacing: 0.14em; color: rgba(255, 255, 255, 0.72); margin-top: 1.1mm; }
 
 .bar__tag {
   margin-left: auto;
@@ -98,7 +115,7 @@ body {
   padding: 1.4mm 3mm;
 }
 
-.bar__ref { font-size: var(--t-micro); font-weight: 500; letter-spacing: 0.1em; color: #9a99d6; font-variant-numeric: tabular-nums; }
+.bar__ref { font-size: var(--t-micro); font-weight: 500; letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.72); font-variant-numeric: tabular-nums; }
 
 .bar--p2 .bar__title { margin-left: auto; font-size: var(--t-fine); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
 
@@ -174,7 +191,19 @@ body {
 
 .hero figure { margin: 0; display: flex; flex-direction: column; }
 
-.hero img { width: 100%; height: 44mm; object-fit: cover; display: block; }
+/* The photo fills whatever height the text column sets, so the two hero columns
+   always end level. The image is taken out of flow so its intrinsic height
+   can't drive the grid row; the frame then stretches to whatever the text needs. */
+.hero__frame { flex: 1 1 auto; min-height: 0; position: relative; }
+
+.hero__frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
 .hero figcaption {
   font-size: var(--t-micro);
@@ -210,7 +239,7 @@ body {
 table { width: 100%; border-collapse: collapse; }
 
 th {
-  background: var(--navy);
+  background: var(--brand);
   color: #fff;
   font-size: var(--t-micro);
   font-weight: 600;
@@ -279,6 +308,35 @@ tbody tr:last-child td { border-bottom: 0; }
 
 .faq p { margin: 0; font-size: var(--t-fine); line-height: 1.36; color: var(--ink-mid); }
 
+/* ---------- pull quotes ---------- */
+
+.quotes { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 7mm; }
+
+.quotes blockquote {
+  margin: 0;
+  border-left: 2px solid var(--red);
+  padding-left: 3.4mm;
+}
+
+.quotes p {
+  margin: 0;
+  font-size: var(--t-body);
+  line-height: 1.34;
+  font-style: italic;
+  max-width: 155mm;
+}
+
+/* Not uppercased: a name plus a long affiliation is hard to read in caps. */
+.quotes cite {
+  display: block;
+  margin-top: 1.6mm;
+  font-size: var(--t-fine);
+  font-style: normal;
+  color: var(--ink-faint);
+}
+
+.quotes cite b { color: var(--ink); font-weight: 700; }
+
 /* ---------- page 2 two-column band ---------- */
 
 .band { display: grid; grid-template-columns: 1.05fr 1fr; gap: 8mm; }
@@ -340,6 +398,13 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
 .disclaimer { margin-top: 1.8mm; font-size: var(--t-micro); line-height: 1.45; color: var(--ink-mid); max-width: 150mm; }
 
+/* Optional call-to-action beside the institution list on page 1. */
+.contact { flex: none; border-left: 2px solid var(--rule-hard); padding-left: 5mm; align-self: stretch; }
+
+.contact__lines { margin-top: 1.8mm; font-size: var(--t-fine); line-height: 1.5; }
+.contact__lines span { display: block; font-weight: 600; white-space: nowrap; }
+.contact__lines span:first-child { font-weight: 700; color: var(--red); }
+
 .pageno {
   flex: none;
   font-size: var(--t-h2);
@@ -361,7 +426,7 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
   .deck { display: block; gap: 0; padding: 0; }
   .sheet { break-after: page; page-break-after: always; box-shadow: none; }
   .sheet:last-child { break-after: auto; page-break-after: auto; }
-  th, .bar, .bar__tag, .zebra tbody tr:nth-child(odd) td {
+  th, .bar, .bar::before, .bar__tag, .zebra tbody tr:nth-child(odd) td {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -388,12 +453,12 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
     <div class="hero">
       <div>
-        <div class="label">{{&hero.eyebrow}}</div>
+        {{#hero.eyebrow}}<div class="label">{{&hero.eyebrow}}</div>{{/hero.eyebrow}}
         <h1>{{&hero.heading}}</h1>
         <p>{{&hero.body}}</p>
       </div>
       <figure>
-        <img src="data:image/jpeg;base64,{{&photo_b64}}" alt="{{hero.photo_alt}}">
+        <div class="hero__frame"><img src="data:image/jpeg;base64,{{&photo_b64}}" alt="{{hero.photo_alt}}"></div>
         {{#hero.photo_caption}}<figcaption>{{&hero.photo_caption}}</figcaption>{{/hero.photo_caption}}
       </figure>
     </div>
@@ -407,6 +472,20 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
       </div>
       {{/features}}
     </div>
+
+    {{#quotes}}
+    <div class="block">
+      {{#heading}}{{> secthead}}{{/heading}}
+      <div class="quotes">
+        {{#items}}
+        <blockquote>
+          <p>{{&text}}</p>
+          <cite><b>{{&name}}</b>{{#affiliation}} · {{&affiliation}}{{/affiliation}}</cite>
+        </blockquote>
+        {{/items}}
+      </div>
+    </div>
+    {{/quotes}}
 
     <div class="block">
       {{#pricing}}{{> secthead}}{{> table}}{{> footnote}}{{/pricing}}
@@ -436,6 +515,15 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
         {{/institutions.items}}
       </div>
     </div>
+    {{#contact}}
+    <div class="contact">
+      <div class="label">{{&label}}</div>
+      <div class="contact__lines">
+        {{#lines}}<span>{{&.}}</span>
+        {{/lines}}
+      </div>
+    </div>
+    {{/contact}}
     <div class="pageno"><span>PAGE</span>01</div>
   </footer>
 

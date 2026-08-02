@@ -173,6 +173,33 @@ def as_data_uri_payload(path: Path) -> str:
     return base64.b64encode(path.read_bytes()).decode()
 
 
+def check_glyph_coverage(content: dict, font: Path) -> None:
+    """Warn about characters the embedded font cannot draw.
+
+    The font is subset, so a stray character silently falls back to whatever the
+    renderer has to hand — a different typeface mid-word, or a blank box in the
+    PDF. Needs fontTools; skipped quietly when it isn't installed, since it is
+    not a runtime dependency of the build.
+    """
+    try:
+        from fontTools.ttLib import TTFont
+    except ImportError:
+        return
+
+    covered = set(TTFont(font).getBestCmap())
+    missing: dict[str, str] = {}
+    for path, text in walk_strings(content):
+        for char in text:
+            if ord(char) > 0x20 and ord(char) not in covered:
+                missing.setdefault(char, path)
+
+    for char, path in sorted(missing.items()):
+        logging.warning(
+            f"{path}: U+{ord(char):04X} {char!r} is not in the embedded font "
+            "and will fall back to another typeface"
+        )
+
+
 def prepare_supporters(supporters: dict, assets: Path) -> None:
     """Inline each supporter logo and work out its per-item sizing."""
     height = supporters.get("logo_height", "8.5mm")
@@ -321,8 +348,14 @@ def main() -> None:
         prepare_table(key, content[key])
 
     assets = HERE / "assets"
+    check_glyph_coverage(content, assets / content["assets"]["font"])
     content["font_b64"] = as_data_uri_payload(assets / content["assets"]["font"])
     content["photo_b64"] = as_data_uri_payload(assets / content["assets"]["photo"])
+
+    texture = content["theme"].get("bar_texture")
+    if texture:
+        content["bar_texture_b64"] = as_data_uri_payload(assets / texture)
+        content["theme"].setdefault("bar_texture_opacity", 0.55)
     if "supporters" in content:
         prepare_supporters(content["supporters"], assets)
 

@@ -1,0 +1,296 @@
+# ---------------------------------------------------------------------------
+# Tiny Tapeout datasheet — UNIVERSITY EDITION.
+#
+#     python3 docs/product/build.py --config docs/product/datasheet-universities.yaml \
+#                                   --out docs/product/tt-datasheet-universities.html --pdf
+#
+# Same template and assets as datasheet.yaml; the difference is audience. This
+# one is written for a department buying for a cohort, so it speaks in "we/our
+# students", leads on per-student cost, and answers procurement and calendar
+# questions an individual buyer never asks. Editing notes are in datasheet.yaml.
+# ---------------------------------------------------------------------------
+
+doc:
+  title: Tiny Tapeout for Universities
+  wordmark: Tiny Tapeout
+  wordmark_sub: ""
+  tag: FOR UNIVERSITIES
+  ref: ""
+  page2_title: Electrical Specifications
+
+theme:
+  brand: "#0c66ab"           # header bars and table header rows
+  red: "#ec3013"
+  tag_bg: "#fef244"
+  tag_fg: "#040371"
+  ink: "#141414"
+  ink_mid: "#55545f"
+  ink_faint: "#86858f"
+  ground: "#f2f1f4"
+  rule: "#c9c8d0"
+  rule_hard: "#141414"
+  # Chip-layout texture over the header bars, from the tt-datasheet-artwork repo.
+  # Blank the filename for flat bars; raise/lower the opacity for more or
+  # less texture (0.35 subtle, 0.55 balanced, 0.75 strong).
+  bar_texture: bar-texture.png
+  bar_texture_opacity: 0.55
+  heading_size: 23pt
+  body_size: 8.3pt
+
+assets:
+  photo: demoboard.jpg
+  font: archivo.woff2
+
+# --------------------------------------------------------------------------
+# PAGE 1
+# --------------------------------------------------------------------------
+
+hero:
+  eyebrow: ""                # short line above the headline; blank to hide
+  heading: Put your class on silicon from €70 a student
+  body: >-
+    Students submit designs onto regular shuttles with a few clicks. Hundreds of
+    designs are combined into a multi project chip and manufactured on an open
+    source PDK. The cohort shares a set of easy to use demoboards to test their
+    designs.
+  photo_alt: Tiny Tapeout demoboard with a QFN-64 packaged ASIC on a breakout board
+  photo_caption: ""
+
+features:
+  - kicker: 01 · Curriculum
+    title: Teaching material included
+    body: >-
+      Workshops, a digital design guide, HDL templates and worked testbenches,
+      plus open IP to teach from: a RISC-V CPU, an FPGA and an analog FPGA.
+  - kicker: 02 · IT footprint
+    title: Nothing to install
+    body: >-
+      The flow runs in GitHub Actions. Any student laptop with a browser is
+      enough — no lab images, no EDA seats, no licence server.
+  - kicker: 03 · Cohort
+    title: One board serves many
+    body: >-
+      A single demoboard selects any project on the die over USB, so a class
+      shares hardware instead of buying one board per student.
+  - kicker: 04 · Process
+    title: Three PDKs, no NDAs
+    body: >-
+      SkyWater SKY130, IHP sg13g2 and GlobalFoundries gf180mcu — 10+ shuttles a
+      year across the three open-source PDKs.
+  - kicker: 05 · I/O
+    title: 26 pins, plus analog
+    body: >-
+      Clock, reset, 8 dedicated inputs, 8 dedicated outputs and 8 bidirectional
+      pins — plus up to 6 analog pins where the process allows.
+  - kicker: 06 · Flexibility
+    title: Use your own EDA tools
+    body: >-
+      Any toolchain, commercial or open source, as long as the GDS and LEF can
+      be published. Verilog officially supported, VHDL and Chisel by the
+      community.
+
+quotes:
+  heading: ""                # blank keeps the quotes as a band with no heading
+  items:
+    - text: >-
+        “Tiny Tapeout has been an exciting game changer for my students and the
+        broader microelectronics community. It helps us attract much-needed new
+        talents into a field that has previously failed to provide highly
+        accessible on-ramps.”
+      name: Prof. Boris Murmann
+      affiliation: Chair, IEEE Solid-State Circuits Society · University of Hawai‘i
+    - text: >-
+        “Tiny Tapeout is genius! It allows students, hobbyists, and
+        professionals to easily create custom silicon circuit blocks, supporting
+        digital, analog, or mixed-signal… indispensable for modern IC design
+        education!”
+      name: Prof. Harald Pretl
+      affiliation: Senior Principal Engineer, Intel · JKU Linz
+
+pricing:
+  heading: What a cohort costs
+  note: ""
+  columns:
+    - {label: Item, width: "27%", style: name}
+    - {label: What it buys you}
+    - {label: From, width: "22%", style: price}
+  rows:
+    - ["1 tile",
+       "Roughly 1,000 standard cells — one design, one student. Dimensions vary by PDK, see page 2.",
+       "€70"]
+    - ["Analog pin",
+       "Multiplexed analog pad access for mixed signal work. Minimum project size of 2 tiles applies.",
+       "€100 <span class=\"t-sub\">/ pin, max 6</span>"]
+    - ["Demoboard PCB",
+       "Packaged chip on an RP2350 demoboard. Any board can select any project, so a class shares them.",
+       "€300 <span class=\"t-sub\">each</span>"]
+    - ["Postage &amp; packing",
+       "Flat rate worldwide, charged once per demoboard.",
+       "€15"]
+  footnote: >-
+    <b>A class of 25, each submitting one design, sharing 5 demoboards for
+    testing: 25 tiles (€1,750) + 5 boards (€1,500) + postage (5 × €15) = €3,325,
+    or €133 a student.</b> Every extra student after that is €70. Orders over
+    €10,000 receive 10% off. Price your own cohort at
+    <b><a href="https://app.tinytapeout.com/calculator">app.tinytapeout.com/calculator</a></b>,
+    or email
+    <b><a href="mailto:education@tinytapeout.com">education@tinytapeout.com</a></b>
+    for a quote.
+
+faq:
+  heading: What departments ask
+  note: FULL FAQ AT TINYTAPEOUT.COM/FAQ
+  items:
+    - q: How does this fit our academic calendar?
+      a: >-
+        Fabrication takes 6–9 months and delivery up to a year, so a design
+        submitted in one academic year returns in the next. That return becomes
+        a bring-up module in its own right: students test parts documented by
+        their peers, where gaps in testing and documentation show up
+        immediately.
+    - q: How do we pay?
+      a: >-
+        We invoice institutions directly, accept purchase orders and issue
+        written quotes your finance office can approve against. VAT invoices are
+        available.
+    - q: Do our students need prior experience?
+      a: >-
+        No. The guided workshops take a beginner from logic gates to a submitted
+        design, and thousands of past projects are public to learn from.
+    - q: Who owns the work?
+      a: >-
+        Every design is published publicly under Apache-2.0, so Tiny Tapeout
+        does not suit confidential or commercially sensitive research. Full
+        terms at <a href="https://tinytapeout.com/terms">tinytapeout.com/terms</a>.
+
+institutions:
+  # US-only for this sheet. The individual datasheet keeps the full
+  # international list; the non-US entries are still there if you need them.
+  label: Already teaching with Tiny Tapeout
+  items:
+    - Carnegie Mellon University
+    - New York University
+    - UC Santa Cruz
+    - UC San Diego
+    - San Jose State University
+    - Oklahoma State University
+
+contact:
+  label: Talk to us
+  lines:
+    - education@tinytapeout.com
+    - Quotes · purchase orders · invoicing
+
+# --------------------------------------------------------------------------
+# PAGE 2 — identical specifications to the individual sheet, with procurement
+# added to the ordering table.
+# --------------------------------------------------------------------------
+
+process:
+  heading: Process &amp; fabrication
+  note: TILE DIMENSIONS PER PDK
+  columns:
+    - {label: PDK, width: "19%", style: name}
+    - {label: Foundry, width: "21%"}
+    - {label: Node, width: "20%", style: num}
+    - {label: 1×1 tile area, width: "24%", style: mono}
+    - {label: Analog support}
+  rows:
+    - ["SKY130A", "SkyWater", "130 nm", "161.00 × 111.52 µm", "Full"]
+    - ["ihp-sg13g2", "IHP", "130 nm BiCMOS", "202.08 × 154.98 µm", "Partial"]
+    - ["gf180mcuD", "GlobalFoundries", "180 nm", "346.64 × 160.72 µm", "Partial"]
+  footnote: >-
+    One tile holds approximately <b>1,000 standard cells</b>. Larger designs are
+    built from multi-tile blocks, up to <b>8×4</b> on SKY130A and ihp-sg13g2 and
+    up to <b>4×4</b> on gf180mcuD; the sizes available in between differ per PDK.
+    Analog projects require a minimum height of 2 tiles.
+
+ratings:
+  heading: Absolute maximum ratings
+  note: DIGITAL I/O
+  columns:
+    - {label: Parameter, width: "40%", style: name}
+    - {label: Min, width: "13%", style: num}
+    - {label: Typ, width: "13%", style: num}
+    - {label: Max, width: "13%", style: num}
+    - {label: Unit}
+  rows:
+    - ["I/O supply voltage", "1.71", "3.30", "5.50", "V"]
+    - ["Input frequency", "—", "—", "66", "MHz"]
+    - ["Output toggle frequency", "—", "—", "33", "MHz"]
+    - ["Output drive strength, source/sink", "—", "4", "—", "mA"]
+    - ["Demoboard clock generator", "1", "—", "66.5 M", "Hz"]
+    - ["Pad-to-tile round-trip latency", "—", "—", "20", "ns"]
+    - ["Clock insertion delay, pad to logic", "—", "—", "10", "ns"]
+    - ["Pin-to-pin latency variance", "—", "—", "2", "ns"]
+  footnote: >-
+    Characterised on <b>SKY130A</b> using the <b>sky130_ef_io_gpiov2_pad</b> cell;
+    ratings differ per PDK. Inputs are <b>not 5 V tolerant</b> despite the supply
+    range. Full per-process figures at
+    <b><a href="https://tinytapeout.com/specs/">tinytapeout.com/specs</a></b>.
+
+gpio:
+  heading: GPIO pin map
+  columns:
+    - {label: Signal, width: "34%", style: mono}
+    - {label: Width, width: "14%", style: num center}
+    - {label: Direction, width: "22%"}
+    - {label: Function}
+  rows:
+    - ["clk", "1", "Input", "Clock"]
+    - ["rst_n", "1", "Input", "Reset, active low"]
+    - ["ui_in[7:0]", "8", "Input", "General purpose"]
+    - ["uo_out[7:0]", "8", "Output", "General purpose"]
+    - ["uio[7:0]", "8", "Bidirectional", "Per-pin direction control"]
+  linkline: >-
+    26 I/O PINS TOTAL ·
+    <b><a href="https://tinytapeout.com/specs/gpio/">TINYTAPEOUT.COM/SPECS/GPIO</a></b>
+
+analog:
+  heading: Analog I/O
+  note: OPTIONAL
+  columns:
+    - {label: Parameter, style: name}
+    - {label: Value, width: "34%", style: mono}
+  rows:
+    - ["Analog pins, maximum", "6 · ua[0:5]"]
+    - ["Series resistance, pad to project", "&lt; 500 Ω"]
+    - ["Parasitic capacitance", "&lt; 5 pF"]
+    - ["Current per pin, maximum", "4 mA"]
+    - ["VDPWR digital supply", "1.8 V"]
+    - ["VAPWR analog supply", "3.3 V"]
+  linkline: >-
+    <b><a href="https://tinytapeout.com/specs/analog/">TINYTAPEOUT.COM/SPECS/ANALOG</a></b>
+
+ordering:
+  heading: Ordering information
+  note: EDUCATION@TINYTAPEOUT.COM
+  headless: true
+  columns:
+    - {width: "27%", style: name}
+    - {}
+  rows:
+    - ["Shuttle cadence",
+       "10+ shuttles per year across the three processes. Check <a href=\"https://app.tinytapeout.com/chips\">tinytapeout.com/chips</a> for the schedule."]
+    - ["Lead time",
+       "6–9 months in fabrication, then assembly, test and fulfilment."]
+    - ["Payment",
+       "Invoices, purchase orders and written quotes for institutions. VAT invoices available."]
+    - ["Volume discount",
+       "10% off orders over €10,000. Price a cohort at <a href=\"https://app.tinytapeout.com/calculator\">app.tinytapeout.com/calculator</a>, or email us for a quote."]
+    - ["Deliverable",
+       "Silicon area only for remote or shared test, or area plus demoboard kits: packaged chip, RP2350 demoboard and breakout board."]
+    - ["Design tools",
+       "Supplied open-source LibreLane flow running in GitHub Actions, or any commercial or open-source toolchain of your own."]
+    - ["Minimum submission",
+       "GDS + LEF, produced with any tools, in a public repository under Apache-2.0. Your tools must permit publishing them."]
+
+disclaimer:
+  label: Disclaimer
+  body: >-
+    Specifications are indicative and subject to change between shuttles.
+    Electrical characteristics are quoted for the SKY130A process unless stated
+    otherwise — consult tinytapeout.com/specs for the process you intend to use.
+    Every submitted design is published publicly under Apache-2.0. Full terms and
+    conditions of sale are published at
+    <a href="https://tinytapeout.com/terms">tinytapeout.com/terms</a>.

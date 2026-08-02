@@ -31,11 +31,11 @@ doc:
 
 # Colours and the two page-level type sizes. Everything else scales from these.
 theme:
-  navy: "#040371"            # header bars and table header rows
+  brand: "#0c66ab"           # header bars and table header rows
   red: "#ec3013"             # accent: labels, rules, prices
   # DATASHEET tag in the header bar. Official Tiny Tapeout brand colours:
   #   yellow #fef244 · cyan #3dfef7 · hot pink #f82381 · pink #fc9f9f · blue #040371
-  # Set tag_fg to navy for the light colours, #ffffff for hot pink.
+  # Set tag_fg to a dark colour for the light tags, #ffffff for hot pink.
   tag_bg: "#fef244"
   tag_fg: "#040371"
   ink: "#141414"             # body text
@@ -44,6 +44,11 @@ theme:
   ground: "#f2f1f4"          # zebra stripe on tables
   rule: "#c9c8d0"            # thin rules
   rule_hard: "#141414"       # 2px section rules
+  # Chip-layout texture over the header bars, from the tt-datasheet-artwork repo.
+  # Blank the filename for flat bars; raise/lower the opacity for more or
+  # less texture (0.35 subtle, 0.55 balanced, 0.75 strong).
+  bar_texture: bar-texture.png
+  bar_texture_opacity: 0.55
   heading_size: 30pt         # page 1 headline
   body_size: 8.3pt           # feature and FAQ body text
 
@@ -99,8 +104,8 @@ features:
   - kicker: 04 · Process
     title: Three PDKs
     body: >-
-      SkyWater SKY130, IHP sg13g2 and GlobalFoundries gf180mcu. Open-source PDKs
-      running multiple times per year with no NDAs to sign.
+      SkyWater SKY130, IHP sg13g2 and GlobalFoundries gf180mcu. Open-source PDKs,
+      10+ shuttles per year, no NDAs to sign.
   - kicker: 05 · Hardware
     title: Demoboard available
     body: >-
@@ -109,8 +114,9 @@ features:
   - kicker: 06 · Flexibility
     title: Bring your own flow
     body: >-
-      Harden with the supplied open-source LibreLane flow, or use your own tools
-      entirely — the minimum submission is GDS + LEF.
+      Harden with the supplied open-source LibreLane flow, or use any tools you
+      like — commercial or open source — as long as the resulting GDS and LEF
+      can be published.
 
 pricing:
   heading: Pricing
@@ -130,7 +136,7 @@ pricing:
        "Optional add-on: packaged chip on an RP2350 powered demoboard.",
        "€300"]
     - ["Postage &amp; packing",
-       "Flat rate worldwide, charged once per order.",
+       "Flat rate worldwide, charged once per demoboard.",
        "€15"]
   footnote: >-
     <b>The €385 headline is one tile (€70) plus a demoboard (€300) plus postage
@@ -272,7 +278,7 @@ ordering:
     - {}
   rows:
     - ["Shuttle cadence",
-       "Several shuttles per year across the three processes. Check <a href=\"https://app.tinytapeout.com/chips\">tinytapeout.com/chips</a> for the schedule."]
+       "10+ shuttles per year across the three processes. Check <a href=\"https://app.tinytapeout.com/chips\">tinytapeout.com/chips</a> for the schedule."]
     - ["Lead time",
        "6–9 months in fabrication, then assembly, test and fulfilment."]
     - ["Volume discount",
@@ -280,9 +286,9 @@ ordering:
     - ["Deliverable",
        "Silicon area only for remote or shared test, or area plus the demoboard kit: packaged chip, RP2350 demoboard and breakout board."]
     - ["Design tools",
-       "Supplied open-source LibreLane flow running in GitHub Actions, or any toolchain of your own."]
+       "Supplied open-source LibreLane flow running in GitHub Actions, or any commercial or open-source toolchain of your own."]
     - ["Minimum submission",
-       "GDS + LEF in a public repository, licensed Apache-2.0."]
+       "GDS + LEF, produced with any tools, in a public repository under Apache-2.0. Your tools must permit publishing them."]
 
 disclaimer:
   label: Disclaimer
