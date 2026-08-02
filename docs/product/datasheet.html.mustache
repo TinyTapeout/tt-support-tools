@@ -1,0 +1,486 @@
+<title>{{&doc.title}}</title>
+
+<style>
+@font-face {
+  font-family: "Archivo";
+  src: url(data:font/woff2;base64,{{&font_b64}}) format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  --navy: {{theme.navy}};
+  --red: {{theme.red}};
+  --ink: {{theme.ink}};
+  --ink-mid: {{theme.ink_mid}};
+  --ink-faint: {{theme.ink_faint}};
+  --ground: {{theme.ground}};
+  --rule: {{theme.rule}};
+  --rule-hard: {{theme.rule_hard}};
+  --paper: #ffffff;
+  --chrome: #d8d7dd;
+
+  --t-micro: 6.2pt;
+  --t-fine: 7.1pt;
+  --t-body: {{theme.body_size}};
+  --t-lead: 9.6pt;
+  --t-sub: 13pt;
+  --t-h2: 15pt;
+  --t-h1: {{theme.heading_size}};
+}
+
+@media (prefers-color-scheme: dark) { :root { --chrome: #17171c; } }
+:root[data-theme="dark"] { --chrome: #17171c; }
+:root[data-theme="light"] { --chrome: #d8d7dd; }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--chrome);
+  font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.deck {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8mm;
+  padding: 8mm 4mm;
+}
+
+.sheet {
+  width: 210mm;
+  height: 297mm;
+  background: var(--paper);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: none;
+}
+
+/* ---------- masthead ---------- */
+
+.bar {
+  background: var(--navy);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 5mm;
+  padding: 4.2mm 12mm;
+  flex: none;
+}
+
+.bar__logo { width: 11mm; height: 11mm; flex: none; display: block; }
+
+.bar__word {
+  font-size: var(--t-sub);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.bar__word span { display: block; font-size: var(--t-micro); font-weight: 600; letter-spacing: 0.14em; color: #9a99d6; margin-top: 1.1mm; }
+
+.bar__tag {
+  margin-left: auto;
+  background: var(--red);
+  color: #fff;
+  font-size: var(--t-fine);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  padding: 1.4mm 3mm;
+}
+
+.bar__ref { font-size: var(--t-micro); font-weight: 500; letter-spacing: 0.1em; color: #9a99d6; font-variant-numeric: tabular-nums; }
+
+.bar--p2 .bar__title { margin-left: auto; font-size: var(--t-fine); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+
+/* ---------- shared structure ---------- */
+
+.body {
+  flex: 1 1 auto;
+  padding: 0 12mm;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.label {
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--red);
+  text-align: left;
+}
+
+.label--dim { color: var(--ink-faint); }
+
+.secthead {
+  display: flex;
+  align-items: baseline;
+  gap: 3mm;
+  border-bottom: 2px solid var(--rule-hard);
+  padding-bottom: 1.1mm;
+  margin-bottom: 2.1mm;
+}
+
+.secthead h2 {
+  margin: 0;
+  font-size: var(--t-h2);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+
+.secthead .note { margin-left: auto; font-size: var(--t-micro); font-weight: 500; letter-spacing: 0.06em; color: var(--ink-faint); }
+
+/* ---------- hero ---------- */
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.32fr 1fr;
+  gap: 7mm;
+  padding: 4.6mm 0 4.2mm;
+  border-bottom: 2px solid var(--rule-hard);
+}
+
+.hero h1 {
+  margin: 2.2mm 0 0;
+  font-size: var(--t-h1);
+  font-weight: 700;
+  line-height: 0.97;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.hero p {
+  margin: 3mm 0 0;
+  font-size: var(--t-lead);
+  line-height: 1.4;
+  color: var(--ink);
+  max-width: 62ch;
+}
+
+.hero .rule { height: 2px; background: var(--red); width: 22mm; margin-top: 3.2mm; }
+
+.hero figure { margin: 0; display: flex; flex-direction: column; }
+
+.hero img { width: 100%; height: 44mm; object-fit: cover; display: block; }
+
+.hero figcaption {
+  font-size: var(--t-micro);
+  color: var(--ink-faint);
+  letter-spacing: 0.05em;
+  margin-top: 1.4mm;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.2mm;
+}
+
+/* ---------- feature grid ---------- */
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 2px solid var(--rule-hard);
+}
+
+.feature {
+  padding: 2.8mm 4mm 2.9mm 0;
+  border-right: 1px solid var(--rule);
+}
+
+.feature:nth-child(3n) { border-right: 0; padding-right: 0; }
+.feature:nth-child(n + 4) { border-top: 1px solid var(--rule); }
+
+.feature h3 {
+  margin: 1.6mm 0 1.4mm;
+  font-size: var(--t-body);
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  line-height: 1.12;
+}
+
+.feature p { margin: 0; font-size: var(--t-fine); line-height: 1.36; color: var(--ink-mid); }
+
+/* ---------- tables ---------- */
+
+table { width: 100%; border-collapse: collapse; }
+
+th {
+  background: var(--navy);
+  color: #fff;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 1.35mm 2.4mm;
+}
+
+td {
+  font-size: var(--t-fine);
+  line-height: 1.3;
+  padding: 1.35mm 2.4mm;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+tbody tr:last-child td { border-bottom: 0; }
+
+.t-num { font-variant-numeric: tabular-nums; }
+.t-name { font-weight: 600; white-space: nowrap; }
+.t-mono { font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; white-space: nowrap; }
+.t-price { font-weight: 700; color: var(--red); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.t-dim { color: var(--ink-faint); }
+.t-center { text-align: center; }
+.t-sub { color: var(--ink-faint); font-weight: 500; }
+
+.zebra tbody tr:nth-child(odd) td { background: var(--ground); }
+
+.tnote {
+  font-size: var(--t-micro);
+  line-height: 1.4;
+  color: var(--ink-mid);
+  border-left: 2px solid var(--red);
+  padding: 0 0 0 2.6mm;
+  margin-top: 1.9mm;
+}
+
+.tnote b { color: var(--ink); font-weight: 700; }
+
+/* ---------- pricing / faq blocks ---------- */
+
+.block { padding: 3.2mm 0; border-bottom: 2px solid var(--rule-hard); }
+.block:last-of-type { border-bottom: 0; }
+
+.faq {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 8mm;
+  row-gap: 2.6mm;
+}
+
+.faq > div { border-top: 1px solid var(--rule); padding-top: 1.8mm; }
+
+.faq h3 {
+  margin: 0 0 1.2mm;
+  font-size: var(--t-body);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+}
+
+.faq p { margin: 0; font-size: var(--t-fine); line-height: 1.36; color: var(--ink-mid); }
+
+/* ---------- page 2 two-column band ---------- */
+
+.band { display: grid; grid-template-columns: 1.05fr 1fr; gap: 8mm; }
+
+.band__col { display: flex; flex-direction: column; min-width: 0; }
+
+.linkline {
+  font-size: var(--t-micro);
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+  margin-top: auto;
+  padding-top: 1.4mm;
+  border-top: 1px solid var(--rule);
+}
+
+.linkline b { color: var(--red); font-weight: 700; }
+
+a { color: inherit; text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+@media screen { .tnote a, .note a { text-decoration: underline; text-underline-offset: 1.5px; } }
+
+/* ---------- footers ---------- */
+
+.foot {
+  flex: none;
+  padding: 3.4mm 12mm 5mm;
+  border-top: 2px solid var(--rule-hard);
+  display: flex;
+  align-items: flex-end;
+  gap: 6mm;
+}
+
+.foot__body { flex: 1 1 auto; min-width: 0; }
+
+.orgs {
+  margin-top: 1.8mm;
+  font-size: var(--t-fine);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink);
+  column-count: 2;
+  column-gap: 8mm;
+}
+
+.orgs span { display: block; white-space: nowrap; }
+.orgs span::before { content: "▪"; color: var(--red); margin-right: 1.6mm; font-size: 0.8em; }
+
+.disclaimer { margin-top: 1.8mm; font-size: var(--t-micro); line-height: 1.45; color: var(--ink-mid); max-width: 150mm; }
+
+.pageno {
+  flex: none;
+  font-size: var(--t-h2);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+  text-align: right;
+}
+
+.pageno span { display: block; font-size: var(--t-micro); font-weight: 600; letter-spacing: 0.14em; color: var(--ink-faint); margin-bottom: 1mm; }
+
+/* ---------- print ---------- */
+
+@page { size: A4; margin: 0; }
+
+@media print {
+  body { background: #fff; }
+  .deck { display: block; gap: 0; padding: 0; }
+  .sheet { break-after: page; page-break-after: always; box-shadow: none; }
+  .sheet:last-child { break-after: auto; page-break-after: auto; }
+  th, .bar, .bar__tag, .zebra tbody tr:nth-child(odd) td {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+@media screen {
+  .sheet { border: 1px solid var(--rule); }
+}
+</style>
+
+<div class="deck">
+
+<!-- ========================= PAGE 1 ========================= -->
+<section class="sheet">
+
+  <header class="bar">
+    {{> logo}}
+    <div class="bar__word">{{&doc.wordmark}}<span>{{&doc.wordmark_sub}}</span></div>
+    <div class="bar__tag">{{&doc.tag}}</div>
+    <div class="bar__ref">{{&doc.ref}}</div>
+  </header>
+
+  <div class="body">
+
+    <div class="hero">
+      <div>
+        <div class="label">{{&hero.eyebrow}}</div>
+        <h1>{{&hero.heading}}</h1>
+        <p>{{&hero.body}}</p>
+        <div class="rule"></div>
+      </div>
+      <figure>
+        <img src="data:image/jpeg;base64,{{&photo_b64}}" alt="{{hero.photo_alt}}">
+        <figcaption>{{&hero.photo_caption}}</figcaption>
+      </figure>
+    </div>
+
+    <div class="features">
+      {{#features}}
+      <div class="feature">
+        <div class="label label--dim">{{&kicker}}</div>
+        <h3>{{&title}}</h3>
+        <p>{{&body}}</p>
+      </div>
+      {{/features}}
+    </div>
+
+    <div class="block">
+      {{#pricing}}{{> secthead}}{{> table}}{{> footnote}}{{/pricing}}
+    </div>
+
+    <div class="block">
+      {{#faq}}
+      {{> secthead}}
+      <div class="faq">
+        {{#items}}
+        <div>
+          <h3>{{&q}}</h3>
+          <p>{{&a}}</p>
+        </div>
+        {{/items}}
+      </div>
+      {{/faq}}
+    </div>
+
+  </div>
+
+  <footer class="foot">
+    <div class="foot__body">
+      <div class="label label--dim">{{&institutions.label}}</div>
+      <div class="orgs">
+        {{#institutions.items}}<span>{{&.}}</span>
+        {{/institutions.items}}
+      </div>
+    </div>
+    <div class="pageno"><span>PAGE</span>01</div>
+  </footer>
+
+</section>
+
+<!-- ========================= PAGE 2 ========================= -->
+<section class="sheet">
+
+  <header class="bar bar--p2">
+    {{> logo}}
+    <div class="bar__word">{{&doc.wordmark}}<span>{{&doc.ref}}</span></div>
+    <div class="bar__title">{{&doc.page2_title}}</div>
+  </header>
+
+  <div class="body">
+
+    <div class="block">
+      {{#process}}{{> secthead}}{{> table}}{{> footnote}}{{/process}}
+    </div>
+
+    <div class="block">
+      {{#ratings}}{{> secthead}}{{> table}}{{> footnote}}{{/ratings}}
+    </div>
+
+    <div class="block">
+      <div class="band">
+        <div class="band__col">
+          {{#gpio}}
+          {{> secthead}}
+          {{> table}}
+          <div class="linkline">{{&linkline}}</div>
+          {{/gpio}}
+        </div>
+        <div class="band__col">
+          {{#analog}}
+          {{> secthead}}
+          {{> table}}
+          <div class="linkline">{{&linkline}}</div>
+          {{/analog}}
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      {{#ordering}}{{> secthead}}{{> table}}{{> footnote}}{{/ordering}}
+    </div>
+
+  </div>
+
+  <footer class="foot">
+    <div class="foot__body">
+      <div class="label label--dim">{{&disclaimer.label}}</div>
+      <p class="disclaimer">{{&disclaimer.body}}</p>
+    </div>
+    <div class="pageno"><span>PAGE</span>02</div>
+  </footer>
+
+</section>
+
+</div>

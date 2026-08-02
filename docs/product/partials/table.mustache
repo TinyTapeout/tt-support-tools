@@ -1,0 +1,11 @@
+<table class="zebra">
+  <colgroup>{{#columns}}<col{{&width_attr}}>{{/columns}}</colgroup>
+  {{^headless}}
+  <thead><tr>{{#columns}}<th>{{&label}}</th>{{/columns}}</tr></thead>
+  {{/headless}}
+  <tbody>
+  {{#rows}}
+    <tr>{{#cells}}<td class="{{cls}}">{{&v}}</td>{{/cells}}</tr>
+  {{/rows}}
+  </tbody>
+</table>
