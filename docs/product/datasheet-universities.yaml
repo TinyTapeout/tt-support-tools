@@ -195,7 +195,7 @@ process:
   rows:
     - ["SKY130A", "SkyWater", "130 nm", "161.00 × 111.52 µm", "Full"]
     - ["ihp-sg13g2", "IHP", "130 nm BiCMOS", "202.08 × 154.98 µm", "Partial"]
-    - ["gf180mcuD", "GlobalFoundries", "180 nm", "346.64 × 160.72 µm", "Partial"]
+    - ["gf180mcuD", "GlobalFoundries", "180 nm", "346.64 × 160.72 µm", "Full"]
   footnote: >-
     One tile holds approximately <b>1,000 standard cells</b>. Larger designs are
     built from multi-tile blocks, up to <b>8×4</b> on SKY130A and ihp-sg13g2 and
