@@ -47,7 +47,7 @@ assets:
 
 hero:
   eyebrow: ""                # short line above the headline; blank to hide
-  heading: Put your class on silicon from €70 a student
+  heading: Get your class on silicon from €70 per design
   body: >-
     Students submit designs onto regular shuttles with a few clicks. Hundreds
     are combined into a multi project chip and manufactured on an open source
@@ -57,10 +57,10 @@ hero:
 
 features:
   - kicker: Cohort
-    title: One board serves many
+    title: All designs on one chip
     body: >-
-      A single demoboard selects any project on the die over USB, so a class
-      shares hardware instead of buying one board per student.
+      Enable and test each design in turn with our easy to use demoboard. Students can share
+      hardware instead of buying one board per student.
   - kicker: IT footprint
     title: No install needed
     body: >-
@@ -69,8 +69,8 @@ features:
   - kicker: Process
     title: Three PDKs, no NDAs
     body: >-
-      SkyWater SKY130, IHP sg13g2 and GlobalFoundries gf180mcu — 10+ shuttles a
-      year across the three open-source PDKs.
+      SkyWater sky130, IHP sg13g2 and GlobalFoundries gf180mcu — 10+ shuttles a
+      year across three open-source PDKs.
   - kicker: I/O
     title: 26 pins, plus analog
     body: >-
@@ -84,8 +84,8 @@ features:
   - kicker: Resources
     title: Teach it your way
     body: >-
-      Bring your own course. Workshops, HDL templates and open IP — a RISC-V
-      CPU, an FPGA and an analog FPGA — are there if you want them.
+      Bring your own course or use our workshops and HDL templates. Build a course based on the RISC-V
+      CPU, FPGA and analog FPGA included on each chip.
 
 quotes:
   heading: ""                # blank keeps the quotes as a band with no heading
@@ -114,13 +114,13 @@ pricing:
     - {label: From, width: "22%", style: price}
   rows:
     - ["1 tile",
-       "Roughly 1,000 standard cells — one design, one student. Dimensions vary by PDK, see page 2.",
+       "Smallest purchasable area - fits roughly 1,000 standard cells. Dimensions vary by PDK, see page 2.",
        "€70"]
     - ["Analog pin",
        "Multiplexed analog pad access for mixed signal work. Minimum project size of 2 tiles applies.",
        "€100 <span class=\"t-sub\">/ pin, max 6</span>"]
     - ["Demoboard PCB",
-       "Packaged chip on an RP2350 demoboard. Any board can select any project, so a class shares them.",
+       "Packaged chip on a demoboard. Control via USBC, 3 Pmod ports, clock and power supply. Write test scripts with MicroPython",
        "€300 <span class=\"t-sub\">each</span>"]
     - ["Postage &amp; packing",
        "Flat rate worldwide, charged once per demoboard.",
@@ -193,37 +193,34 @@ process:
     - {label: 1×1 tile area, width: "24%", style: mono}
     - {label: Analog support}
   rows:
-    - ["SKY130A", "SkyWater", "130 nm", "161.00 × 111.52 µm", "Full"]
+    - ["sky130A", "SkyWater", "130 nm", "161.00 × 111.52 µm", "Full"]
     - ["ihp-sg13g2", "IHP", "130 nm BiCMOS", "202.08 × 154.98 µm", "Partial"]
     - ["gf180mcuD", "GlobalFoundries", "180 nm", "346.64 × 160.72 µm", "Full"]
   footnote: >-
     One tile holds approximately <b>1,000 standard cells</b>. Larger designs are
-    built from multi-tile blocks, up to <b>8×4</b> on SKY130A and ihp-sg13g2 and
+    built from multi-tile blocks, up to <b>8×4</b> on sky130A and ihp-sg13g2 and
     up to <b>4×4</b> on gf180mcuD; the sizes available in between differ per PDK.
     Analog projects require a minimum height of 2 tiles.
 
 ratings:
-  heading: Absolute maximum ratings
+  heading: Typical ratings
   note: DIGITAL I/O
   columns:
     - {label: Parameter, width: "40%", style: name}
-    - {label: Min, width: "13%", style: num}
-    - {label: Typ, width: "13%", style: num}
-    - {label: Max, width: "13%", style: num}
+    - {label: SKY130A, width: "13%", style: num}
+    - {label: ihp-sg13g2, width: "13%", style: num}
+    - {label: gf180mcuD, width: "13%", style: num}
     - {label: Unit}
   rows:
-    - ["I/O supply voltage", "1.71", "3.30", "5.50", "V"]
-    - ["Input frequency", "—", "—", "66", "MHz"]
-    - ["Output toggle frequency", "—", "—", "33", "MHz"]
-    - ["Output drive strength, source/sink", "—", "4", "—", "mA"]
-    - ["Demoboard clock generator", "1", "—", "66.5 M", "Hz"]
-    - ["Pad-to-tile round-trip latency", "—", "—", "20", "ns"]
-    - ["Clock insertion delay, pad to logic", "—", "—", "10", "ns"]
-    - ["Pin-to-pin latency variance", "—", "—", "2", "ns"]
+    - ["I/O supply voltage", "3.30", "3.30", "3.30", "V"]
+    - ["Input frequency", "66", "66", "66", "MHz"]
+    - ["Output toggle frequency", "33", "33", "33", "MHz"]
+    - ["Output drive strength, source/sink", "4", "4", "4", "mA"]
+    - ["Demoboard clock generator", "66.5 M", "66.5 M", "66.5 M", "Hz"]
+    - ["Pad-to-tile round-trip latency", "20", "20", "20", "ns"]
+    - ["Pin-to-pin latency variance", "2", "2", "2", "ns"]
   footnote: >-
-    Characterised on <b>SKY130A</b> using the <b>sky130_ef_io_gpiov2_pad</b> cell;
-    ratings differ per PDK. Inputs are <b>not 5 V tolerant</b> despite the supply
-    range. Full per-process figures at
+    For more detail see
     <b><a href="https://tinytapeout.com/specs/">tinytapeout.com/specs</a></b>.
 
 gpio:
@@ -276,17 +273,17 @@ ordering:
     - ["Volume discount",
        "10% off orders over €10,000. Price a cohort at <a href=\"https://app.tinytapeout.com/calculator\">app.tinytapeout.com/calculator</a>, or email us for a quote."]
     - ["Deliverable",
-       "Silicon area only for remote or shared test, or area plus demoboard kits: packaged chip, RP2350 demoboard and breakout board."]
+       "Silicon area only for remote or shared test, or area plus demoboard kits: packaged chip mounted on the demoboard."]
     - ["Design tools",
-       "Supplied open-source LibreLane flow running in GitHub Actions, or any commercial or open-source toolchain of your own."]
+       "Supplied open-source LibreLane flow running in GitHub Actions, IIC-OSIC-TOOLS Docker or any commercial or open-source toolchain of your own."]
     - ["Minimum submission",
-       "GDS + LEF, produced with any tools, in a public repository under Apache-2.0. Your tools must permit publishing them."]
+       "GDS + LEF, produced with any tools, in one of our template repositories under Apache-2.0. Your tools must permit publishing them."]
 
 disclaimer:
   label: Disclaimer
   body: >-
     Specifications are indicative and subject to change between shuttles.
-    Electrical characteristics are quoted for the SKY130A process unless stated
+    Electrical characteristics are quoted for the sky130A process unless stated
     otherwise — consult tinytapeout.com/specs for the process you intend to use.
     Every submitted design is published publicly under Apache-2.0. Full terms and
     conditions of sale are published at

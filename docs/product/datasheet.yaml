@@ -213,27 +213,24 @@ process:
     Analog projects require a minimum height of 2 tiles.
 
 ratings:
-  heading: Absolute maximum ratings
+  heading: Typical ratings
   note: DIGITAL I/O
   columns:
     - {label: Parameter, width: "40%", style: name}
-    - {label: Min, width: "13%", style: num}
-    - {label: Typ, width: "13%", style: num}
-    - {label: Max, width: "13%", style: num}
+    - {label: SKY130A, width: "13%", style: num}
+    - {label: ihp-sg13g2, width: "13%", style: num}
+    - {label: gf180mcuD, width: "13%", style: num}
     - {label: Unit}
   rows:
-    - ["I/O supply voltage", "1.71", "3.30", "5.50", "V"]
-    - ["Input frequency", "—", "—", "66", "MHz"]
-    - ["Output toggle frequency", "—", "—", "33", "MHz"]
-    - ["Output drive strength, source/sink", "—", "4", "—", "mA"]
-    - ["Demoboard clock generator", "1", "—", "66.5 M", "Hz"]
-    - ["Pad-to-tile round-trip latency", "—", "—", "20", "ns"]
-    - ["Clock insertion delay, pad to logic", "—", "—", "10", "ns"]
-    - ["Pin-to-pin latency variance", "—", "—", "2", "ns"]
+    - ["I/O supply voltage", "3.30", "3.30", "3.30", "V"]
+    - ["Input frequency", "66", "66", "66", "MHz"]
+    - ["Output toggle frequency", "33", "33", "33", "MHz"]
+    - ["Output drive strength, source/sink", "4", "4", "4", "mA"]
+    - ["Demoboard clock generator", "66.5 M", "66.5 M", "66.5 M", "Hz"]
+    - ["Pad-to-tile round-trip latency", "20", "20", "20", "ns"]
+    - ["Pin-to-pin latency variance", "2", "2", "2", "ns"]
   footnote: >-
-    Characterised on <b>SKY130A</b> using the <b>sky130_ef_io_gpiov2_pad</b> cell;
-    ratings differ per PDK. Inputs are <b>not 5 V tolerant</b> despite the supply
-    range. Full per-process figures at
+    For more detail see
     <b><a href="https://tinytapeout.com/specs/">tinytapeout.com/specs</a></b>.
 
 gpio:
