@@ -267,7 +267,8 @@ class TTFPGA:
         sources = [os.path.join(self.source_dir, src) for src in self.sources]
         source_list = " ".join(sources)
 
-        yosys_cmd = f"yosys -l {build_dir}/01-synth.log -DSYNTH -p 'read_verilog -sv src/_tt_fpga_top.v {source_list}; synth_ice40 -top tt_fpga_top -json {build_dir}/{base_name}.json'"
+        top_module_filename = os.path.join(self.source_dir, "_tt_fpga_top.v")
+        yosys_cmd = f"yosys -l {build_dir}/01-synth.log -DSYNTH -p 'read_verilog -sv {top_module_filename} {source_list}; synth_ice40 -top tt_fpga_top -json {build_dir}/{base_name}.json'"
         logging.debug(yosys_cmd)
         p = subprocess.run(yosys_cmd, shell=True)
         if p.returncode != 0:
@@ -324,7 +325,7 @@ def main():
     elif args.command == CommandConfig:
         proj_name = fpga.get_name()
         bitstream_name = f"{proj_name}.bin"
-        fname = f"build/{bitstream_name}"
+        fname = os.path.join(fpga.local_dir, "build", bitstream_name)
         if not os.path.exists(fname):
             print(f"Can't find {fname}")
             sys.exit(3)
