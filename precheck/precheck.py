@@ -15,7 +15,12 @@ import klayout.rdb as rdb
 import yaml
 from klayout_tools import parse_lyp_layers
 from pin_check import parse_def, pin_check
-from precheck_failure import PrecheckFailure, PrecheckFailureGroup
+from precheck_failure import (
+    PrecheckFailure,
+    PrecheckFailureGroup,
+    PrecheckWarning,
+    PrecheckWarningGroup,
+)
 from tech_data import (
     analog_pin_rects,
     boundary_layer,
@@ -334,6 +339,7 @@ def analog_pin_check(
     filtered = {}
 
     failures = []
+    warnings = []
 
     for pin, (rect, pin_layer, via_layers) in enumerate(
         analog_pin_rects(tech, uses_vapwr)
@@ -382,25 +388,37 @@ def analog_pin_check(
                 )
             )
         elif not connected and expected_pc:
-            failures.append(
-                PrecheckFailure(
+            warnings.append(
+                PrecheckWarning(
                     f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either wire up `ua[{pin}]` to your design or decrease `analog_pins` to {pin}."
                 )
             )
         elif not connected and expected_pd:
-            failures.append(
-                PrecheckFailure(
+            warnings.append(
+                PrecheckWarning(
                     f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is non-empty. Either wire up `ua[{pin}]` to your design or remove the description for the disconnected pin."
                 )
             )
 
-    if len(failures) == 1:
-        raise failures[0]
-    if len(failures) > 1:
+    if len(failures) & len(warnings):
         raise PrecheckFailureGroup(
-            f"Analog pin check failed with {len(failures)} errors.",
-            failures,
+            f"Analog pin check failed with {len(failures)} errors and {len(warnings)} warnings.",
+            failures + warnings,
         )
+    elif failures:
+        if len(failures) == 1:
+            raise failures[0]
+        else:
+            raise PrecheckFailureGroup(
+                f"Analog pin check failed with {len(failures)} errors.", failures
+            )
+    elif warnings:
+        if len(warnings) == 1:
+            raise warnings[0]
+        else:
+            raise PrecheckWarningGroup(
+                f"Analog pin check succeeded with {len(warnings)} warnings.", warnings
+            )
 
 
 def verilog_syntax_check(verilog: str):
@@ -591,6 +609,7 @@ def main():
 
     testsuite = ET.Element("testsuite", name="Tiny Tapeout Prechecks")
     error_count = 0
+    warning_count = 0
     markdown_table = "# Tiny Tapeout Precheck Results\n\n"
     markdown_table += "| Check | Result |\n|-----------|--------|\n"
     for check in checks:
@@ -604,13 +623,27 @@ def main():
             elapsed_time = time.time() - start_time
             markdown_table += f"| {name} | ✅ |\n"
             test_case.set("time", str(round(elapsed_time, 2)))
+        except (PrecheckWarning, PrecheckWarningGroup) as e:
+            warning_count += 1
+            elapsed_time = time.time() - start_time
+            if type(e) is PrecheckWarning:
+                markdown_table += f"| {name} | ⚠️ Warning: {str(e)} |\n"
+            else:
+                for warn in e.exceptions:
+                    markdown_table += f"| {name} | ⚠️ Warning: {str(warn)} |\n"
+            test_case.set("time", str(round(elapsed_time, 2)))
+            warning = ET.SubElement(test_case, "warning", message=str(e))
+            warning.text = traceback.format_exc()
         except Exception as e:
             error_count += 1
             elapsed_time = time.time() - start_time
             markdown_table += f"| {name} | ❌ Fail: {str(e)} |\n"
             if type(e) is PrecheckFailureGroup:
                 for err in e.exceptions:
-                    markdown_table += f"| {name} | ❌ Fail: {str(err)} |\n"
+                    if type(err) is PrecheckWarning:
+                        markdown_table += f"| {name} | ⚠️ Warning: {str(err)} |\n"
+                    else:
+                        markdown_table += f"| {name} | ❌ Fail: {str(err)} |\n"
             test_case.set("time", str(round(elapsed_time, 2)))
             error = ET.SubElement(test_case, "error", message=str(e))
             error.text = traceback.format_exc()
@@ -636,7 +669,12 @@ def main():
         logging.error(f"Markdown report:\n{markdown_table}")
         exit(1)
     else:
-        logging.info(f"Precheck passed for {args.gds}! 🎉")
+        if warning_count > 0:
+            logging.warning(f"Precheck passed for {args.gds} with warnings! ⚠️")
+            logging.warning(f"See {REPORTS_PATH} for more details")
+            logging.warning(f"Markdown report:\n{markdown_table}")
+        else:
+            logging.info(f"Precheck passed for {args.gds}! 🎉")
 
 
 if __name__ == "__main__":

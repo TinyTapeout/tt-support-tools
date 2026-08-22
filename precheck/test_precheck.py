@@ -679,6 +679,26 @@ def gds_lef_analog_pin_example(tmp_path_factory: pytest.TempPathFactory):
 
 
 @pytest.fixture(scope="session")
+def gds_lef_analog_unused_pins(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS and LEF using the 1x2 analog template with no analog pins connected."""
+    tcl_file = tmp_path_factory.mktemp("tcl") / "TEST_analog_unused_pins.tcl"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_analog_unused_pins.gds"
+    lef_file = tmp_path_factory.mktemp("lef") / "TEST_analog_unused_pins.lef"
+
+    generate_analog_example(
+        str(tcl_file),
+        str(gds_file),
+        str(lef_file),
+        "TEST_analog_example",
+        [
+            SimplePort("VDPWR", "met4", (100, 500), (250, 22076)),
+            SimplePort("VGND", "met4", (4900, 500), (5050, 22076)),
+        ],
+    )
+    return str(gds_file), str(lef_file)
+
+
+@pytest.fixture(scope="session")
 def gds_lef_analog_bridged_unused_pins(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS and LEF using the 1x2 analog template with 2 analog pins used and the rest bridged together with a path."""
     tcl_file = tmp_path_factory.mktemp("tcl") / "TEST_analog_bridged_unused_pins.tcl"
@@ -710,6 +730,33 @@ def gds_lef_analog_bridged_unused_pins(tmp_path_factory: pytest.TempPathFactory)
     top.shapes(layer).insert(path)
     layout.write(str(gds_file))
 
+    return str(gds_file), str(lef_file)
+
+
+@pytest.fixture(scope="session")
+def gds_lef_analog_incorrect_pin_connected(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS and LEF using the 1x2 analog template with the incorrect analog pin wired up."""
+    tcl_file = (
+        tmp_path_factory.mktemp("tcl") / "TEST_analog_incorrect_pin_connected.tcl"
+    )
+    gds_file = (
+        tmp_path_factory.mktemp("gds") / "TEST_analog_incorrect_pin_connected.gds"
+    )
+    lef_file = (
+        tmp_path_factory.mktemp("lef") / "TEST_analog_incorrect_pin_connected.lef"
+    )
+
+    generate_analog_example(
+        str(tcl_file),
+        str(gds_file),
+        str(lef_file),
+        "TEST_analog_incorrect_pin_connected",
+        [
+            SimplePort(
+                "", "via3", (13270, 30), (13320, 80)
+            ),  # connect to ua[1] instead of ua[0]
+        ],
+    )
     return str(gds_file), str(lef_file)
 
 
@@ -1112,7 +1159,7 @@ def test_analog_less_pins(gds_lef_analog_pin_example: tuple[str, str]):
 def test_analog_more_pins(gds_lef_analog_pin_example: tuple[str, str]):
     gds_file, lef_file = gds_lef_analog_pin_example
     with pytest.raises(
-        precheck.PrecheckFailure,
+        precheck.PrecheckWarning,
         match="Analog pin `ua\\[2\\]` is not connected to any adjacent metal but `analog_pins` is set to 3 .*",
     ):
         precheck.analog_pin_check(
@@ -1134,7 +1181,7 @@ def test_analog_less_ua_entries(gds_lef_analog_pin_example: tuple[str, str]):
 def test_analog_more_ua_entries(gds_lef_analog_pin_example: tuple[str, str]):
     gds_file, lef_file = gds_lef_analog_pin_example
     with pytest.raises(
-        precheck.PrecheckFailure,
+        precheck.PrecheckWarning,
         match="Analog pin `ua\\[2\\]` is not connected to any adjacent metal but the description of `ua\\[2\\]` .*",
     ):
         precheck.analog_pin_check(
@@ -1182,6 +1229,53 @@ def test_analog_bridged_unused_pins(
         precheck.analog_pin_check(
             gds_file, PDK_NAME, True, False, 2, {"ua[0]": "x", "ua[1]": "x"}
         )
+
+
+@sky130A_only
+def test_analog_incorrect_wired_pin(
+    gds_lef_analog_incorrect_pin_connected: tuple[str, str]
+):
+    gds_file, lef_file = gds_lef_analog_incorrect_pin_connected
+    with pytest.RaisesGroup(
+        pytest.RaisesExc(
+            precheck.PrecheckFailure,
+            match="Analog pin `ua\\[1\\]` is connected to some metal but `analog_pins` is set to 1 .*",
+        ),
+        pytest.RaisesExc(
+            precheck.PrecheckWarning,
+            match="Analog pin `ua\\[0\\]` is not connected to any adjacent metal but `analog_pins` is set to 1 .*",
+        ),
+    ):
+        precheck.analog_pin_check(gds_file, PDK_NAME, True, False, 1, {"ua[0]": "x"})
+
+
+def test_analog_single_declared_unused_pin(gds_lef_analog_unused_pins: tuple[str, str]):
+    """Test if `PrecheckWarning` is raised if `analog_pins` == 1"""
+    gds_file, lef_file = gds_lef_analog_unused_pins
+    with pytest.raises(
+        precheck.PrecheckWarning,
+        match="Analog pin `ua\\[0\\]` is not connected to any adjacent metal but `analog_pins` is set to 1 .*",
+    ):
+        precheck.analog_pin_check(gds_file, PDK_NAME, True, False, 1, {})
+
+
+def test_analog_multiple_declared_unused_pins(
+    gds_lef_analog_unused_pins: tuple[str, str]
+):
+    """Test if a `PrecheckWarningGroup` is raised if `analog_pins` > 1"""
+    gds_file, lef_file = gds_lef_analog_unused_pins
+    with pytest.RaisesGroup(
+        pytest.RaisesExc(
+            precheck.PrecheckWarning,
+            match="Analog pin `ua\\[0\\]` is not connected to any adjacent metal but `analog_pins` is set to 2 .*",
+        ),
+        pytest.RaisesExc(
+            precheck.PrecheckWarning,
+            match="Analog pin `ua\\[1\\]` is not connected to any adjacent metal but `analog_pins` is set to 2 .*",
+        ),
+        match="Analog pin check succeeded with 2 warnings.",
+    ):
+        precheck.analog_pin_check(gds_file, PDK_NAME, True, False, 2, {})
 
 
 def test_verilog_syntax_ok(verilog_syntax_ok: str):
