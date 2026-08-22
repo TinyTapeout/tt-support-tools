@@ -350,12 +350,19 @@ def analog_pin_check(
         )
 
         pin_layer_polygons = filtered[pin_layer].polygons
-        connected = bool(gdstk.boolean(pin_layer_polygons, pin_ring, "and"))
+        pin_layer_paths = filtered[pin_layer].paths
+
+        connected_by_polygons = bool(gdstk.boolean(pin_layer_polygons, pin_ring, "and"))
+        connected_by_paths = bool(gdstk.boolean(pin_layer_paths, pin_ring, "and"))
+        connected_by_vias = False
+
         for via_layer in via_layers:
             via_layer_polygons = filtered[via_layer].polygons
-            connected = connected or bool(
+            connected_by_vias = connected_by_vias or bool(
                 gdstk.boolean(via_layer_polygons, pin_rect, "and")
             )
+
+        connected = connected_by_polygons or connected_by_paths or connected_by_vias
 
         expected_pc = pin < analog_pins
         expected_pd = bool(pinout.get(f"ua[{pin}]", ""))
