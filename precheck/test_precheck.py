@@ -679,6 +679,41 @@ def gds_lef_analog_pin_example(tmp_path_factory: pytest.TempPathFactory):
 
 
 @pytest.fixture(scope="session")
+def gds_lef_analog_bridged_unused_pins(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS and LEF using the 1x2 analog template with 2 analog pins used and the rest bridged together with a path."""
+    tcl_file = tmp_path_factory.mktemp("tcl") / "TEST_analog_bridged_unused_pins.tcl"
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_analog_bridged_unused_pins.gds"
+    lef_file = tmp_path_factory.mktemp("lef") / "TEST_analog_bridged_unused_pins.lef"
+
+    generate_analog_example(
+        str(tcl_file),
+        str(gds_file),
+        str(lef_file),
+        "TEST_analog_bridged_unused_pins",
+        [
+            SimplePort("", "via3", (15200, 30), (15250, 80)),
+            SimplePort("", "via3", (13270, 30), (13320, 80)),
+        ],
+    )
+
+    # add a GDSII path object using klayout
+    layout = pya.Layout()
+    layout.read(str(gds_file))
+    top = layout.top_cell()
+    layer = layout.layer(71, 20)  # sky130 metal4
+    points = [
+        pya.DPoint(16.57, 0.5),
+        pya.DPoint(114.07, 0.5),
+        pya.DPoint(114.07, 0.5),
+    ]
+    path = pya.DPath(points, 0.3)
+    top.shapes(layer).insert(path)
+    layout.write(str(gds_file))
+
+    return str(gds_file), str(lef_file)
+
+
+@pytest.fixture(scope="session")
 def verilog_syntax_ok(tmp_path_factory: pytest.TempPathFactory):
     """Creates a Verilog file with correct syntax."""
     verilog_file = tmp_path_factory.mktemp("verilog") / "TEST_verilog_syntax_ok.v"
@@ -1109,6 +1144,43 @@ def test_analog_more_ua_entries(gds_lef_analog_pin_example: tuple[str, str]):
             False,
             2,
             {"ua[0]": "x", "ua[1]": "x", "ua[2]": "x"},
+        )
+
+
+@sky130A_only
+def test_analog_bridged_unused_pins(
+    gds_lef_analog_bridged_unused_pins: tuple[str, str]
+):
+    gds_file, lef_file = gds_lef_analog_bridged_unused_pins
+    with pytest.RaisesGroup(
+        pytest.RaisesExc(
+            precheck.PrecheckFailure,
+            match="Analog pin `ua\\[2\\]` is connected to some metal .*",
+        ),
+        pytest.RaisesExc(
+            precheck.PrecheckFailure,
+            match="Analog pin `ua\\[3\\]` is connected to some metal .*",
+        ),
+        pytest.RaisesExc(
+            precheck.PrecheckFailure,
+            match="Analog pin `ua\\[4\\]` is connected to some metal .*",
+        ),
+        pytest.RaisesExc(
+            precheck.PrecheckFailure,
+            match="Analog pin `ua\\[5\\]` is connected to some metal .*",
+        ),
+        pytest.RaisesExc(
+            precheck.PrecheckFailure,
+            match="Analog pin `ua\\[6\\]` is connected to some metal .*",
+        ),
+        pytest.RaisesExc(
+            precheck.PrecheckFailure,
+            match="Analog pin `ua\\[7\\]` is connected to some metal .*",
+        ),
+        match="Analog pin check failed with 6 errors.",
+    ):
+        precheck.analog_pin_check(
+            gds_file, PDK_NAME, True, False, 2, {"ua[0]": "x", "ua[1]": "x"}
         )
 
 
