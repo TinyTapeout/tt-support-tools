@@ -326,54 +326,56 @@ def analog_pin_check(
 ):
     """Check that every analog pin connects to a piece of metal
     if and only if the pin is used according to info.yaml."""
-    if is_analog:
-        lib = gdstk.read_gds(gds)
-        top = lib.top_level()[0]
-        filtered = {}
+    if not is_analog:
+        return
 
-        for pin, (rect, pin_layer, via_layers) in enumerate(
-            analog_pin_rects(tech, uses_vapwr)
-        ):
-            for layer in [pin_layer] + via_layers:
-                if layer not in filtered:
-                    i = len(filtered)
-                    lf = top.copy(f"test_lf_{i}")
-                    lf.flatten()
-                    lf.filter([layer], False)
-                    filtered[layer] = lf
+    lib = gdstk.read_gds(gds)
+    top = lib.top_level()[0]
+    filtered = {}
 
-            pin_rect = gdstk.rectangle(*rect)
-            pin_ring = gdstk.boolean(
-                gdstk.offset(pin_rect, 0.5), gdstk.offset(pin_rect, 0.1), "not"
+    for pin, (rect, pin_layer, via_layers) in enumerate(
+        analog_pin_rects(tech, uses_vapwr)
+    ):
+        for layer in [pin_layer] + via_layers:
+            if layer not in filtered:
+                i = len(filtered)
+                lf = top.copy(f"test_lf_{i}")
+                lf.flatten()
+                lf.filter([layer], False)
+                filtered[layer] = lf
+
+        pin_rect = gdstk.rectangle(*rect)
+        pin_ring = gdstk.boolean(
+            gdstk.offset(pin_rect, 0.5), gdstk.offset(pin_rect, 0.1), "not"
+        )
+
+        pin_layer_polygons = filtered[pin_layer].polygons
+        connected = bool(gdstk.boolean(pin_layer_polygons, pin_ring, "and"))
+        for via_layer in via_layers:
+            via_layer_polygons = filtered[via_layer].polygons
+            connected = connected or bool(
+                gdstk.boolean(via_layer_polygons, pin_rect, "and")
             )
 
-            pin_layer_polygons = filtered[pin_layer].polygons
-            connected = bool(gdstk.boolean(pin_layer_polygons, pin_ring, "and"))
-            for via_layer in via_layers:
-                via_layer_polygons = filtered[via_layer].polygons
-                connected = connected or bool(
-                    gdstk.boolean(via_layer_polygons, pin_rect, "and")
-                )
+        expected_pc = pin < analog_pins
+        expected_pd = bool(pinout.get(f"ua[{pin}]", ""))
 
-            expected_pc = pin < analog_pins
-            expected_pd = bool(pinout.get(f"ua[{pin}]", ""))
-
-            if connected and not expected_pc:
-                raise PrecheckFailure(
-                    f"Analog pin `ua[{pin}]` is connected to some metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either increase `analog_pins` to at least {pin+1}, or remove any metal or via adjacent to `ua[{pin}]`."
-                )
-            elif connected and not expected_pd:
-                raise PrecheckFailure(
-                    f"Analog pin `ua[{pin}]` is connected to some metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is empty. Either add a description or remove any metal or via adjacent to `ua[{pin}]`."
-                )
-            elif not connected and expected_pc:
-                raise PrecheckFailure(
-                    f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either wire up `ua[{pin}]` to your design or decrease `analog_pins` to {pin}."
-                )
-            elif not connected and expected_pd:
-                raise PrecheckFailure(
-                    f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is non-empty. Either wire up `ua[{pin}]` to your design or remove the description for the disconnected pin."
-                )
+        if connected and not expected_pc:
+            raise PrecheckFailure(
+                f"Analog pin `ua[{pin}]` is connected to some metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either increase `analog_pins` to at least {pin+1}, or remove any metal or via adjacent to `ua[{pin}]`."
+            )
+        elif connected and not expected_pd:
+            raise PrecheckFailure(
+                f"Analog pin `ua[{pin}]` is connected to some metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is empty. Either add a description or remove any metal or via adjacent to `ua[{pin}]`."
+            )
+        elif not connected and expected_pc:
+            raise PrecheckFailure(
+                f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either wire up `ua[{pin}]` to your design or decrease `analog_pins` to {pin}."
+            )
+        elif not connected and expected_pd:
+            raise PrecheckFailure(
+                f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is non-empty. Either wire up `ua[{pin}]` to your design or remove the description for the disconnected pin."
+            )
 
 
 def verilog_syntax_check(verilog: str):
