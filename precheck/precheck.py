@@ -15,7 +15,12 @@ import klayout.rdb as rdb
 import yaml
 from klayout_tools import parse_lyp_layers
 from pin_check import parse_def, pin_check
-from precheck_failure import PrecheckFailure
+from precheck_failure import (
+    PrecheckFailure,
+    PrecheckFailureGroup,
+    PrecheckWarning,
+    PrecheckWarningGroup,
+)
 from tech_data import (
     analog_pin_rects,
     boundary_layer,
@@ -326,54 +331,94 @@ def analog_pin_check(
 ):
     """Check that every analog pin connects to a piece of metal
     if and only if the pin is used according to info.yaml."""
-    if is_analog:
-        lib = gdstk.read_gds(gds)
-        top = lib.top_level()[0]
-        filtered = {}
+    if not is_analog:
+        return
 
-        for pin, (rect, pin_layer, via_layers) in enumerate(
-            analog_pin_rects(tech, uses_vapwr)
-        ):
-            for layer in [pin_layer] + via_layers:
-                if layer not in filtered:
-                    i = len(filtered)
-                    lf = top.copy(f"test_lf_{i}")
-                    lf.flatten()
-                    lf.filter([layer], False)
-                    filtered[layer] = lf
+    lib = gdstk.read_gds(gds)
+    top = lib.top_level()[0]
+    filtered = {}
 
-            pin_rect = gdstk.rectangle(*rect)
-            pin_ring = gdstk.boolean(
-                gdstk.offset(pin_rect, 0.5), gdstk.offset(pin_rect, 0.1), "not"
+    failures = []
+    warnings = []
+
+    for pin, (rect, pin_layer, via_layers) in enumerate(
+        analog_pin_rects(tech, uses_vapwr)
+    ):
+        for layer in [pin_layer] + via_layers:
+            if layer not in filtered:
+                i = len(filtered)
+                lf = top.copy(f"test_lf_{i}")
+                lf.flatten()
+                lf.filter([layer], False)
+                filtered[layer] = lf
+
+        pin_rect = gdstk.rectangle(*rect)
+        pin_ring = gdstk.boolean(
+            gdstk.offset(pin_rect, 0.5), gdstk.offset(pin_rect, 0.1), "not"
+        )
+
+        pin_layer_polygons = filtered[pin_layer].polygons
+        pin_layer_paths = filtered[pin_layer].paths
+
+        connected_by_polygons = bool(gdstk.boolean(pin_layer_polygons, pin_ring, "and"))
+        connected_by_paths = bool(gdstk.boolean(pin_layer_paths, pin_ring, "and"))
+        connected_by_vias = False
+
+        for via_layer in via_layers:
+            via_layer_polygons = filtered[via_layer].polygons
+            connected_by_vias = connected_by_vias or bool(
+                gdstk.boolean(via_layer_polygons, pin_rect, "and")
             )
 
-            pin_layer_polygons = filtered[pin_layer].polygons
-            connected = bool(gdstk.boolean(pin_layer_polygons, pin_ring, "and"))
-            for via_layer in via_layers:
-                via_layer_polygons = filtered[via_layer].polygons
-                connected = connected or bool(
-                    gdstk.boolean(via_layer_polygons, pin_rect, "and")
-                )
+        connected = connected_by_polygons or connected_by_paths or connected_by_vias
 
-            expected_pc = pin < analog_pins
-            expected_pd = bool(pinout.get(f"ua[{pin}]", ""))
+        expected_pc = pin < analog_pins
+        expected_pd = bool(pinout.get(f"ua[{pin}]", ""))
 
-            if connected and not expected_pc:
-                raise PrecheckFailure(
+        if connected and not expected_pc:
+            failures.append(
+                PrecheckFailure(
                     f"Analog pin `ua[{pin}]` is connected to some metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either increase `analog_pins` to at least {pin+1}, or remove any metal or via adjacent to `ua[{pin}]`."
                 )
-            elif connected and not expected_pd:
-                raise PrecheckFailure(
+            )
+        elif connected and not expected_pd:
+            failures.append(
+                PrecheckFailure(
                     f"Analog pin `ua[{pin}]` is connected to some metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is empty. Either add a description or remove any metal or via adjacent to `ua[{pin}]`."
                 )
-            elif not connected and expected_pc:
-                raise PrecheckFailure(
+            )
+        elif not connected and expected_pc:
+            warnings.append(
+                PrecheckWarning(
                     f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either wire up `ua[{pin}]` to your design or decrease `analog_pins` to {pin}."
                 )
-            elif not connected and expected_pd:
-                raise PrecheckFailure(
+            )
+        elif not connected and expected_pd:
+            warnings.append(
+                PrecheckWarning(
                     f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is non-empty. Either wire up `ua[{pin}]` to your design or remove the description for the disconnected pin."
                 )
+            )
+
+    if len(failures) & len(warnings):
+        raise PrecheckFailureGroup(
+            f"Analog pin check failed with {len(failures)} errors and {len(warnings)} warnings.",
+            failures + warnings,
+        )
+    elif failures:
+        if len(failures) == 1:
+            raise failures[0]
+        else:
+            raise PrecheckFailureGroup(
+                f"Analog pin check failed with {len(failures)} errors.", failures
+            )
+    elif warnings:
+        if len(warnings) == 1:
+            raise warnings[0]
+        else:
+            raise PrecheckWarningGroup(
+                f"Analog pin check succeeded with {len(warnings)} warnings.", warnings
+            )
 
 
 def verilog_syntax_check(verilog: str):
@@ -564,6 +609,7 @@ def main():
 
     testsuite = ET.Element("testsuite", name="Tiny Tapeout Prechecks")
     error_count = 0
+    warning_count = 0
     markdown_table = "# Tiny Tapeout Precheck Results\n\n"
     markdown_table += "| Check | Result |\n|-----------|--------|\n"
     for check in checks:
@@ -577,10 +623,27 @@ def main():
             elapsed_time = time.time() - start_time
             markdown_table += f"| {name} | ✅ |\n"
             test_case.set("time", str(round(elapsed_time, 2)))
+        except (PrecheckWarning, PrecheckWarningGroup) as e:
+            warning_count += 1
+            elapsed_time = time.time() - start_time
+            if type(e) is PrecheckWarning:
+                markdown_table += f"| {name} | ⚠️ Warning: {str(e)} |\n"
+            else:
+                for warn in e.exceptions:
+                    markdown_table += f"| {name} | ⚠️ Warning: {str(warn)} |\n"
+            test_case.set("time", str(round(elapsed_time, 2)))
+            warning = ET.SubElement(test_case, "warning", message=str(e))
+            warning.text = traceback.format_exc()
         except Exception as e:
             error_count += 1
             elapsed_time = time.time() - start_time
             markdown_table += f"| {name} | ❌ Fail: {str(e)} |\n"
+            if type(e) is PrecheckFailureGroup:
+                for err in e.exceptions:
+                    if type(err) is PrecheckWarning:
+                        markdown_table += f"| {name} | ⚠️ Warning: {str(err)} |\n"
+                    else:
+                        markdown_table += f"| {name} | ❌ Fail: {str(err)} |\n"
             test_case.set("time", str(round(elapsed_time, 2)))
             error = ET.SubElement(test_case, "error", message=str(e))
             error.text = traceback.format_exc()
@@ -606,7 +669,12 @@ def main():
         logging.error(f"Markdown report:\n{markdown_table}")
         exit(1)
     else:
-        logging.info(f"Precheck passed for {args.gds}! 🎉")
+        if warning_count > 0:
+            logging.warning(f"Precheck passed for {args.gds} with warnings! ⚠️")
+            logging.warning(f"See {REPORTS_PATH} for more details")
+            logging.warning(f"Markdown report:\n{markdown_table}")
+        else:
+            logging.info(f"Precheck passed for {args.gds}! 🎉")
 
 
 if __name__ == "__main__":
