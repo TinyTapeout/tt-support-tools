@@ -15,7 +15,7 @@ import klayout.rdb as rdb
 import yaml
 from klayout_tools import parse_lyp_layers
 from pin_check import parse_def, pin_check
-from precheck_failure import PrecheckFailure
+from precheck_failure import PrecheckFailure, PrecheckFailureGroup
 from tech_data import (
     analog_pin_rects,
     boundary_layer,
@@ -333,6 +333,8 @@ def analog_pin_check(
     top = lib.top_level()[0]
     filtered = {}
 
+    failures = []
+
     for pin, (rect, pin_layer, via_layers) in enumerate(
         analog_pin_rects(tech, uses_vapwr)
     ):
@@ -368,21 +370,37 @@ def analog_pin_check(
         expected_pd = bool(pinout.get(f"ua[{pin}]", ""))
 
         if connected and not expected_pc:
-            raise PrecheckFailure(
-                f"Analog pin `ua[{pin}]` is connected to some metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either increase `analog_pins` to at least {pin+1}, or remove any metal or via adjacent to `ua[{pin}]`."
+            failures.append(
+                PrecheckFailure(
+                    f"Analog pin `ua[{pin}]` is connected to some metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either increase `analog_pins` to at least {pin+1}, or remove any metal or via adjacent to `ua[{pin}]`."
+                )
             )
         elif connected and not expected_pd:
-            raise PrecheckFailure(
-                f"Analog pin `ua[{pin}]` is connected to some metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is empty. Either add a description or remove any metal or via adjacent to `ua[{pin}]`."
+            failures.append(
+                PrecheckFailure(
+                    f"Analog pin `ua[{pin}]` is connected to some metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is empty. Either add a description or remove any metal or via adjacent to `ua[{pin}]`."
+                )
             )
         elif not connected and expected_pc:
-            raise PrecheckFailure(
-                f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either wire up `ua[{pin}]` to your design or decrease `analog_pins` to {pin}."
+            failures.append(
+                PrecheckFailure(
+                    f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but `analog_pins` is set to {analog_pins} in `info.yaml`. Either wire up `ua[{pin}]` to your design or decrease `analog_pins` to {pin}."
+                )
             )
         elif not connected and expected_pd:
-            raise PrecheckFailure(
-                f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is non-empty. Either wire up `ua[{pin}]` to your design or remove the description for the disconnected pin."
+            failures.append(
+                PrecheckFailure(
+                    f"Analog pin `ua[{pin}]` is not connected to any adjacent metal but the description of `ua[{pin}]` in the pinout section of `info.yaml` is non-empty. Either wire up `ua[{pin}]` to your design or remove the description for the disconnected pin."
+                )
             )
+
+    if len(failures) == 1:
+        raise failures[0]
+    if len(failures) > 1:
+        raise PrecheckFailureGroup(
+            f"Analog pin check failed with {len(failures)} errors.",
+            failures,
+        )
 
 
 def verilog_syntax_check(verilog: str):
@@ -590,6 +608,9 @@ def main():
             error_count += 1
             elapsed_time = time.time() - start_time
             markdown_table += f"| {name} | ❌ Fail: {str(e)} |\n"
+            if type(e) is PrecheckFailureGroup:
+                for err in e.exceptions:
+                    markdown_table += f"| {name} | ❌ Fail: {str(err)} |\n"
             test_case.set("time", str(round(elapsed_time, 2)))
             error = ET.SubElement(test_case, "error", message=str(e))
             error.text = traceback.format_exc()
