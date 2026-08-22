@@ -1245,6 +1245,7 @@ def test_analog_incorrect_wired_pin(
             precheck.PrecheckWarning,
             match="Analog pin `ua\\[0\\]` is not connected to any adjacent metal but `analog_pins` is set to 1 .*",
         ),
+        match="Analog pin check failed with 1 errors and 1 warnings.",
     ):
         precheck.analog_pin_check(gds_file, PDK_NAME, True, False, 1, {"ua[0]": "x"})
 
