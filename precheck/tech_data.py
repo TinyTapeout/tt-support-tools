@@ -66,7 +66,7 @@ valid_layers_ihp_sg13cmos5l = [
     "Metal3.label", "Metal3.nofill", "Metal3.pin", "Metal3.slit", "Metal3.text", "Metal3.res", "Via3.drawing",
     "Metal4.drawing", "Metal4.label", "Metal4.nofill", "Metal4.pin", "Metal4.slit", "Metal4.text", "Metal4.res",
     "TopMetal1.nofill", "TEXT.drawing", "Recog.drawing", "Recog.pin", "Recog.esd", "Recog.diode", "Recog.tsv",
-    "Recog.pdiode", "Recog.mom", "RES.drawing", "RES.label", "HeatRes.drawing", "EXTBlock.drawing", "prBoundary.drawing",
+    "Recog.pdiode", "Recog.mom", "RES.drawing", "RES.label", "SRAM.drawing", "HeatRes.drawing", "EXTBlock.drawing", "prBoundary.drawing",
     "prBoundary.label", "prBoundary.boundary",
 ]
 
