@@ -19,7 +19,9 @@ jobs:
       PDK_ROOT: /home/runner/pdk
       PROJECT_DIR: /home/runner/project
       LIBRELANE_VERSION: '2.4.2'
-      LIBRELANE_VERSION_DEV: '3.0.0.dev44'
+      LIBRELANE_VERSION_DEV: '3.1.0.dev3'
+      IHP_PDK_REPO: 'https://github.com/IHP-GmbH/IHP-Open-PDK.git'
+      IHP_PDK_REV: '2bbec755dc67ca3db0261c3d6163e15735d66710'
 
     steps:
       - name: Check out code
@@ -38,10 +40,20 @@ jobs:
         if: "${{ matrix.pdk != 'ihp-sg13cmos5l' }}"
         run: pip install librelane==${LIBRELANE_VERSION}
 
-      # LibreLane 2.4.2 does not support ihp-sg13cmos5l. Remove once 3.0.0 is released.
+      # LibreLane 2.4.2 does not support ihp-sg13cmos5l.
       - name: Install librelane 3 dev (IHP only)
         if: "${{ matrix.pdk == 'ihp-sg13cmos5l' }}"
         run: pip install librelane==${LIBRELANE_VERSION_DEV}
+
+      - name: Install ihp-sg13cmos5l PDK
+        if: "${{ matrix.pdk == 'ihp-sg13cmos5l' }}"
+        run: |
+          mkdir -p "$PDK_ROOT"
+          git -C "$PDK_ROOT" init -q
+          git -C "$PDK_ROOT" fetch -q --depth 1 "$IHP_PDK_REPO" "$IHP_PDK_REV"
+          git -C "$PDK_ROOT" checkout -q FETCH_HEAD
+          # Record the PDK source revision, like ciel-installed PDKs do
+          echo "IHP-Open-PDK $IHP_PDK_REV" > "$PDK_ROOT/ihp-sg13cmos5l/SOURCES"
 
       - name: Clone the factory test
         if: "${{ matrix.pdk != 'ihp-sg13cmos5l' }}"
@@ -49,7 +61,7 @@ jobs:
 
       - name: Clone the factory test (ihp-sg13cmos5l)
         if: "${{ matrix.pdk == 'ihp-sg13cmos5l' }}"
-        run: git clone https://github.com/TinyTapeout/ttihp25b-factory-test ${PROJECT_DIR}
+        run: git clone https://github.com/TinyTapeout/ttihp0p4-factory-test ${PROJECT_DIR}
 
       - name: Configure tt_tool.py args (IHP)
         if: "${{ matrix.pdk == 'ihp-sg13cmos5l' }}"
