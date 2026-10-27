@@ -3,6 +3,7 @@ name = "tt-support-tools"
 requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
+    "brotli",
     "CairoSVG",
     "chevron",
     "gdstk",
@@ -17,6 +18,7 @@ dependencies = [
     "requests",
     "yowasp-yosys",
     "matplotlib",
+    "fonttools",
     "configupdater",
     "mpremote"
 ]

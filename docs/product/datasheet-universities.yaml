@@ -69,7 +69,7 @@ features:
   - kicker: Process
     title: Three PDKs, no NDAs
     body: >-
-      SkyWater sky130, IHP sg13g2 and GlobalFoundries gf180mcu — 10+ shuttles a
+      sky130A, ihp-sg13g2 and gf180mcuD — 10+ shuttles a
       year across three open-source PDKs.
   - kicker: I/O
     title: 26 pins, plus analog
@@ -119,8 +119,8 @@ pricing:
     - ["Analog pin",
        "Multiplexed analog pad access for mixed signal work. Minimum project size of 2 tiles applies.",
        "€100 <span class=\"t-sub\">/ pin, max 6</span>"]
-    - ["Demoboard PCB",
-       "Packaged chip on a demoboard. Control via USBC, 3 Pmod ports, clock and power supply. Write test scripts with MicroPython",
+    - ["ASIC + demoboard",
+       "Packaged chip on a breakout board, mounted on the demoboard. Control via USBC, 3 Pmod ports, clock and power supply. Write test scripts with MicroPython",
        "€300 <span class=\"t-sub\">each</span>"]
     - ["Postage &amp; packing",
        "Flat rate worldwide, charged once per demoboard.",
@@ -204,20 +204,19 @@ process:
 
 ratings:
   heading: Typical ratings
-  note: DIGITAL I/O
   columns:
     - {label: Parameter, width: "40%", style: name}
-    - {label: SKY130A, width: "13%", style: num}
-    - {label: ihp-sg13g2, width: "13%", style: num}
-    - {label: gf180mcuD, width: "13%", style: num}
+    - {label: '<span class="pdk">sky130A</span>', width: "13%", style: num}
+    - {label: '<span class="pdk">ihp-sg13g2</span>', width: "13%", style: num}
+    - {label: '<span class="pdk">gf180mcuD</span>', width: "13%", style: num}
     - {label: Unit}
   rows:
-    - ["I/O supply voltage", "3.30", "3.30", "3.30", "V"]
+    - ["Core supply voltage (VDPWR)", "1.80", "1.20", "3.30", "V"]
+    - ["I/O supply voltage", "3.30/5.00", "3.30", "3.30/5.00", "V"]
     - ["Input frequency", "66", "66", "66", "MHz"]
-    - ["Output toggle frequency", "33", "33", "33", "MHz"]
+    - ["Output toggle frequency", "33", "66", "66", "MHz"]
     - ["Output drive strength, source/sink", "4", "4", "4", "mA"]
-    - ["Demoboard clock generator", "66.5 M", "66.5 M", "66.5 M", "Hz"]
-    - ["Pad-to-tile round-trip latency", "20", "20", "20", "ns"]
+    - ["Pad-to-tile round-trip latency", "17", "11", "20", "ns"]
     - ["Pin-to-pin latency variance", "2", "2", "2", "ns"]
   footnote: >-
     For more detail see
@@ -251,7 +250,6 @@ analog:
     - ["Series resistance, pad to project", "&lt; 500 Ω"]
     - ["Parasitic capacitance", "&lt; 5 pF"]
     - ["Current per pin, maximum", "4 mA"]
-    - ["VDPWR digital supply", "1.8 V"]
     - ["VAPWR analog supply", "3.3 V"]
   linkline: >-
     <b><a href="https://tinytapeout.com/specs/analog/">TINYTAPEOUT.COM/SPECS/ANALOG</a></b>
@@ -273,18 +271,17 @@ ordering:
     - ["Volume discount",
        "10% off orders over €10,000. Price a cohort at <a href=\"https://app.tinytapeout.com/calculator\">app.tinytapeout.com/calculator</a>, or email us for a quote."]
     - ["Deliverable",
-       "Silicon area only for remote or shared test, or area plus demoboard kits: packaged chip mounted on the demoboard."]
+       "Silicon area only for remote or shared test, or area plus demoboard kits: packaged chip on a breakout board, mounted on the demoboard."]
     - ["Design tools",
        "Supplied open-source LibreLane flow running in GitHub Actions, IIC-OSIC-TOOLS Docker or any commercial or open-source toolchain of your own."]
     - ["Minimum submission",
-       "GDS + LEF, produced with any tools, in one of our template repositories under Apache-2.0. Your tools must permit publishing them."]
+       "GDS + LEF, produced with any tools, in a public repository under Apache-2.0. Your tools must permit publishing them. If you use our flow, starting from one of our template repositories is easiest."]
 
 disclaimer:
   label: Disclaimer
   body: >-
-    Specifications are indicative and subject to change between shuttles.
-    Electrical characteristics are quoted for the sky130A process unless stated
-    otherwise — consult tinytapeout.com/specs for the process you intend to use.
+    Specifications are indicative and subject to change between shuttles —
+    consult tinytapeout.com/specs for the process you intend to use.
     Every submitted design is published publicly under Apache-2.0. Full terms and
     conditions of sale are published at
     <a href="https://tinytapeout.com/terms">tinytapeout.com/terms</a>.

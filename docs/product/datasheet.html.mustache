@@ -144,6 +144,9 @@ body {
 
 .label--dim { color: var(--ink-faint); }
 
+/* PDK names keep their real case inside uppercased labels and headers. */
+.pdk { text-transform: none; letter-spacing: 0.04em; }
+
 .secthead {
   display: flex;
   align-items: baseline;
@@ -585,10 +588,12 @@ a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
   </div>
 
   <footer class="foot">
+    {{#disclaimer}}
     <div class="foot__body">
-      <div class="label label--dim">{{&disclaimer.label}}</div>
-      <p class="disclaimer">{{&disclaimer.body}}</p>
+      <div class="label label--dim">{{&label}}</div>
+      <p class="disclaimer">{{&body}}</p>
     </div>
+    {{/disclaimer}}
     <div class="pageno"><span>PAGE</span>02</div>
   </footer>
 

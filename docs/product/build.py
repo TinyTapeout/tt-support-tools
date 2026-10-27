@@ -13,7 +13,8 @@ long is silently clipped rather than spilling onto a third page. Every build
 therefore measures the rendered sheets in headless Chrome and fails if anything
 overflows. Pass --no-check to skip that (or set CHROME if it isn't found).
 
-Requires chevron and pyyaml, both already pinned in requirements.txt.
+Requires chevron, pyyaml, fonttools and brotli (fonttools needs it to read
+the WOFF2 font), all pinned in requirements.txt.
 """
 
 import argparse
