@@ -2,7 +2,7 @@ import json
 import os
 from typing import Dict, List, Literal, Pattern, Protocol, Tuple, TypedDict, Union
 
-TechName = Literal["sky130A", "ihp-sg13g2", "gf180mcuD", "fpgaUp5k"]
+TechName = Literal["sky130A", "ihp-sg13g2", "ihp-sg13cmos5l", "gf180mcuD", "fpgaUp5k"]
 
 
 class CellDefinition(TypedDict):
@@ -125,7 +125,9 @@ class Sky130Tech(Tech):
         return cells
 
 
-class IHPTech(Tech):
+class IHPG2Tech(Tech):
+    pdk_name = "ihp-sg13g2"
+    cell_doc_url = "https://raw.githubusercontent.com/IHP-GmbH/IHP-Open-PDK/refs/heads/main/ihp-sg13g2/libs.ref/sg13g2_stdcell/doc/sg13g2_stdcell_typ_1p20V_25C.pdf#{ref}"
     is_fpga = False
     def_suffix = "pgvdd"
     librelane_pdk_args = "--pdk ihp-sg13g2"
@@ -166,17 +168,46 @@ class IHPTech(Tech):
     logo_pixel_size = 0.25  # um
 
     def read_pdk_version(self, pdk_root: str) -> PDKVersionInfo:
-        pdk_sources_file = os.path.join(pdk_root, "ihp-sg13g2", "SOURCES")
+        pdk_sources_file = os.path.join(pdk_root, self.pdk_name, "SOURCES")
         return parse_openpdks_pdk_version(pdk_sources_file, "IHP-Open-PDK")
 
     def load_cell_definitions(self) -> Dict[str, CellDefinition]:
-        URL_FORMAT = "https://raw.githubusercontent.com/IHP-GmbH/IHP-Open-PDK/refs/heads/main/ihp-sg13g2/libs.ref/sg13g2_stdcell/doc/sg13g2_stdcell_typ_1p20V_25C.pdf#{ref}"
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(script_dir, "tech/ihp-sg13g2/cells.json")) as fh:
+        with open(os.path.join(script_dir, f"tech/{self.pdk_name}/cells.json")) as fh:
             cells = json.load(fh)
         for cell in cells.values():
-            cell["url"] = URL_FORMAT.format(ref=cell["doc_ref"])
+            cell["url"] = self.cell_doc_url.format(ref=cell["doc_ref"])
         return cells
+
+
+class IHPCmos5lTech(IHPG2Tech):
+    """
+    SG13CMOS5L has five metal layers (Metal1-Metal4 + TopMetal1). Projects may
+    use up to Metal4, TopMetal1 is reserved for the chip-level power grid.
+    """
+
+    pdk_name = "ihp-sg13cmos5l"
+    # sg13cmos5l is only available on the dev branch of IHP-Open-PDK for now
+    cell_doc_url = "https://raw.githubusercontent.com/IHP-GmbH/IHP-Open-PDK/refs/heads/dev/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/doc/sg13cmos5l_stdcell_typ_1p20V_25C.pdf#{ref}"
+    librelane_pdk_args = "--pdk ihp-sg13cmos5l"
+    cell_regexp = r"^\s*sg13cmos5l_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
+    project_top_metal_layer = "Metal4"
+    label_layers = [
+        (8, 1),  # Metal1.label
+        (8, 25),  # Metal1.text
+        (50, 25),  # Metal4.text
+        (126, 25),  # TopMetal1.text
+    ]
+    scramble_cells = "sg13cmos5l_"
+    mux_config_yaml_name = "ihp-sg13cmos5l.yaml"
+    mux_macros = [
+        # No power gate macros yet, shuttles must set no_power_gating
+    ]
+    extra_logo_macros = [
+        "tech/ihp-sg13cmos5l/tt_logo_corner",
+    ]
+    logo_layer = (50, 0)  # Metal4.drawing
+    logo_layer_name = "Metal4"
 
 
 class GF180MCUDTech(Tech):
@@ -277,7 +308,8 @@ class FpgaTech(Tech):
 
 
 tech_map: dict[TechName, Tech] = {
-    "ihp-sg13g2": IHPTech(),
+    "ihp-sg13g2": IHPG2Tech(),
+    "ihp-sg13cmos5l": IHPCmos5lTech(),
     "gf180mcuD": GF180MCUDTech(),
     "sky130A": Sky130Tech(),
     "fpgaUp5k": FpgaTech(),

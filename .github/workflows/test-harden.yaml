@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pdk: [sky130A, ihp-sg13g2, gf180mcuD]
+        pdk: [sky130A, ihp-sg13g2, ihp-sg13cmos5l, gf180mcuD]
         
     runs-on: ubuntu-24.04
 
@@ -18,7 +18,8 @@ jobs:
       PDK: ${{ matrix.pdk }}
       PDK_ROOT: /home/runner/pdk
       PROJECT_DIR: /home/runner/project
-      LIBRELANE_VERSION: '3.0.2'
+      LIBRELANE_VERSION: '3.1.0.dev4'
+      TT_TOOL_ARGS: --pdk ${{ matrix.pdk }}
 
     steps:
       - name: Check out code
@@ -37,20 +38,16 @@ jobs:
         run: pip install librelane==${LIBRELANE_VERSION}
 
       - name: Clone the factory test
-        if: "${{ matrix.pdk != 'ihp-sg13g2' }}"
+        if: "${{ matrix.pdk != 'ihp-sg13g2' && matrix.pdk != 'ihp-sg13cmos5l' }}"
         run: git clone https://github.com/tinytapeout/ttsky25a-factory-test ${PROJECT_DIR}
 
       - name: Clone the factory test (ihp-sg13g2)
         if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
         run: git clone https://github.com/TinyTapeout/ttihp25b-factory-test ${PROJECT_DIR}
 
-      - name: Configure tt_tool.py args (IHP)
-        if: "${{ matrix.pdk == 'ihp-sg13g2' }}"
-        run: echo "TT_TOOL_ARGS=--ihp" >> $GITHUB_ENV
-
-      - name: Configure tt_tool.py args (gf180mcuD)
-        if: "${{ matrix.pdk == 'gf180mcuD' }}"
-        run: echo "TT_TOOL_ARGS=--gf" >> $GITHUB_ENV
+      - name: Clone the factory test (ihp-sg13cmos5l)
+        if: "${{ matrix.pdk == 'ihp-sg13cmos5l' }}"
+        run: git clone https://github.com/TinyTapeout/ttihp0p4-factory-test ${PROJECT_DIR}
 
       - name: Copy tt-support-tools to the project directory
         run: cp -r . ${PROJECT_DIR}/tt
@@ -94,5 +91,3 @@ jobs:
         with:
           name: svg-render-${{ matrix.pdk }}
           path: ${{ env.PROJECT_DIR }}/gds_render.svg
-
-    

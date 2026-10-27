@@ -23,17 +23,22 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--ihp",
-        help="use IHP PDK",
+        help="use IHP SG13G2 PDK (same as --pdk ihp-sg13g2)",
         action="store_const",
         const=True,
         default=False,
     )
     parser.add_argument(
         "--gf",
-        help="use gf180mcuD PDK",
+        help="use gf180mcuD PDK (same as --pdk gf180mcuD)",
         action="store_const",
         const=True,
         default=False,
+    )
+    parser.add_argument(
+        "--pdk",
+        help="PDK to use (overrides --ihp / --gf)",
+        choices=["sky130A", "ihp-sg13g2", "ihp-sg13cmos5l", "gf180mcuD"],
     )
 
     # reports & summaries
@@ -147,7 +152,9 @@ if __name__ == "__main__":
 
     setup_logging(args.loglevel)
 
-    pdk: TechName = "ihp-sg13g2" if args.ihp else "gf180mcuD" if args.gf else "sky130A"
+    pdk: TechName = args.pdk or (
+        "ihp-sg13g2" if args.ihp else "gf180mcuD" if args.gf else "sky130A"
+    )
 
     if args.check_docs:
         check_project_docs(args.project_dir, pdk)

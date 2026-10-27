@@ -129,6 +129,14 @@ def klayout_sg13g2(gds: str):
     )
 
 
+def klayout_sg13cmos5l(gds: str):
+    return klayout_drc(
+        gds,
+        "sg13cmos5l",
+        f"{PDK_ROOT}/{PDK_NAME}/libs.tech/klayout/tech/drc/ihp-sg13cmos5l.drc",
+    )
+
+
 def klayout_gf180mcuD_rule_deck(gds: str, top_module: str, check: str, decks: str):
     # All gf180mcuD DRC runs go through the PDK's unified rule deck
     # (gf180mcu.drc); `decks` selects which rule groups to run (see its
@@ -452,6 +460,8 @@ def main():
     pinout = yaml_data.get("pinout", {})
     if uses_vapwr and not is_analog:
         raise PrecheckFailure("Projects with VAPWR power need at least one analog pin")
+    if is_analog and tech == "ihp-sg13cmos5l":
+        raise PrecheckFailure("Analog projects are not supported on ihp-sg13cmos5l yet")
     def_root = f"../tech/{tech}/def"
     if is_analog:
         analog_def = f"{def_root}/analog/tt_analog_{tiles}"
@@ -463,7 +473,7 @@ def main():
                 template_def = f"{analog_def}_3v3.def"
         else:
             template_def = f"{analog_def}.def"
-    elif tech == "ihp-sg13g2" or tech == "gf180mcuD":
+    elif tech in ("ihp-sg13g2", "ihp-sg13cmos5l", "gf180mcuD"):
         template_def = f"{def_root}/tt_block_{tiles}_pgvdd.def"
     else:
         template_def = f"{def_root}/tt_block_{tiles}_pg.def"
@@ -511,6 +521,11 @@ def main():
             "name": "KLayout SG13G2 DRC",
             "check": lambda: klayout_sg13g2(gds_file),
             "techs": ["ihp-sg13g2"],
+        },
+        {
+            "name": "KLayout SG13CMOS5L DRC",
+            "check": lambda: klayout_sg13cmos5l(gds_file),
+            "techs": ["ihp-sg13cmos5l"],
         },
         {"name": "KLayout zero area", "check": lambda: klayout_zero_area(gds_file)},
         {

@@ -484,6 +484,7 @@
     openframe: (diagram: "chip_pinout_qfn64", table: pins.openframe),
     openframe_sky130: (diagram: "chip_pinout_qfn64_sky130_openframe", table: pins.openframe_sky130),
     customframe_ihp_sg13g2: (diagram: "chip_pinout_qfn64_ihp_sg13g2", table: pins.customframe_ihp_sg13g2),
+    customframe_ihp_sg13cmos5l: (diagram: "chip_pinout_qfn64_ihp_sg13g2", table: pins.customframe_ihp_sg13g2),
     customframe_gf180mcud: (diagram: "chip_pinout_qfn64_gf180mcud", table: pins.customframe_gf180mcud)
   )
 
