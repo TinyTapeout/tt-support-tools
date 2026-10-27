@@ -199,7 +199,7 @@ class IHPCmos5lTech(IHPG2Tech):
         (126, 25),  # TopMetal1.text
     ]
     scramble_cells = "sg13cmos5l_"
-    mux_config_yaml_name = "ihp-sg13cmos5l.yaml"
+    mux_config_yaml_name = "ihp-sg13cmos5l-18.yaml"
     mux_macros = [
         # No power gate macros yet, shuttles must set no_power_gating
     ]
