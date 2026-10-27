@@ -23,21 +23,21 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--ihp",
-        help="use IHP SG13G2 PDK (same as --pdk ihp-sg13g2)",
+        help="deprecated, use --pdk ihp-sg13g2",
         action="store_const",
         const=True,
         default=False,
     )
     parser.add_argument(
         "--gf",
-        help="use gf180mcuD PDK (same as --pdk gf180mcuD)",
+        help="deprecated, use --pdk gf180mcuD",
         action="store_const",
         const=True,
         default=False,
     )
     parser.add_argument(
         "--pdk",
-        help="PDK to use (overrides --ihp / --gf)",
+        help="PDK to use (default: sky130A)",
         choices=["sky130A", "ihp-sg13g2", "ihp-sg13cmos5l", "gf180mcuD"],
     )
 
@@ -151,6 +151,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     setup_logging(args.loglevel)
+
+    if args.ihp or args.gf:
+        deprecated_flag = "--ihp" if args.ihp else "--gf"
+        replacement = "ihp-sg13g2" if args.ihp else "gf180mcuD"
+        logging.warning(
+            f"{deprecated_flag} is deprecated and will be removed in a future version, "
+            f"use --pdk {replacement} instead"
+        )
 
     pdk: TechName = args.pdk or (
         "ihp-sg13g2" if args.ihp else "gf180mcuD" if args.gf else "sky130A"
