@@ -250,7 +250,7 @@ analog:
     - ["Series resistance, pad to project", "&lt; 500 Ω"]
     - ["Parasitic capacitance", "&lt; 5 pF"]
     - ["Current per pin, maximum", "4 mA"]
-    - ["VAPWR analog supply", "3.3 V"]
+    - ["VAPWR analog supply", "3.3 V, adjustable up to VIO"]
   linkline: >-
     <b><a href="https://tinytapeout.com/specs/analog/">TINYTAPEOUT.COM/SPECS/ANALOG</a></b>
 
