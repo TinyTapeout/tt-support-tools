@@ -201,7 +201,7 @@ class IHPCmos5lTech(IHPG2Tech):
     scramble_cells = "sg13cmos5l_"
     mux_config_yaml_name = "ihp-sg13cmos5l-18.yaml"
     mux_macros = [
-        # No power gate macros yet, shuttles must set no_power_gating
+        # The power gates (pg/ihp-sg13cmos5l) are copied by tt-multiplexer's tt_top build
     ]
     extra_logo_macros = [
         "tech/ihp-sg13cmos5l/tt_logo_corner",
