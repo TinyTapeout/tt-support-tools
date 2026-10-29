@@ -10,7 +10,7 @@ gdstk==0.9.52
     # via tt-precheck (pyproject.toml)
 iniconfig==2.0.0
     # via pytest
-klayout==0.30.8
+klayout>=0.30.8,<0.31.0
     # via tt-precheck (pyproject.toml)
 numpy==1.26.4
     # via
