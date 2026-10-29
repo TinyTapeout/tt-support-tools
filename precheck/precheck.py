@@ -460,8 +460,6 @@ def main():
     pinout = yaml_data.get("pinout", {})
     if uses_vapwr and not is_analog:
         raise PrecheckFailure("Projects with VAPWR power need at least one analog pin")
-    if is_analog and tech == "ihp-sg13cmos5l":
-        raise PrecheckFailure("Analog projects are not supported on ihp-sg13cmos5l yet")
     def_root = f"../tech/{tech}/def"
     if is_analog:
         analog_def = f"{def_root}/analog/tt_analog_{tiles}"
@@ -569,7 +567,7 @@ def main():
             "check": lambda: analog_pin_check(
                 gds_file, tech, is_analog, uses_vapwr, analog_pins, pinout
             ),
-            "techs": ["sky130A", "ihp-sg13g2", "gf180mcuD"],
+            "techs": ["sky130A", "ihp-sg13g2", "ihp-sg13cmos5l", "gf180mcuD"],
         },
         {
             "name": "Verilog syntax check",

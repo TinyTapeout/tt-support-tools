@@ -135,6 +135,17 @@ def analog_pin_rects(tech: str, uses_vapwr: bool):
             x2, y2 = x1 + 1.75, y1 + 2.0
             rect = ((x1, y1), (x2, y2))
             yield (rect, pin_layer, via_layers)
+    elif tech == "ihp-sg13cmos5l":
+        pin_layer = (50, 0)  # Metal4
+        via_layers = [(49, 0)]  # Via3
+        for pin_number in range(8):
+            if uses_vapwr:
+                x1, y1 = 174.18 - 24.48 * pin_number, 0.0
+            else:
+                x1, y1 = 189.54 - 24.48 * pin_number, 0.0
+            x2, y2 = x1 + 3.0, y1 + 1.0
+            rect = ((x1, y1), (x2, y2))
+            yield (rect, pin_layer, via_layers)
     elif tech == "gf180mcuD":
         pin_layer = (46, 0)  # Metal4
         via_layers = [(40, 0)]  # Via3
