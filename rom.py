@@ -37,21 +37,31 @@ segment_font = {
     "b": 0b01111100,
     "c": 0b01011000,
     "d": 0b01011110,
+    "e": 0b01111011,
     "f": 0b01110001,
     "g": 0b01101111,  # Same as 9
     "h": 0b01110110,  # Actually uppercase H
     "i": 0b00110000,  # Actually uppercase I
+    "j": 0b00011110,  # Actually uppercase J
     "k": 0b01110101,
+    "l": 0b00111000,  # Actually uppercase L
+    "n": 0b01010100,
     "o": 0b01011100,
     "p": 0b01110011,
+    "q": 0b01100111,
+    "r": 0b01010000,
     "s": 0b01101101,
     "t": 0b01111000,
+    "u": 0b00011100,
     "y": 0b01101110,
 }
 
 
 def segment_char(c: str):
-    return segment_font[c]
+    try:
+        return segment_font[c]
+    except KeyError:
+        raise ValueError(f"No 7-segment glyph for character {c!r}") from None
 
 
 class ROMFile:
