@@ -243,13 +243,21 @@ power_pins_min_width = {
 # their power pins are lower and narrower than those of a regular project.
 micro_power_pins_layers = {
     "sky130A": ["met2", "met3"],
+    "ihp-sg13cmos5l": ["Metal2", "Metal3"],
 }
 micro_power_pins_min_width = {
     "sky130A": 800,  # 0.8 um
+    "ihp-sg13cmos5l": 1000,  # 1.0 um
 }
 # Layers that belong to the container and must stay empty in a micro tile
 micro_forbidden_layers = {
     "sky130A": ["via3.drawing", "met4.drawing", "met4.pin", "met4.label"],
+    "ihp-sg13cmos5l": [
+        "Via3.drawing",
+        "Metal4.drawing",
+        "Metal4.pin",
+        "Metal4.text",
+    ],
 }
 boundary_layer = {
     "sky130A": "prBoundary.boundary",
