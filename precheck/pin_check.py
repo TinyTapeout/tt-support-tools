@@ -8,7 +8,13 @@ from numbers import Real
 
 import gdstk
 from precheck_failure import PrecheckFailure
-from tech_data import power_pins_layer, power_pins_min_width, valid_lef_port_layers
+from tech_data import (
+    micro_power_pins_layers,
+    micro_power_pins_min_width,
+    power_pins_layer,
+    power_pins_min_width,
+    valid_lef_port_layers,
+)
 
 
 def canonicalize_rectangles(
@@ -202,7 +208,13 @@ def parse_def(template_def: str) -> DefTemplate:
 
 
 def pin_check(
-    gds: str, lef: str, template_def: str, toplevel: str, uses_vapwr: bool, tech: str
+    gds: str,
+    lef: str,
+    template_def: str,
+    toplevel: str,
+    uses_vapwr: bool,
+    tech: str,
+    is_micro: bool = False,
 ):
     logging.info("Running pin check...")
     logging.info(f"* gds: {gds}")
@@ -343,31 +355,45 @@ def pin_check(
                 )
                 lef_errors += 1
 
+    if is_micro:
+        # Stripes run in both directions and need not reach the edges
+        expected_layers = micro_power_pins_layers[tech]
+        expected_width = micro_power_pins_min_width[tech]
+    else:
+        expected_layers = [power_pins_layer[tech]]
+        expected_width = power_pins_min_width[tech]
+
     for current_pin in power_pins:
         if current_pin not in lef_ports:
             logging.error(f"Pin {current_pin} not found in {lef}")
             lef_errors += 1
         else:
-            for layer, lx, by, rx, ty in lef_ports[current_pin]:
-                width = rx - lx
-                expected_layer = power_pins_layer[tech]
-                if layer != expected_layer:
+            if is_micro:
+                # The container connects to the top layer stripes from above
+                connect_layer = expected_layers[-1]
+                if not any(port[0] == connect_layer for port in lef_ports[current_pin]):
                     logging.error(
-                        f"Port {current_pin} has wrong layer in {lef}: {layer} != {expected_layer}"
+                        f"Pin {current_pin} has no port on {connect_layer} in {lef}"
                     )
                     lef_errors += 1
-                expected_width = power_pins_min_width[tech]
+            for layer, lx, by, rx, ty in lef_ports[current_pin]:
+                width = min(rx - lx, ty - by) if is_micro else rx - lx
+                if layer not in expected_layers:
+                    logging.error(
+                        f"Port {current_pin} has wrong layer in {lef}: {layer} != {' or '.join(expected_layers)}"
+                    )
+                    lef_errors += 1
                 if width < expected_width:
                     logging.error(
                         f"Port {current_pin} has too small width in {lef}: {width/1000} < {expected_width/1000} um"
                     )
                     lef_errors += 1
-                if by > 10000:
+                if not is_micro and by > 10000:
                     logging.error(
                         f"Port {current_pin} is too far from bottom edge of module: {by/1000} > 10 um"
                     )
                     lef_errors += 1
-                if template.die_height - ty > 10000:
+                if not is_micro and template.die_height - ty > 10000:
                     logging.error(
                         f"Port {current_pin} is too far from top edge of module: {(template.die_height-ty)/1000} > 10 um"
                     )
