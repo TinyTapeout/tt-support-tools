@@ -21,6 +21,7 @@ from tech_data import (
     boundary_layer,
     forbidden_layers,
     lyp_filename,
+    micro_forbidden_layers,
     tech_names,
     valid_layers,
 )
@@ -169,7 +170,7 @@ def klayout_gf180mcuD_drc(gds: str, top_module: str):
     )
 
 
-def klayout_checks(gds: str, expected_name: str, tech: str):
+def klayout_checks(gds: str, expected_name: str, tech: str, is_micro: bool = False):
     layout = pya.Layout()
     layout.read(gds)
     layers = load_layers(tech)
@@ -182,7 +183,10 @@ def klayout_checks(gds: str, expected_name: str, tech: str):
         )
 
     logging.info("Running forbidden layer check...")
-    for layer in forbidden_layers[tech]:
+    layer_names = list(forbidden_layers[tech])
+    if is_micro:
+        layer_names += micro_forbidden_layers[tech]
+    for layer in layer_names:
         layer_info = layers[layer]
         logging.info(f"* Checking {layer_info.name}")
         layer_index = layout.find_layer(layer_info.layer, layer_info.data_type)
@@ -475,11 +479,16 @@ def main():
     tiles = project_cfg.get("tiles", "1x1")
     analog_pins = project_cfg.get("analog_pins", 0)
     is_analog = analog_pins > 0
+    is_micro = tiles == "micro"
     # "uses_3v3" is the legacy name for "uses_vapwr"; still accepted for compat.
     uses_vapwr = bool(project_cfg.get("uses_vapwr", project_cfg.get("uses_3v3", False)))
     pinout = yaml_data.get("pinout", {})
     if uses_vapwr and not is_analog:
         raise PrecheckFailure("Projects with VAPWR power need at least one analog pin")
+    if is_micro and is_analog:
+        raise PrecheckFailure("Micro tile projects cannot have analog pins")
+    if is_micro and tech not in micro_forbidden_layers:
+        raise PrecheckFailure(f"Micro tiles are not supported on {tech}")
     def_root = f"../tech/{tech}/def"
     if is_analog:
         analog_def = f"{def_root}/analog/tt_analog_{tiles}"
@@ -548,12 +557,12 @@ def main():
         {"name": "KLayout zero area", "check": lambda: klayout_zero_area(gds_file)},
         {
             "name": "KLayout Checks",
-            "check": lambda: klayout_checks(gds_file, top_module, tech),
+            "check": lambda: klayout_checks(gds_file, top_module, tech, is_micro),
         },
         {
             "name": "Pin check",
             "check": lambda: pin_check(
-                gds_file, lef_file, template_def, top_module, uses_vapwr, tech
+                gds_file, lef_file, template_def, top_module, uses_vapwr, tech, is_micro
             ),
         },
         {
