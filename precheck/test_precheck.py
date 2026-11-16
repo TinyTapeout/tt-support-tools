@@ -455,7 +455,8 @@ class SimplePort(CompoundPort):
         super().__init__(name, [PortRect(*rect_args)])
 
 
-def generate_analog_example(
+def generate_example(
+    template: str,
     tcl_file: str,
     gds_file: str,
     lef_file: str,
@@ -469,7 +470,7 @@ def generate_analog_example(
 
         tcl_append(
             f"""
-            def read ../tech/{PDK_NAME}/def/analog/tt_analog_1x2.def
+            def read ../tech/{PDK_NAME}/def/{template}.def
             cellname rename tt_um_template {toplevel}
             """
         )
@@ -516,6 +517,18 @@ def generate_analog_example(
     )
 
     assert magic.returncode == 0
+
+
+def generate_analog_example(
+    tcl_file: str,
+    gds_file: str,
+    lef_file: str,
+    toplevel: str,
+    extra_ports: list[CompoundPort],
+):
+    generate_example(
+        "analog/tt_analog_1x2", tcl_file, gds_file, lef_file, toplevel, extra_ports
+    )
 
 
 @pytest.fixture(scope="session")
