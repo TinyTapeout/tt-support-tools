@@ -3,6 +3,9 @@ from typing import Any, Dict, List, Optional
 # Analog pins a project can request (ua[0] .. ua[MAX_ANALOG_PINS - 1]).
 MAX_ANALOG_PINS = 6
 
+# The 'tiles' value of a micro tile, which reaches a shuttle inside a container project
+MICRO_TILE_SIZE = "micro"
+
 YAML_VERSION = 6
 
 
@@ -133,6 +136,10 @@ class ProjectInfo:
             analog_pins = 0  # Set default for further validation
         self.analog_pins: int = analog_pins
         self.is_analog: bool = self.analog_pins > 0
+
+        self.is_micro: bool = project_section.get("tiles") == MICRO_TILE_SIZE
+        if self.is_micro and self.is_analog:
+            errors.append("Micro tile projects cannot have analog pins")
 
         # "uses_3v3" is the legacy name for "uses_vapwr"; still accepted for compat.
         uses_vapwr: bool = project_section.get(

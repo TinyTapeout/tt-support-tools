@@ -15,7 +15,7 @@ import yaml
 from git.repo import Repo
 
 import git_utils
-from config_utils import read_config, write_config
+from config_utils import override_config, read_config, write_config
 from doc_utils import DocsHelper
 from markdown_utils import limit_markdown_headings
 from project_info import ProjectInfo, ProjectYamlError
@@ -184,20 +184,29 @@ class Project:
                 module_ports["VDPWR"] = module_ports["VPWR"]
                 del module_ports["VPWR"]
 
-        required_ports = [
-            ["input", "clk", 1],
-            ["input", "ena", 1],
-            ["input", "rst_n", 1],
-            ["input", "ui_in", 8],
-            ["input", "uio_in", 8],
-            ["output", "uio_oe", 8],
-            ["output", "uio_out", 8],
-            ["output", "uo_out", 8],
-        ]
-        if self.info.is_analog:
-            required_ports += [
-                ["inout", "ua", 8],
+        if self.info.is_micro:
+            # The container project muxes these between its micro tiles
+            required_ports = [
+                ["input", "clk", 1],
+                ["input", "rst_n", 1],
+                ["input", "ui_in", 8],
+                ["output", "uo_out", 8],
             ]
+        else:
+            required_ports = [
+                ["input", "clk", 1],
+                ["input", "ena", 1],
+                ["input", "rst_n", 1],
+                ["input", "ui_in", 8],
+                ["input", "uio_in", 8],
+                ["output", "uio_oe", 8],
+                ["output", "uio_out", 8],
+                ["output", "uo_out", 8],
+            ]
+            if self.info.is_analog:
+                required_ports += [
+                    ["inout", "ua", 8],
+                ]
         if include_power_ports:
             required_ports += [
                 [("input", "inout"), "VGND", 1],
@@ -405,7 +414,9 @@ class Project:
     def fetch_wokwi_files(self):
         logging.info("fetching wokwi files")
         src_file = self.info.source_files[0]
-        url = f"https://wokwi.com/api/projects/{self.info.wokwi_id}/verilog"
+        # Wokwi generates a module with the micro tile port list on request
+        params = "?micro=1" if self.info.is_micro else ""
+        url = f"https://wokwi.com/api/projects/{self.info.wokwi_id}/verilog{params}"
         git_utils.fetch_file(url, os.path.join(self.src_dir, src_file))
 
         # also fetch the wokwi diagram
@@ -480,8 +491,7 @@ class Project:
     def create_merged_config(self):
         config = read_config("src/config")
         user_config = read_config("src/user_config")
-        config.update(user_config)
-        write_config(config, "src/config_merged")
+        write_config(override_config(config, user_config), "src/config_merged")
 
     def create_user_config(self):
         if self.is_wokwi():
@@ -505,6 +515,8 @@ class Project:
             "RT_MAX_LAYER": self.tech.project_top_metal_layer,
         }
         config.update(self.tech.librelane_config)
+        if self.info.is_micro:
+            config.update(self.tech.micro_librelane_config)
         write_config(config, os.path.join(self.src_dir, "user_config"), ("json",))
         self.create_merged_config()
 
