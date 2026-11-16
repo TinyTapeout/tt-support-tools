@@ -437,6 +437,8 @@ class DocsHelper:
                                 content["pinout"] = "openframe_sky130"
                             case "ihp-sg13g2":
                                 content["pinout"] = "customframe_ihp_sg13g2"
+                            case "ihp-sg13cmos5l":
+                                content["pinout"] = "customframe_ihp_sg13cmos5l"
                             case "gf180mcuD":
                                 content["pinout"] = "customframe_gf180mcud"
                             case _:

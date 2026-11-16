@@ -18,6 +18,7 @@ class DatasheetConfig(TypedDict):
         "openframe",
         "openframe_sky130",
         "customframe_ihp_sg13g2",
+        "customframe_ihp_sg13cmos5l",
         "customframe_gf180mcud",
     ]
     theme_override_colour: str

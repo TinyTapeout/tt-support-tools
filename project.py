@@ -290,7 +290,10 @@ class Project:
         return top_verilog[0]
 
     def get_git_remote(self):
-        return list(Repo(self.local_dir).remotes[0].urls)[0]
+        try:
+            return list(Repo(self.local_dir).remotes[0].urls)[0]
+        except IndexError:
+            return "N/A"
 
     def get_git_commit_hash(self):
         return Repo(self.local_dir).commit().hexsha
