@@ -80,7 +80,22 @@ class Sky130Tech(Tech):
     netlist_type = "pnl"
     project_top_metal_layer = "met4"
     librelane_config = {}
-    micro_librelane_config = {}
+    micro_librelane_config = {
+        "RT_MAX_LAYER": "met3",
+        "PDN_MULTILAYER": True,
+        # One pair of met2 stripes at each end of the core ties the met1 rails
+        # together: standard cells cannot be placed under them
+        "PDN_VERTICAL_LAYER": "met2",
+        "PDN_VWIDTH": 0.8,
+        "PDN_VSPACING": 0.58,
+        "PDN_VPITCH": 61.18,
+        "PDN_VOFFSET": 0.92,
+        "PDN_HORIZONTAL_LAYER": "met3",
+        "PDN_HWIDTH": 1.0,
+        "PDN_HSPACING": 9.88,
+        "PDN_HPITCH": 21.76,
+        "PDN_HOFFSET": 6.8,
+    }
     label_layers = [
         (64, 59),  # pwell.label
         (64, 5),  # nwell.label

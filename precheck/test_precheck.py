@@ -87,6 +87,23 @@ def gds_fail_metal5_poly(tmp_path_factory: pytest.TempPathFactory):
 
 
 @pytest.fixture(scope="session")
+def gds_metal4_poly(tmp_path_factory: pytest.TempPathFactory):
+    """Creates a GDS with drawings on met4: fine for a regular project, not for a micro tile."""
+    gds_file = tmp_path_factory.mktemp("gds") / "TEST_met4.gds"
+    layout = pya.Layout()
+    top_cell = layout.create_cell("TEST_met4")
+    for layer_name, rect in [
+        ("prBoundary.boundary", pya.DBox(0, 0, 70.38, 51.68)),
+        ("met4.drawing", pya.DBox(0, 0, 5, 5)),
+    ]:
+        layer_info = gds_layers[layer_name]
+        layer = layout.layer(layer_info.layer, layer_info.data_type)
+        top_cell.shapes(layer).insert(rect)
+    layout.write(str(gds_file))
+    return str(gds_file)
+
+
+@pytest.fixture(scope="session")
 def gds_no_pr_boundary(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS without a pr boundary layer."""
     gds_file = tmp_path_factory.mktemp("gds") / "TEST_no_prboundary.gds"
@@ -658,6 +675,69 @@ def gds_lef_analog_example_3v3(tmp_path_factory: pytest.TempPathFactory):
     return str(gds_file), str(lef_file)
 
 
+def generate_micro_example(
+    tmp_path_factory: pytest.TempPathFactory, toplevel: str, ports: list[CompoundPort]
+):
+    """Creates a GDS and LEF using the micro tile template."""
+    tmp_path = tmp_path_factory.mktemp(toplevel)
+    gds_file = tmp_path / f"{toplevel}.gds"
+    lef_file = tmp_path / f"{toplevel}.lef"
+    generate_example(
+        "tt_block_micro_pg",
+        str(tmp_path / f"{toplevel}.tcl"),
+        str(gds_file),
+        str(lef_file),
+        toplevel,
+        ports,
+    )
+    return str(gds_file), str(lef_file)
+
+
+@pytest.fixture(scope="session")
+def gds_lef_micro_example(tmp_path_factory: pytest.TempPathFactory):
+    """A micro tile with horizontal met3 and vertical met2 power stripes."""
+    return generate_micro_example(
+        tmp_path_factory,
+        "TEST_micro_example",
+        [
+            CompoundPort(
+                "VDPWR",
+                [
+                    PortRect("met3", (300, 680), (6700, 780)),
+                    PortRect("met2", (300, 300), (380, 4800)),
+                ],
+            ),
+            SimplePort("VGND", "met3", (300, 1768), (6700, 1868)),
+        ],
+    )
+
+
+@pytest.fixture(scope="session")
+def gds_lef_micro_no_top_layer_port(tmp_path_factory: pytest.TempPathFactory):
+    """A micro tile whose VDPWR has no met3 port for the container to connect to."""
+    return generate_micro_example(
+        tmp_path_factory,
+        "TEST_micro_no_top_layer_port",
+        [
+            SimplePort("VDPWR", "met2", (300, 300), (380, 4800)),
+            SimplePort("VGND", "met3", (300, 1768), (6700, 1868)),
+        ],
+    )
+
+
+@pytest.fixture(scope="session")
+def gds_lef_micro_met4_port(tmp_path_factory: pytest.TempPathFactory):
+    """A micro tile with a power port on met4, which belongs to the container."""
+    return generate_micro_example(
+        tmp_path_factory,
+        "TEST_micro_met4_port",
+        [
+            SimplePort("VDPWR", "met4", (300, 680), (6700, 780)),
+            SimplePort("VGND", "met3", (300, 1768), (6700, 1868)),
+        ],
+    )
+
+
 @pytest.fixture(scope="session")
 def gds_lef_analog_pin_example(tmp_path_factory: pytest.TempPathFactory):
     """Creates a GDS and LEF using the 1x2 analog template with 2 analog pins used."""
@@ -817,6 +897,15 @@ def test_klayout_checks_fail_metal5(gds_fail_metal5_poly: str):
         precheck.PrecheckFailure, match=r"Forbidden layer met5\.drawing found in .+"
     ):
         precheck.klayout_checks(gds_fail_metal5_poly, "TEST_met5_error", PDK_NAME)
+
+
+@sky130A_only
+def test_klayout_checks_micro_fail_metal4(gds_metal4_poly: str):
+    precheck.klayout_checks(gds_metal4_poly, "TEST_met4", PDK_NAME)
+    with pytest.raises(
+        precheck.PrecheckFailure, match=r"Forbidden layer met4\.drawing found in .+"
+    ):
+        precheck.klayout_checks(gds_metal4_poly, "TEST_met4", PDK_NAME, is_micro=True)
 
 
 @sky130A_only
@@ -1086,6 +1175,59 @@ def test_pin_analog_compound_vgnd(gds_lef_analog_compound_vgnd: tuple[str, str])
         False,
         PDK_NAME,
     )
+
+
+MICRO_TEMPLATE_DEF = f"../tech/{PDK_NAME}/def/tt_block_micro_pg.def"
+
+
+@sky130A_only
+def test_pin_micro_example(gds_lef_micro_example: tuple[str, str]):
+    gds_file, lef_file = gds_lef_micro_example
+    precheck.pin_check(
+        gds_file,
+        lef_file,
+        MICRO_TEMPLATE_DEF,
+        "TEST_micro_example",
+        False,
+        PDK_NAME,
+        is_micro=True,
+    )
+
+
+@sky130A_only
+def test_pin_micro_no_top_layer_port(
+    gds_lef_micro_no_top_layer_port: tuple[str, str], caplog: pytest.LogCaptureFixture
+):
+    gds_file, lef_file = gds_lef_micro_no_top_layer_port
+    with pytest.raises(precheck.PrecheckFailure):
+        precheck.pin_check(
+            gds_file,
+            lef_file,
+            MICRO_TEMPLATE_DEF,
+            "TEST_micro_no_top_layer_port",
+            False,
+            PDK_NAME,
+            is_micro=True,
+        )
+    assert "Pin VDPWR has no port on met3" in caplog.text
+
+
+@sky130A_only
+def test_pin_micro_met4_port(
+    gds_lef_micro_met4_port: tuple[str, str], caplog: pytest.LogCaptureFixture
+):
+    gds_file, lef_file = gds_lef_micro_met4_port
+    with pytest.raises(precheck.PrecheckFailure):
+        precheck.pin_check(
+            gds_file,
+            lef_file,
+            MICRO_TEMPLATE_DEF,
+            "TEST_micro_met4_port",
+            False,
+            PDK_NAME,
+            is_micro=True,
+        )
+    assert "Port VDPWR has wrong layer" in caplog.text
 
 
 @sky130A_only
