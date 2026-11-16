@@ -241,10 +241,16 @@ power_pins_min_width = {
 # Micro tiles sit inside a container project. Its power stripes run over them and
 # connect to the power stripes on their top layer (the last one listed here), so
 # their power pins are lower and narrower than those of a regular project.
-micro_power_pins_layers: dict[str, list[str]] = {}
-micro_power_pins_min_width: dict[str, int] = {}
+micro_power_pins_layers = {
+    "sky130A": ["met2", "met3"],
+}
+micro_power_pins_min_width = {
+    "sky130A": 800,  # 0.8 um
+}
 # Layers that belong to the container and must stay empty in a micro tile
-micro_forbidden_layers: dict[str, list[str]] = {}
+micro_forbidden_layers = {
+    "sky130A": ["via3.drawing", "met4.drawing", "met4.pin", "met4.label"],
+}
 boundary_layer = {
     "sky130A": "prBoundary.boundary",
     "ihp-sg13g2": "prBoundary.boundary",
