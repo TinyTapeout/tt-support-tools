@@ -156,12 +156,13 @@ def shuttle_specific_sizes() -> set[str]:
 
 def collect_repo(facts: Facts, pdks: list[str]) -> None:
     sys.path.insert(0, str(ROOT))
-    from project_info import MAX_ANALOG_PINS
+    from project_info import MAX_ANALOG_PINS, MICRO_TILE_SIZE
     from tech import tech_map
 
     src_tiles = "repo: tech/{}/tile_sizes.yaml"
     # The largest block is the largest size generally on sale, so leave out
-    # sizes only one or two special shuttles offer.
+    # sizes only one or two special shuttles offer, and the micro tile, which
+    # is not sold on its own.
     special = shuttle_specific_sizes()
     src_max = (
         src_tiles
@@ -181,7 +182,9 @@ def collect_repo(facts: Facts, pdks: list[str]) -> None:
             f"pdk.{pdk}.tile_1x1", f"{width} × {height} µm", src_tiles.format(pdk)
         )
 
-        offered = [size for size in sizes if size not in special]
+        offered = [
+            size for size in sizes if size not in special and size != MICRO_TILE_SIZE
+        ]
         largest = max(offered, key=lambda s: size_key(s)[0] * size_key(s)[1])
         max_blocks[pdk] = largest.replace("x", "×")
         facts.set(f"pdk.{pdk}.max_block", max_blocks[pdk], src_max.format(pdk))

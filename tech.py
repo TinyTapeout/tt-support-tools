@@ -28,6 +28,10 @@ class Tech(Protocol):
     librelane_config: Dict[
         str, Union[bool, int, float, str, List[str], Dict[str, List[str]]]
     ]
+    """ LibreLane configuration of a micro tile (tiles: micro), applied on top of librelane_config. Empty if the PDK has no micro tile.
+    The micro tile routes up to the layer below project_top_metal_layer. Its horizontal power stripes on that layer are its power pins:
+    the vertical power stripes of the container project, on project_top_metal_layer, cross them. """
+    micro_librelane_config: Dict[str, Union[bool, int, float, str]]
     """ These layers will be removed from the SVG render of the layout """
     label_layers: List[Tuple[int, int]]
     """ These layers are hardly visible and will also be removed from the SVG render of the layout """
@@ -76,6 +80,7 @@ class Sky130Tech(Tech):
     netlist_type = "pnl"
     project_top_metal_layer = "met4"
     librelane_config = {}
+    micro_librelane_config = {}
     label_layers = [
         (64, 59),  # pwell.label
         (64, 5),  # nwell.label
@@ -136,6 +141,7 @@ class IHPG2Tech(Tech):
     netlist_type = "nl"
     project_top_metal_layer = "TopMetal1"
     librelane_config = {}
+    micro_librelane_config = {}
     label_layers = [
         (8, 1),  # Metal1.label
         (8, 25),  # Metal1.text
@@ -251,6 +257,7 @@ class GF180MCUDTech(Tech):
             ],
         },
     }
+    micro_librelane_config = {}
     label_layers = [
         # TODO: add label layers
     ]
@@ -293,6 +300,7 @@ class FpgaTech(Tech):
     netlist_type = "nl"
     project_top_metal_layer = ""
     librelane_config = {}
+    micro_librelane_config = {}
     label_layers = []
     buried_layers = []
     scramble_cells = None

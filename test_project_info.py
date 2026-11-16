@@ -54,6 +54,7 @@ def valid_yaml_data():
 def tile_sizes():
     """Valid tile sizes for testing"""
     return {
+        "micro": "0 0 70.38 51.68",
         "1x1": "0 0 161 111.52",
         "1x2": "0 0 161 225.76",
         "2x2": "0 0 322 225.76",
@@ -173,6 +174,14 @@ class TestProjectInfoProjectSection:
         with pytest.raises(
             ProjectYamlError,
             match="Projects with VAPWR power need at least one analog pin",
+        ):
+            ProjectInfo(valid_yaml_data, tile_sizes)
+
+    def test_micro_tile_with_analog_pins(self, valid_yaml_data, tile_sizes):
+        valid_yaml_data["project"]["tiles"] = "micro"
+        valid_yaml_data["project"]["analog_pins"] = 1
+        with pytest.raises(
+            ProjectYamlError, match="Micro tile projects cannot have analog pins"
         ):
             ProjectInfo(valid_yaml_data, tile_sizes)
 
