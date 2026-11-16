@@ -21,6 +21,7 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
+from functools import cache
 from pathlib import Path
 from typing import Any, Callable
 
@@ -104,6 +105,7 @@ def fetch(url: str, headers: dict[str, str] | None = None) -> str:
         raise FactError(f"fetching {url}: {error.reason}")
 
 
+@cache
 def fetch_app_file(path: str) -> str:
     return fetch(
         f"https://api.github.com/repos/{APP_REPO}/contents/{path}",
@@ -140,12 +142,32 @@ def size_key(size: str) -> tuple[int, int]:
     return int(width), int(height)
 
 
+def shuttle_specific_sizes() -> set[str]:
+    """Sizes the calculator offers only on the shuttles that opt in to them."""
+    shuttles = fetch_app_file("src/config/shuttle.ts")
+    found = need(
+        r"shuttleSpecificProjectSizes: ProjectSize\[\] = \[(.*?)\];",
+        shuttles,
+        "shuttleSpecificProjectSizes in shuttle.ts",
+        re.S,
+    )
+    return set(re.findall(r"'(\d+x\d+)'", found[1]))
+
+
 def collect_repo(facts: Facts, pdks: list[str]) -> None:
     sys.path.insert(0, str(ROOT))
     from project_info import MAX_ANALOG_PINS
     from tech import tech_map
 
     src_tiles = "repo: tech/{}/tile_sizes.yaml"
+    # The largest block is the largest size generally on sale, so leave out
+    # sizes only one or two special shuttles offer.
+    special = shuttle_specific_sizes()
+    src_max = (
+        src_tiles
+        + ", less calculator shuttleSpecificProjectSizes "
+        + ", ".join(sorted(special))
+    )
     max_blocks: dict[str, str] = {}
     analog_heights: set[int] = set()
 
@@ -159,9 +181,10 @@ def collect_repo(facts: Facts, pdks: list[str]) -> None:
             f"pdk.{pdk}.tile_1x1", f"{width} × {height} µm", src_tiles.format(pdk)
         )
 
-        largest = max(sizes, key=lambda s: size_key(s)[0] * size_key(s)[1])
+        offered = [size for size in sizes if size not in special]
+        largest = max(offered, key=lambda s: size_key(s)[0] * size_key(s)[1])
         max_blocks[pdk] = largest.replace("x", "×")
-        facts.set(f"pdk.{pdk}.max_block", max_blocks[pdk], src_tiles.format(pdk))
+        facts.set(f"pdk.{pdk}.max_block", max_blocks[pdk], src_max.format(pdk))
 
         corner = tech_map[pdk].tt_corner  # type: ignore[index]
         volts = need(r"_(\d)[vp](\d\d)", corner, f"a voltage in {pdk}'s tt_corner")
@@ -183,7 +206,7 @@ def collect_repo(facts: Facts, pdks: list[str]) -> None:
         " and up to ".join(
             f"<b>{size}</b> on {join_and(names)}" for size, names in groups.items()
         ),
-        "repo: tech/*/tile_sizes.yaml",
+        "repo: tech/*/tile_sizes.yaml, less calculator shuttleSpecificProjectSizes",
     )
     facts.set("analog.min_height", min(analog_heights), "repo: tech/*/def/analog/*.def")
 
@@ -463,10 +486,22 @@ def collect(config_path: Path = HERE / "facts.yaml") -> tuple[dict, dict[str, st
         config = yaml.safe_load(fh)
 
     pdks = list(config["pdks"])
-    if sorted(pdks) != repo_pdks():
+    hidden = list(config.get("hidden_pdks") or [])
+    if set(pdks) & set(hidden):
         raise FactError(
-            f"facts.yaml lists PDKs {sorted(pdks)} but the repo has {repo_pdks()} — "
-            "add or remove entries under pdks:"
+            f"facts.yaml: {sorted(set(pdks) & set(hidden))} under both pdks and hidden_pdks"
+        )
+    if sorted(pdks + hidden) != repo_pdks():
+        unknown = sorted(set(repo_pdks()) - set(pdks + hidden))
+        gone = sorted(set(pdks + hidden) - set(repo_pdks()))
+        raise FactError(
+            "facts.yaml is out of step with tech/:"
+            + (
+                f" {unknown} not listed — add to pdks or hidden_pdks;"
+                if unknown
+                else ""
+            )
+            + (f" {gone} listed but not in the repo — remove them;" if gone else "")
         )
 
     facts = Facts()

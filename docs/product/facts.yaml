@@ -17,8 +17,8 @@
 #     python3 docs/product/build.py --facts
 # ---------------------------------------------------------------------------
 
-# Datasheet order. Must list exactly the PDKs that have a tech/<pdk>/ directory
-# with a tile_sizes.yaml, or the build fails.
+# Datasheet order. Together with hidden_pdks below, must list exactly the PDKs
+# that have a tech/<pdk>/tile_sizes.yaml, or the build fails.
 pdks:
   sky130A:
     foundry: SkyWater
@@ -50,6 +50,11 @@ pdks:
     drive: 4
     latency: 20
     variance: 2
+
+# PDKs in tech/ that are deliberately left off the datasheet. Every PDK in the
+# repo must be under pdks: or here, so a new one can't be missed silently.
+hidden_pdks:
+  - ihp-sg13cmos5l                # not in the calculator's prices yet
 
 # The shuttle whose subsidised-board count ("first N people") the main sheet
 # quotes. The count itself comes from the calculator's shuttle config.
