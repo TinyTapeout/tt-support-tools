@@ -1,0 +1,64 @@
+name: Build Product Datasheet
+
+on:
+  push:
+    paths: &datasheet-inputs
+      - 'docs/product/**'
+      - 'tech/**'
+      - 'tech.py'
+      - 'project_info.py'
+      - '.github/workflows/build-datasheet.yaml'
+  pull_request:
+    paths: *datasheet-inputs
+  # The calculator and website are read at build time; a weekly run catches
+  # them changing format, which fails the build.
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sheet:
+          - name: tt-datasheet
+            config: datasheet.yaml
+          - name: tt-datasheet-universities
+            config: datasheet-universities.yaml
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: docs/product/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r docs/product/requirements.txt
+
+      # Builds the HTML and PDF, then fails if any page overflows its sheet.
+      # google-chrome is preinstalled on the ubuntu-latest runner.
+      - name: Build ${{ matrix.sheet.name }}
+        env:
+          CHROME: google-chrome
+          # Prices are read from the private TinyTapeout/tinytapeout-app repo:
+          # a fine-grained token with read-only Contents access to it.
+          GH_TOKEN: ${{ secrets.TT_APP_READ_TOKEN }}
+        run: >
+          python docs/product/build.py --pdf
+          --config docs/product/${{ matrix.sheet.config }}
+          --out docs/product/${{ matrix.sheet.name }}.html
+
+      - name: Upload datasheet
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.sheet.name }}
+          path: |
+            docs/product/${{ matrix.sheet.name }}.html
+            docs/product/${{ matrix.sheet.name }}.pdf

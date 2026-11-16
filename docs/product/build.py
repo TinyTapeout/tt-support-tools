@@ -1,20 +1,26 @@
 #!/usr/bin/env python3
 """Build the two-page Tiny Tapeout product datasheet.
 
-All copy, numbers and colours live in datasheet.yaml. This script renders them
-through datasheet.html.mustache, inlining the font and photo as data URIs so the
+All copy and colours live in datasheet.yaml. Numbers are {{placeholders}}
+filled from facts.py, which reads them from their golden references (this repo,
+the calculator, the website) plus the hand-kept facts.yaml. This script renders
+the result through datasheet.html.mustache, inlining the font and photo as data URIs so the
 result is a single self-contained file that prints to two A4 pages.
 
     python3 docs/product/build.py              # write tt-datasheet.html
     python3 docs/product/build.py --pdf        # also render tt-datasheet.pdf
+    python3 docs/product/build.py --facts      # list every fact and its source
 
 The sheets are a fixed 297mm tall with overflow hidden, so copy that grows too
 long is silently clipped rather than spilling onto a third page. Every build
 therefore measures the rendered sheets in headless Chrome and fails if anything
 overflows. Pass --no-check to skip that (or set CHROME if it isn't found).
 
+Reading prices needs GH_TOKEN (or `gh auth login`) with read access to the
+private TinyTapeout/tinytapeout-app repo.
+
 Requires chevron, pyyaml, fonttools and brotli (fonttools needs it to read
-the WOFF2 font), all pinned in requirements.txt.
+the WOFF2 font), all pinned in docs/product/requirements.txt.
 """
 
 import argparse
@@ -31,6 +37,9 @@ import chevron
 import yaml
 
 HERE = Path(__file__).parent
+sys.path.insert(0, str(HERE))
+
+from facts import collect as collect_facts  # noqa: E402
 
 # `style` tokens in datasheet.yaml -> CSS classes in the template.
 STYLE_CLASSES = {
@@ -100,6 +109,108 @@ def prepare_table(name: str, table: dict) -> None:
     table["rows"] = rows
     table["has_note"] = bool(table.get("note"))
     table["has_footnote"] = bool(table.get("footnote"))
+
+
+PLACEHOLDER = re.compile(r"\{\{\s*([\w.-]+)\s*\}\}")
+
+
+def fill(text: str, facts: dict, where: str) -> str:
+    """Replace each {{dotted.key}} in text with its fact; unknown keys are fatal."""
+
+    def lookup(match: re.Match) -> str:
+        node = facts
+        for part in match[1].split("."):
+            if not isinstance(node, dict) or part not in node:
+                raise SystemExit(
+                    f"{where}: unknown fact {{{{{match[1]}}}}} — "
+                    "run build.py --facts to list them"
+                )
+            node = node[part]
+        if isinstance(node, (dict, list)):
+            raise SystemExit(f"{where}: {{{{{match[1]}}}}} is a group, not a value")
+        if isinstance(node, int) and not isinstance(node, bool):
+            return f"{node:,}"
+        return str(node)
+
+    return PLACEHOLDER.sub(lookup, text)
+
+
+def fill_all(node, facts: dict, path: str = ""):
+    """fill() every string in the loaded config, keeping its shape."""
+    if isinstance(node, dict):
+        return {
+            key: fill_all(value, facts, f"{path}.{key}" if path else str(key))
+            for key, value in node.items()
+        }
+    if isinstance(node, list):
+        return [fill_all(value, facts, f"{path}[{i}]") for i, value in enumerate(node)]
+    if isinstance(node, str):
+        return fill(node, facts, path)
+    return node
+
+
+def expand_per_pdk(name: str, table: dict, facts: dict) -> None:
+    """Repeat per-PDK parts of a table once for each PDK, in facts.yaml order.
+
+    A column marked `per_pdk: true` becomes one column per PDK, and the matching
+    cell in every row is filled once per PDK. `rows_per_pdk` is a row template
+    appended once per PDK. Inside either, {{pdk.<key>}} is that PDK's fact.
+    """
+    contexts = [{**facts, "pdk": facts["pdk"][pdk]} for pdk in facts["pdk_order"]]
+    columns = table.get("columns") or []
+    marked = [i for i, column in enumerate(columns) if column.pop("per_pdk", False)]
+    if len(marked) > 1:
+        raise SystemExit(f"{name}: only one column can be per_pdk")
+
+    if marked:
+        (i,) = marked
+        template = columns[i]
+        table["columns"] = (
+            columns[:i]
+            + [
+                {
+                    **template,
+                    "label": fill(
+                        template.get("label", ""), ctx, f"{name}.columns[{i}]"
+                    ),
+                }
+                for ctx in contexts
+            ]
+            + columns[i + 1 :]
+        )
+        rows = []
+        for index, row in enumerate(table.get("rows") or [], start=1):
+            if len(row) != len(columns):
+                raise SystemExit(
+                    f"{name}: row {index} has {len(row)} cells "
+                    f"but there are {len(columns)} columns"
+                )
+            where = f"{name}.rows[{index - 1}]"
+            rows.append(
+                row[:i] + [fill(row[i], ctx, where) for ctx in contexts] + row[i + 1 :]
+            )
+        table["rows"] = rows
+
+    template_row = table.pop("rows_per_pdk", None)
+    if template_row:
+        table["rows"] = (table.get("rows") or []) + [
+            [fill(cell, ctx, f"{name}.rows_per_pdk") for cell in template_row]
+            for ctx in contexts
+        ]
+
+
+def print_facts(sources: dict[str, str], facts: dict) -> None:
+    def value(key: str):
+        node = facts
+        for part in key.split("."):
+            node = node[part]
+        return node
+
+    width = max(len(key) for key in sources)
+    for key in sorted(sources):
+        print(
+            f"{{{{{key}}}}}".ljust(width + 5), str(value(key)).ljust(36), sources[key]
+        )
 
 
 def load_config(path: Path) -> dict:
@@ -339,13 +450,27 @@ def main() -> None:
         action="store_false",
         help="skip the headless-Chrome overflow check",
     )
+    parser.add_argument(
+        "--facts",
+        action="store_true",
+        help="list every fact the YAML can use, with its source, and exit",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
         level=logging.INFO, format="%(levelname)-8s %(message)s", stream=sys.stdout
     )
 
+    facts, sources = collect_facts()
+    if args.facts:
+        print_facts(sources, facts)
+        return
+
     content = load_config(args.config)
+    for key in TABLE_KEYS:
+        if key in content:
+            expand_per_pdk(key, content[key], facts)
+    content = fill_all(content, facts)
     validate_markup(content)
 
     for key in TABLE_KEYS:

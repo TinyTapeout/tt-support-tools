@@ -19,6 +19,14 @@
 #       dim     greyed out               (em dashes, secondary text)
 #       center  centre aligned
 #   - Table rows must have the same number of cells as there are columns.
+#   - Numbers come from their golden references, not from this file: write
+#     {{price.tile}}, {{pdks.and}} and so on instead. facts.py collects them
+#     from the repo, the calculator and the website; facts.yaml holds the few
+#     with no other source. List every fact and where it comes from with
+#         python3 docs/product/build.py --facts
+#     In a table, a column marked `per_pdk: true` repeats once per PDK, and
+#     `rows_per_pdk` is a row template repeated once per PDK; inside either,
+#     {{pdk.<key>}} is that PDK's value.
 # ---------------------------------------------------------------------------
 
 doc:
@@ -76,8 +84,8 @@ assets:
 # --------------------------------------------------------------------------
 
 hero:
-  eyebrow: 'Multi project chip · <span class="pdk">sky130A / ihp-sg13g2 / gf180mcuD</span>'
-  heading: Custom chips from €185
+  eyebrow: 'Multi project chip · <span class="pdk">{{pdks.slash}}</span>'
+  heading: Custom chips from €{{price.headline}}
   body: >-
     Tiny Tapeout makes it more accessible than ever to get designs manufactured on a real chip. 
     Submit from a
@@ -97,15 +105,15 @@ features:
       Any language that can produce Verilog. Official support for Verilog, 
       community provided templates for VHDL and Chisel.
   - kicker: 03 · I/O
-    title: 26 pins, plus analog
+    title: "{{gpio.total}} pins, plus analog"
     body: >-
-      Clock, reset, 8 dedicated inputs, 8 dedicated outputs and 8 bidirectional
-      pins — plus up to 6 analog pins where the process allows.
+      Clock, reset, {{gpio.ui_in}} dedicated inputs, {{gpio.uo_out}} dedicated outputs and {{gpio.uio}} bidirectional
+      pins — plus up to {{analog.max_pins}} analog pins where the process allows.
   - kicker: 04 · Process
-    title: Three PDKs
+    title: "{{pdks.count_Word}} PDKs"
     body: >-
-      sky130A, ihp-sg13g2 and gf180mcuD. Open-source PDKs,
-      10+ shuttles per year, no NDAs to sign.
+      {{pdks.and}}. Open-source PDKs,
+      {{schedule.shuttles_per_year}} shuttles per year, no NDAs to sign.
   - kicker: 05 · Hardware
     title: Demoboard available
     body: >-
@@ -127,22 +135,22 @@ pricing:
     - {label: From, width: "26%", style: price}
   rows:
     - ["1 tile",
-       "Roughly 1,000 standard cells of silicon area. Physical dimensions vary by PDK — see page 2.",
-       "€70"]
+       "Roughly {{tile.cells}} standard cells of silicon area. Physical dimensions vary by PDK — see page 2.",
+       "€{{price.tile}}"]
     - ["Analog pin",
-       "Multiplexed analog pad access for mixed signal designs. The first 2 pins are discounted. Minimum project size of 2 tiles applies.",
-       "€40 <span class=\"t-sub\">/ pin, varies by process, see calculator</span>"]
+       "Multiplexed analog pad access for mixed signal designs. The first {{price.analog_pins_discounted}} pins are discounted. Minimum project size of {{analog.min_height}} tiles applies.",
+       "€{{price.analog_pin_discounted}} <span class=\"t-sub\">/ pin, varies by process, see calculator</span>"]
     - ["ASIC + demoboard",
        "Your packaged chip on a breakout board, with an RP2350 powered demoboard. Tiles are ordered separately.",
-       "€100 <span class=\"t-sub\">for the first 80 people, one per person, then €300</span>"]
+       "€{{price.board_launch}} <span class=\"t-sub\">for the first {{price.board_launch_count}} people, one per person, then €{{price.board}}</span>"]
     - ["Postage &amp; packing",
        "Flat rate worldwide, charged once per demoboard.",
-       "€15"]
+       "€{{price.postage}}"]
   footnote: >-
-    <b>The €185 headline is one tile (€70) plus an ASIC + demoboard at the launch
-    price of €100 plus postage (€15)</b> — the smallest order that puts a physical
+    <b>The €{{price.headline}} headline is one tile (€{{price.tile}}) plus an ASIC + demoboard at the launch
+    price of €{{price.board_launch}} plus postage (€{{price.postage}})</b> — the smallest order that puts a physical
     chip in your hand. The launch price is first come, first served: one per person
-    for the first 80 people, €300 after. Tiles alone get your design manufactured
+    for the first {{price.board_launch_count}} people, €{{price.board}} after. Tiles alone get your design manufactured
     but do not get you a chip. To price your own design, use
     <b><a href="https://app.tinytapeout.com/calculator">app.tinytapeout.com/calculator</a></b>.
 
@@ -152,7 +160,7 @@ faq:
   items:
     - q: How long until I get my chip?
       a: >-
-        Fabrication takes 6–9 months, then boards are assembled, tested and
+        Fabrication takes {{schedule.lead_time}} months, then boards are assembled, tested and
         shipped. Check <a href="https://app.tinytapeout.com/chips">tinytapeout.com/chips</a> for the schedule.
     - q: Do I need chip design experience?
       a: >-
@@ -164,7 +172,7 @@ faq:
         packaged chip, an RP2350 demoboard and a breakout board. Bare chips are not available separately.
     - q: Which processes can I use?
       a: >-
-        sky130A, ihp-sg13g2 and gf180mcuD, each on its own shuttle schedule.
+        {{pdks.and}}, each on its own shuttle schedule.
     - q: Why would I only order area?
       a: >-
         Share the cost of 1 board between a group submitting multiple projects. Or save the cost of a board entirely: we can test your design remotely for free.
@@ -208,32 +216,29 @@ process:
     - {label: Node, width: "20%", style: num}
     - {label: 1×1 tile area, width: "24%", style: mono}
     - {label: Analog support}
-  rows:
-    - ["sky130A", "SkyWater", "130 nm", "161.00 × 111.52 µm", "Full"]
-    - ["ihp-sg13g2", "IHP", "130 nm BiCMOS", "202.08 × 154.98 µm", "Partial"]
-    - ["gf180mcuD", "GlobalFoundries", "180 nm", "346.64 × 160.72 µm", "Full"]
+  # One row per PDK, in facts.yaml order. {{pdk.<key>}} is that PDK's fact.
+  rows_per_pdk: ["{{pdk.name}}", "{{pdk.foundry}}", "{{pdk.node}}", "{{pdk.tile_1x1}}", "{{pdk.analog_support}}"]
   footnote: >-
-    One tile holds approximately <b>1,000 standard cells</b>. Larger designs are
-    built from multi-tile blocks, up to <b>8×4</b> on sky130A and ihp-sg13g2 and
-    up to <b>4×4</b> on gf180mcuD; the sizes available in between differ per PDK.
-    Analog projects require a minimum height of 2 tiles.
+    One tile holds approximately <b>{{tile.cells}} standard cells</b>. Larger designs are
+    built from multi-tile blocks, up to {{blocks.max_summary}}; the sizes available
+    in between differ per PDK. Analog projects require a minimum height of
+    {{analog.min_height}} tiles.
 
 ratings:
   heading: Typical ratings
   columns:
     - {label: Parameter, width: "40%", style: name}
-    - {label: '<span class="pdk">sky130A</span>', width: "13%", style: num}
-    - {label: '<span class="pdk">ihp-sg13g2</span>', width: "13%", style: num}
-    - {label: '<span class="pdk">gf180mcuD</span>', width: "13%", style: num}
+    # Repeated once per PDK; the matching cell in each row is too.
+    - {label: '<span class="pdk">{{pdk.name}}</span>', width: "13%", style: num, per_pdk: true}
     - {label: Unit}
   rows:
-    - ["Core supply voltage (VDPWR)", "1.80", "1.20", "3.30", "V"]
-    - ["I/O supply voltage", "3.30/5.00", "3.30", "3.30/5.00", "V"]
-    - ["Input frequency", "66", "66", "66", "MHz"]
-    - ["Output toggle frequency", "33", "66", "66", "MHz"]
-    - ["Output drive strength, source/sink", "4", "4", "4", "mA"]
-    - ["Pad-to-tile round-trip latency", "17", "11", "20", "ns"]
-    - ["Pin-to-pin latency variance", "2", "2", "2", "ns"]
+    - ["Core supply voltage (VDPWR)", "{{pdk.core_voltage}}", "V"]
+    - ["I/O supply voltage", "{{pdk.io_voltage}}", "V"]
+    - ["Input frequency", "{{pdk.input_freq}}", "MHz"]
+    - ["Output toggle frequency", "{{pdk.output_freq}}", "MHz"]
+    - ["Output drive strength, source/sink", "{{pdk.drive}}", "mA"]
+    - ["Pad-to-tile round-trip latency", "{{pdk.latency}}", "ns"]
+    - ["Pin-to-pin latency variance", "{{pdk.variance}}", "ns"]
   footnote: >-
     For more detail see
     <b><a href="https://tinytapeout.com/specs/">tinytapeout.com/specs</a></b>.
@@ -246,13 +251,13 @@ gpio:
     - {label: Direction, width: "22%"}
     - {label: Function}
   rows:
-    - ["clk", "1", "Input", "Clock"]
-    - ["rst_n", "1", "Input", "Reset, active low"]
-    - ["ui_in[7:0]", "8", "Input", "General purpose"]
-    - ["uo_out[7:0]", "8", "Output", "General purpose"]
-    - ["uio[7:0]", "8", "Bidirectional", "Per-pin direction control"]
+    - ["clk", "{{gpio.clk}}", "Input", "Clock"]
+    - ["rst_n", "{{gpio.rst_n}}", "Input", "Reset, active low"]
+    - ["ui_in[7:0]", "{{gpio.ui_in}}", "Input", "General purpose"]
+    - ["uo_out[7:0]", "{{gpio.uo_out}}", "Output", "General purpose"]
+    - ["uio[7:0]", "{{gpio.uio}}", "Bidirectional", "Per-pin direction control"]
   linkline: >-
-    26 I/O PINS TOTAL ·
+    {{gpio.total}} I/O PINS TOTAL ·
     <b><a href="https://tinytapeout.com/specs/gpio/">TINYTAPEOUT.COM/SPECS/GPIO</a></b>
 
 analog:
@@ -262,11 +267,11 @@ analog:
     - {label: Parameter, style: name}
     - {label: Value, width: "34%", style: mono}
   rows:
-    - ["Analog pins, maximum", "6 · ua[0:5]"]
-    - ["Series resistance, pad to project", "&lt; 500 Ω"]
-    - ["Parasitic capacitance", "&lt; 5 pF"]
-    - ["Current per pin, maximum", "4 mA"]
-    - ["VAPWR analog supply", "3.3 V, adjustable up to VIO"]
+    - ["Analog pins, maximum", "{{analog.max_pins}} · {{analog.pins}}"]
+    - ["Series resistance, pad to project", "{{analog.resistance}}"]
+    - ["Parasitic capacitance", "{{analog.capacitance}}"]
+    - ["Current per pin, maximum", "{{analog.current}}"]
+    - ["VAPWR analog supply", "{{analog.vapwr}}"]
   linkline: >-
     <b><a href="https://tinytapeout.com/specs/analog/">TINYTAPEOUT.COM/SPECS/ANALOG</a></b>
 
@@ -279,11 +284,11 @@ ordering:
     - {}
   rows:
     - ["Shuttle cadence",
-       "10+ shuttles per year across the three processes. Check <a href=\"https://app.tinytapeout.com/chips\">tinytapeout.com/chips</a> for the schedule."]
+       "{{schedule.shuttles_per_year}} shuttles per year across the {{pdks.count_word}} processes. Check <a href=\"https://app.tinytapeout.com/chips\">tinytapeout.com/chips</a> for the schedule."]
     - ["Lead time",
-       "6–9 months in fabrication, then assembly, test and fulfilment."]
+       "{{schedule.lead_time}} months in fabrication, then assembly, test and fulfilment."]
     - ["Volume discount",
-       "10% off orders over €10,000."]
+       "{{price.volume_discount_percent}}% off orders over €{{price.volume_discount_threshold}}."]
     - ["Deliverable",
        "Silicon area only for remote or shared test, or area plus the demoboard kit: packaged chip, RP2350 demoboard and breakout board."]
     - ["Design tools",

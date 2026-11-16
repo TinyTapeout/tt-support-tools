@@ -1,0 +1,9 @@
+# Dependencies for build.py only; not needed by the rest of tt-support-tools.
+# Versions match the top-level requirements.txt where the package appears there.
+#
+#    pip install -r docs/product/requirements.txt
+#
+brotli==1.2.1
+chevron==0.14.0
+fonttools==4.60.1
+pyyaml==6.0.2

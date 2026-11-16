@@ -1,0 +1,69 @@
+# ---------------------------------------------------------------------------
+# Hand-maintained facts for the product datasheets.
+#
+# Only values with no machine-readable source live here. Everything else is
+# collected by facts.py at build time from the golden references:
+#
+#   repo        tech/<pdk>/tile_sizes.yaml, the DEF templates, tech.py,
+#               project_info.py
+#   calculator  TinyTapeout/tinytapeout-app: src/model/invoice.ts (prices)
+#               and src/config/shuttle.ts (subsidised board count)
+#   website     TinyTapeout/tinytapeout_www: content/specs (sky130A ratings,
+#               analog pad specs) and content/faq (lead time)
+#
+# A value set here that a golden reference also provides is an error, so the
+# two can never silently disagree. To see every value and where it came from:
+#
+#     python3 docs/product/build.py --facts
+# ---------------------------------------------------------------------------
+
+# Datasheet order. Must list exactly the PDKs that have a tech/<pdk>/ directory
+# with a tile_sizes.yaml, or the build fails.
+pdks:
+  sky130A:
+    foundry: SkyWater
+    node: 130 nm
+    calculator: chipfoundry       # key in the calculator's shuttlePrices
+    analog_support: Full
+    io_voltage: 3.30/5.00         # website says 1.71–5.5 V, demoboard 3.3 V
+    latency: 17                   # ns; website has 20 ns, measured on TT3.5
+    # input_freq, output_freq, drive, variance: from the website (gpio specs)
+  ihp-sg13g2:
+    foundry: IHP
+    node: 130 nm BiCMOS
+    calculator: ihp
+    analog_support: Partial
+    io_voltage: "3.30"
+    input_freq: 66                # MHz
+    output_freq: 66               # MHz
+    drive: 4                      # mA, source/sink
+    latency: 11                   # ns, pad-to-tile round trip
+    variance: 2                   # ns, pin-to-pin
+  gf180mcuD:
+    foundry: GlobalFoundries
+    node: 180 nm
+    calculator: gf180
+    analog_support: Full
+    io_voltage: 3.30/5.00
+    input_freq: 66
+    output_freq: 66
+    drive: 4
+    latency: 20
+    variance: 2
+
+# The shuttle whose subsidised-board count ("first N people") the main sheet
+# quotes. The count itself comes from the calculator's shuttle config.
+launch_offer_shuttle: ttsky26d
+
+volume_discount:
+  percent: 10
+  threshold: 10000                # EUR
+
+cells_per_tile: 1000              # approximate standard cells in one tile
+shuttles_per_year: 10+
+vapwr: 3.3 V, adjustable up to VIO
+
+# Worked example in the university sheet's pricing footnote.
+university_example:
+  students: 25                    # one tile each
+  boards: 5                       # full-price demoboards, plus postage each

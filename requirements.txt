@@ -4,8 +4,6 @@
 #
 #    pip-compile
 #
-brotli==1.2.1
-    # via tt-support-tools (pyproject.toml)
 cairocffi==1.7.1
     # via cairosvg
 cairosvg==2.8.2
@@ -37,9 +35,7 @@ distlib==0.4.0
 filelock==3.18.0
     # via virtualenv
 fonttools==4.60.1
-    # via
-    #   matplotlib
-    #   tt-support-tools (pyproject.toml)
+    # via matplotlib
 gdstk==0.9.60
     # via tt-support-tools (pyproject.toml)
 gitdb==4.0.12

@@ -1,5 +1,8 @@
 from typing import Any, Dict, List, Optional
 
+# Analog pins a project can request (ua[0] .. ua[MAX_ANALOG_PINS - 1]).
+MAX_ANALOG_PINS = 6
+
 YAML_VERSION = 6
 
 
@@ -123,9 +126,9 @@ class ProjectInfo:
                 "Invalid value for 'analog_pins' in 'project' section, must be an integer"
             )
             analog_pins = 0  # Set default for further validation
-        elif analog_pins < 0 or analog_pins > 6:
+        elif analog_pins < 0 or analog_pins > MAX_ANALOG_PINS:
             errors.append(
-                "Invalid value for 'analog_pins' in 'project' section, must be between 0 and 6"
+                f"Invalid value for 'analog_pins' in 'project' section, must be between 0 and {MAX_ANALOG_PINS}"
             )
             analog_pins = 0  # Set default for further validation
         self.analog_pins: int = analog_pins
