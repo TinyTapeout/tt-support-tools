@@ -213,6 +213,22 @@ class IHPCmos5lTech(IHPG2Tech):
     librelane_pdk_args = "--pdk ihp-sg13cmos5l"
     cell_regexp = r"^\s*sg13cmos5l_(?P<cell_name>\S+)_(?P<cell_drive>\d+)"
     project_top_metal_layer = "Metal4"
+    micro_librelane_config = {
+        "RT_MAX_LAYER": "Metal3",
+        "PDN_MULTILAYER": True,
+        # One pair of Metal2 stripes at each end of the core ties the Metal1 rails
+        # together: standard cells cannot be placed under them
+        "PDN_VERTICAL_LAYER": "Metal2",
+        "PDN_VWIDTH": 1.2,
+        "PDN_VSPACING": 0.72,
+        "PDN_VPITCH": 76.8,
+        "PDN_VOFFSET": 0.96,
+        "PDN_HORIZONTAL_LAYER": "Metal3",
+        "PDN_HWIDTH": 1.2,
+        "PDN_HSPACING": 13.92,
+        "PDN_HPITCH": 30.24,
+        "PDN_HOFFSET": 7.56,
+    }
     label_layers = [
         (8, 1),  # Metal1.label
         (8, 25),  # Metal1.text
