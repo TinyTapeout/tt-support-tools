@@ -32,8 +32,12 @@
 #     * Change the default of sram_exclude to false
 #   2025-10-29 : 2025.10.29_01.10 release
 #     * Updated to be in line with the current Skywater required rules
+#   2025-11-21 : licon bar spacing for SP.15/16
+#     * Updated to 0.57 & 0.64 per feedback from SWT
+#   2026-03-17 : fixed MR_mcon.CON.10
+#     * was not flagging violations
 ##########################################################################################
-release = "2025.10.29_01.10"
+release = "2026.03.30_01.00"
 
 require "time"
 require "logger"
@@ -884,11 +888,46 @@ if FEOL
         "MR_licon.SP.4 : licon bar minimum space to licon square : 0.51um"
     )
     
-    # MRW_licon.SP.16: 0.19 width bar licons (post-maskgen) bar licon spacing < 0.51
-    #licon_bars.space(0.51, euclidian).output(
-    #    "MRW_licon.SP.16",
-    #    "MRW_licon.SP.16 : 0.19 width bar licons (post-maskgen) bar licon spacing < 0.51"
-    #)
+    # - Bar licons with spacing < 0.64 get mask drop region on sides, remain 0.19 um wide
+    #   (ends still sized by 0.03 um per side: 0.19 um × 2.06 um post-maskgen)
+    # - Bar licons with spacing >= 0.64 get sized by 0.03 on all sides, becoming 0.25 um wide
+    #   (0.25 um × 2.06 um post-maskgen)
+    
+    # Find bar licons that are in close spacing (< 0.64) - these remain 0.19 um wide
+    # The space() method returns violations (edges/regions) where spacing < 0.64
+    # We expand these violation regions slightly to capture the bar licons involved
+    licon_bars_close_spacing_violations = licon_bars.space(0.64, euclidian)
+
+    # Expand violations slightly to capture nearby bar licons
+    licon_bars_close_regions = licon_bars_close_spacing_violations.polygons.sized(0.1)
+
+    # Get bar licons that interact with close spacing regions
+    licon_bars_in_close_spacing = licon_bars.interacting(licon_bars_close_regions)
+
+    # These remain 0.19 um wide after mask generation (sides not sized, ends are sized)
+    # Note: For spacing checks, we use as-is since spacing is width-based
+    licon_bars_0p19_post_mg = licon_bars_in_close_spacing
+    
+    # Bar licons NOT in close spacing get sized to 0.25 um on all sides
+    licon_bars_not_close = licon_bars.not(licon_bars_in_close_spacing)
+    
+    # Simulate post-maskgen: size by 0.03 on all sides (0.19 × 2.0 -> 0.25 × 2.06 um)
+    licon_bars_0p25_post_mg = licon_bars_not_close.sized(0.03)
+    
+    # MRW_licon.SP.15: 0.25 um width bar licons (post-maskgen) spacing < 0.58
+    # Check spacing between 0.25 um wide bar licons after mask generation
+    licon_bars_0p25_post_mg.space(0.58, euclidian).output(
+        "MRW_licon.SP.15",
+        "MRW_licon.SP.15 : 0.25 um width bar licons (post-maskgen) spacing < 0.58um"
+    )
+
+    # MRW_licon.SP.16: 0.19 um width bar licons (post-maskgen) spacing < 0.51
+    # Check side-to-side spacing (between long sides) for 0.19 um wide bar licons
+    # Use projection mode with parallel edges to check side-to-side spacing
+    licon_bars_0p19_post_mg.space(0.51, projection).with_internal_angle(0).output(
+        "MRW_licon.SP.16",
+        "MRW_licon.SP.16 : 0.19 um width bar licons (post-maskgen) side-to-side spacing < 0.51um"
+    )
     
     # MR_licon.SP.5: tap_licon minimum space to tap edge abutting diff ≥ 0.06
     tap_licon = licon.and(tap)
@@ -907,7 +946,7 @@ if FEOL
         "MR_licon.SP.6_overlap",
         "MR_licon.SP.6 : licon and psdm must not overlap"
     )
-    
+
     # MR_licon.SP.8: licon on diff minimum space to gate outside areaid:standardc (overlap prohibited) ≥ 0.055
     licon_on_diff = licon.and(difftap)
     licon_on_diff_outside_stdc = licon_on_diff.outside(areaid_sc)
@@ -1116,7 +1155,7 @@ if BEOL
             "MR_mcon.CON.1: ring-shaped mcon must be enclosed by areaid_sl"
         )
     end
-    mconnotace.not(li).output("MR_mcon.CON.10", "MR_mcon.CON.10 : mcon should covered by li")
+    mcon.not(li).output("MR_mcon.CON.10", "MR_mcon.CON.10 : mcon should covered by li")
     log("END: 67/44 (mcon)")
 
     #   m1
