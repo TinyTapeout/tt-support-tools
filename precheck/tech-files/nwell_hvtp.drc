@@ -1,0 +1,13 @@
+source($input, $top_cell)
+report("SKY130 DRC runset", $report)
+deep
+threads($thr)
+verbose(true)
+
+nwell = polygons(64, 20)
+hvtp = polygons(78, 44)
+
+(hvtp & nwell).width(0.38, euclidian).output(
+    "hvtp in nwell width",
+    "hvtp in nwell width: min. width of hvtp AND nwell 0.38um"
+)

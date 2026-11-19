@@ -3,6 +3,7 @@ sky130A_mr.drc:
 pin_label_purposes_overlapping_drawing.rb.drc from https://github.com/chipfoundry/mpw_precheck revision f6b9c3d3f00694f96dce8444149449b4719180f0
 zeroarea.rb.drc from https://github.com/chipfoundry/mpw_precheck revision 4fd5283b124e931c9e71219f47270075176f84e2
 nwell_urpm.drc from https://open-source-silicon.slack.com/archives/C05FW1VMY5A/p1729112262642699?thread_ts=1728921677.220509&cid=C05FW1VMY5A
+nwell_hvtp.drc: minimum width of hvtp AND nwell (0.38um), which sky130A_mr.drc does not cover
 
 sg13g2_mr.lydrc:
   from https://github.com/IHP-GmbH/TO_Apr2025 revision 772a369f3ceabc2c6e1eba57d91ae755682c8323

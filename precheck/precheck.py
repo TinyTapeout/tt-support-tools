@@ -324,6 +324,14 @@ def urpm_nwell_check(gds: str, top_module: str):
     )
 
 
+def hvtp_nwell_check(gds: str, top_module: str):
+    """Run a DRC check for the width of hvtp inside nwell."""
+    extra_vars = {"thr": os.cpu_count(), "top_cell": top_module}
+    klayout_drc(
+        gds=gds, check="nwell_hvtp", script="nwell_hvtp.drc", extra_vars=extra_vars
+    )
+
+
 def analog_pin_check(
     gds: str,
     tech: str,
@@ -550,6 +558,11 @@ def main():
         {
             "name": "urpm/nwell check",
             "check": lambda: urpm_nwell_check(gds_file, top_module),
+            "techs": ["sky130A"],
+        },
+        {
+            "name": "hvtp/nwell check",
+            "check": lambda: hvtp_nwell_check(gds_file, top_module),
             "techs": ["sky130A"],
         },
         {

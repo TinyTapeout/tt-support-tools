@@ -934,6 +934,30 @@ def test_urpm_nwell_too_close(gds_urpm_nwell_too_close: str):
 
 
 @sky130A_only
+@pytest.mark.parametrize("overlap", [0.1, 2.0])
+def test_hvtp_nwell_width(tmp_path, overlap: float):
+    """hvtp that overlaps an nwell by less than 0.38um fails, a wider overlap passes."""
+    gds_file = str(tmp_path / "TEST_hvtp_nwell.gds")
+    layout = pya.Layout()
+    nwell_info = gds_layers["nwell.drawing"]
+    hvtp_info = gds_layers["hvtp.drawing"]
+    top_cell = layout.create_cell("TEST_hvtp_nwell")
+    nwell = layout.layer(nwell_info.layer, nwell_info.data_type)
+    hvtp = layout.layer(hvtp_info.layer, hvtp_info.data_type)
+    top_cell.shapes(nwell).insert(pya.DBox(0, 0, 5, 5))
+    top_cell.shapes(hvtp).insert(pya.DBox(5 - overlap, 0, 10, 5))
+    layout.write(gds_file)
+    if overlap < 0.38:
+        with pytest.raises(
+            precheck.PrecheckFailure,
+            match="Klayout nwell_hvtp failed with 1 DRC violations",
+        ):
+            precheck.hvtp_nwell_check(gds_file, "TEST_hvtp_nwell")
+    else:
+        precheck.hvtp_nwell_check(gds_file, "TEST_hvtp_nwell")
+
+
+@sky130A_only
 def test_pin_analog_example(gds_lef_analog_example: tuple[str, str]):
     gds_file, lef_file = gds_lef_analog_example
     precheck.pin_check(
