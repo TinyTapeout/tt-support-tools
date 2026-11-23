@@ -1,6 +1,8 @@
 import os
+import re
 import subprocess
 import textwrap
+from pathlib import Path
 
 import klayout.db as pya
 import klayout_tools
@@ -405,19 +407,6 @@ def gds_invalid_layer(tmp_path_factory: pytest.TempPathFactory):
     top_cell = layout.create_cell("TEST_invalid_layer")
     rect = pya.DBox(0, 0, 5, 5)
     top_cell.shapes(invalid_layer).insert(rect)
-    layout.write(str(gds_file))
-    return str(gds_file)
-
-
-@pytest.fixture(scope="session")
-def gds_invalid_cell_name(tmp_path_factory: pytest.TempPathFactory):
-    """Creates a GDS with a subcell having a '#' in its name."""
-    gds_file = tmp_path_factory.mktemp("gds") / "TEST_invalid_cell_name.gds"
-    layout = pya.Layout()
-    top_cell = layout.create_cell("TEST_invalid_cell_name")
-    subcell = layout.create_cell("subcell#")
-    subcell_instance = pya.CellInstArray(subcell, pya.Trans())
-    top_cell.insert(subcell_instance)
     layout.write(str(gds_file))
     return str(gds_file)
 
@@ -916,12 +905,43 @@ def test_invalid_layer(gds_invalid_layer: str):
         precheck.layer_check(gds_invalid_layer, PDK_NAME)
 
 
-def test_invalid_cell_name(gds_invalid_cell_name: str):
+def write_gds_with_subcells(tmp_path: Path, subcell_names: list[str]) -> str:
+    gds_file = str(tmp_path / "TEST_cell_names.gds")
+    layout = pya.Layout()
+    top_cell = layout.create_cell("TEST_cell_names")
+    for name in subcell_names:
+        top_cell.insert(pya.CellInstArray(layout.create_cell(name), pya.Trans()))
+    layout.write(gds_file)
+    return gds_file
+
+
+@pytest.mark.parametrize("char", [".", "/", "#", "+"])
+def test_invalid_cell_name_char(tmp_path: Path, char: str):
+    gds_file = write_gds_with_subcells(tmp_path, [f"gc_w0{char}42"])
     with pytest.raises(
         precheck.PrecheckFailure,
-        match="Cell name subcell# contains invalid character '#'",
+        match=re.escape(f"Invalid characters in cell names: ['gc_w0{char}42']"),
     ):
-        precheck.cell_name_check(gds_invalid_cell_name)
+        precheck.cell_name_check(gds_file)
+
+
+def test_invalid_cell_names_lists_all(tmp_path: Path):
+    gds_file = write_gds_with_subcells(
+        tmp_path, ["nand_p0.64", "inv_p1.28", "inv_p0.64", "inv_ok"]
+    )
+    with pytest.raises(
+        precheck.PrecheckFailure,
+        match=re.escape("['inv_p0.64', 'inv_p1.28', 'nand_p0.64']"),
+    ):
+        precheck.cell_name_check(gds_file)
+
+
+def test_valid_cell_names(tmp_path: Path):
+    gds_file = write_gds_with_subcells(
+        tmp_path,
+        ["sky130_fd_sc_hd__inv_1", "VIA_M1M2$1", "Cell$$42", "4-to-1_analog_MUX"],
+    )
+    precheck.cell_name_check(gds_file)
 
 
 @sky130A_only

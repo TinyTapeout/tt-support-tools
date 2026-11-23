@@ -303,17 +303,21 @@ def layer_check(gds: str, tech: str):
         raise PrecheckFailure(f"Invalid layers in GDS: {excess}")
 
 
+INVALID_CELL_NAME_CHAR = re.compile(r"[^A-Za-z0-9_$-]")
+
+
 def cell_name_check(gds: str):
-    """Check that there are no cell names with '#' or '/' in them."""
-    for cell_name in gdstk.read_rawcells(gds):
-        if "#" in cell_name:
-            raise PrecheckFailure(
-                f"Cell name {cell_name} contains invalid character '#'"
-            )
-        if "/" in cell_name:
-            raise PrecheckFailure(
-                f"Cell_name {cell_name} contains invalid character '/'"
-            )
+    """Check that cell names only use A-Z, a-z, 0-9, '_', '$' and '-' (foundry requirement)."""
+    invalid = sorted(
+        cell_name
+        for cell_name in gdstk.read_rawcells(gds)
+        if INVALID_CELL_NAME_CHAR.search(cell_name)
+    )
+    if invalid:
+        raise PrecheckFailure(
+            f"Invalid characters in cell names: {invalid}. "
+            "Cell names may only contain A-Z, a-z, 0-9, '_', '$' and '-'"
+        )
 
 
 def urpm_nwell_check(gds: str, top_module: str):
