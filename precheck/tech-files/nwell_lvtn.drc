@@ -1,0 +1,15 @@
+source($input, $top_cell)
+report("SKY130 DRC runset", $report)
+deep
+threads($thr)
+verbose(true)
+
+nwell = polygons(64, 20)
+lvtn = polygons(125, 44)
+
+# Unlike the lvtn.10 text in the SkyWater rules, edges where lvtn touches the
+# nwell edge are flagged: the foundry rejects them.
+nwell.enclosing(lvtn, 0.38, euclidian).output(
+    "lvtn.10",
+    "lvtn.10: min. enclosure of lvtn by nwell 0.38um"
+)

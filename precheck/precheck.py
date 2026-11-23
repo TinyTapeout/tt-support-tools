@@ -336,6 +336,14 @@ def hvtp_nwell_check(gds: str, top_module: str):
     )
 
 
+def lvtn_nwell_check(gds: str, top_module: str):
+    """Run a DRC check for the enclosure of lvtn by nwell."""
+    extra_vars = {"thr": os.cpu_count(), "top_cell": top_module}
+    klayout_drc(
+        gds=gds, check="nwell_lvtn", script="nwell_lvtn.drc", extra_vars=extra_vars
+    )
+
+
 def analog_pin_check(
     gds: str,
     tech: str,
@@ -567,6 +575,11 @@ def main():
         {
             "name": "hvtp/nwell check",
             "check": lambda: hvtp_nwell_check(gds_file, top_module),
+            "techs": ["sky130A"],
+        },
+        {
+            "name": "lvtn/nwell check",
+            "check": lambda: lvtn_nwell_check(gds_file, top_module),
             "techs": ["sky130A"],
         },
         {

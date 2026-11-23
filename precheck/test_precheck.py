@@ -978,6 +978,31 @@ def test_hvtp_nwell_width(tmp_path, overlap: float):
 
 
 @sky130A_only
+@pytest.mark.parametrize("margin", [0.0, 0.2, 0.5, -3.0])
+def test_lvtn_nwell_enclosure(tmp_path, margin: float):
+    """lvtn closer than 0.38um to the nwell edge fails, including touching it.
+    A negative margin puts the lvtn outside the nwell, which passes."""
+    gds_file = str(tmp_path / "TEST_lvtn_nwell.gds")
+    layout = pya.Layout()
+    nwell_info = gds_layers["nwell.drawing"]
+    lvtn_info = gds_layers["lvtn.drawing"]
+    top_cell = layout.create_cell("TEST_lvtn_nwell")
+    nwell = layout.layer(nwell_info.layer, nwell_info.data_type)
+    lvtn = layout.layer(lvtn_info.layer, lvtn_info.data_type)
+    top_cell.shapes(nwell).insert(pya.DBox(0, 0, 5, 5))
+    top_cell.shapes(lvtn).insert(pya.DBox(3 - margin, 1, 5 - margin, 4))
+    layout.write(gds_file)
+    if 0 <= margin < 0.38:
+        with pytest.raises(
+            precheck.PrecheckFailure,
+            match="Klayout nwell_lvtn failed with 1 DRC violations",
+        ):
+            precheck.lvtn_nwell_check(gds_file, "TEST_lvtn_nwell")
+    else:
+        precheck.lvtn_nwell_check(gds_file, "TEST_lvtn_nwell")
+
+
+@sky130A_only
 def test_pin_analog_example(gds_lef_analog_example: tuple[str, str]):
     gds_file, lef_file = gds_lef_analog_example
     precheck.pin_check(
