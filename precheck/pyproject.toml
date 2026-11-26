@@ -6,7 +6,7 @@ dependencies = [
     "gdstk",
     "klayout>=0.30.8,<0.31.0",
     "numpy<2",
-    "pytest",
+    "pytest>=8.4",
     "PyYAML",
     "yowasp-yosys",
 ]
