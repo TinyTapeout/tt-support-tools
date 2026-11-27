@@ -40,22 +40,34 @@ def test_validation_errors_are_reported(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "content",
+    "content, expected",
     [
-        "",
-        "- just\n- a list\n",
-        VALID_INFO_YAML.replace("    - test.v\n", ""),
-        VALID_INFO_YAML.replace("top_module: tt_um_test_project", "top_module: 1"),
-        HEADER,
+        ("", ["info.yaml must contain a YAML mapping"]),
+        ("- just\n- a list\n", ["info.yaml must contain a YAML mapping"]),
+        (
+            VALID_INFO_YAML.replace("    - test.v\n", ""),
+            ["'source_files' must be a non-empty list"],
+        ),
+        (
+            VALID_INFO_YAML.replace("    - test.v\n", "").replace(
+                "source_files:", "source_files: test.v"
+            ),
+            ["'source_files' must be a non-empty list"],
+        ),
+        (
+            VALID_INFO_YAML.replace("top_module: tt_um_test_project", "top_module: 1"),
+            ["'top_module' in 'project' section must be a string"],
+        ),
+        (HEADER, ["Please fill in the 'pinout' section"]),
     ],
     ids=[
         "empty",
         "not-a-mapping",
         "empty-source-files",
+        "string-source-files",
         "top-module-int",
         "empty-pinout",
     ],
 )
-def test_malformed_info_yaml_is_an_error(tmp_path, content):
-    errors = check_info_yaml(write_info_yaml(tmp_path, content), "sky130A")
-    assert errors
+def test_malformed_info_yaml_is_an_error(tmp_path, content, expected):
+    assert check_info_yaml(write_info_yaml(tmp_path, content), "sky130A") == expected
