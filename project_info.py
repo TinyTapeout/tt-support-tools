@@ -86,6 +86,9 @@ class ProjectInfo:
             errors.append("Missing 'project' section")
             # Can't continue without project section
             raise ProjectYamlError(errors)
+        if not isinstance(project_section, dict):
+            errors.append("'project' section must be a mapping of keys to values")
+            raise ProjectYamlError(errors)
 
         # Validate all required fields in project section
         title = project_section.get("title")
@@ -116,7 +119,7 @@ class ProjectInfo:
             tiles = project_section.get("tiles")
             if tiles is None:
                 errors.append("Missing key 'tiles' in 'project' section")
-            elif tiles not in tile_sizes.keys():
+            elif not isinstance(tiles, str) or tiles not in tile_sizes.keys():
                 errors.append(
                     f"Invalid value for 'tiles' in 'project' section: {tiles}"
                 )
@@ -142,8 +145,8 @@ class ProjectInfo:
             errors.append("Micro tile projects cannot have analog pins")
 
         # "uses_3v3" is the legacy name for "uses_vapwr"; still accepted for compat.
-        uses_vapwr: bool = project_section.get(
-            "uses_vapwr", project_section.get("uses_3v3", False)
+        uses_vapwr = bool(
+            project_section.get("uses_vapwr", project_section.get("uses_3v3", False))
         )
         self.uses_vapwr: bool = uses_vapwr
         if uses_vapwr and not self.is_analog:
@@ -174,6 +177,8 @@ class ProjectInfo:
             top_module = project_section.get("top_module")
             if top_module is None:
                 errors.append("Missing key 'top_module' in 'project' section")
+            elif not isinstance(top_module, str):
+                errors.append("'top_module' in 'project' section must be a string")
             elif not top_module.startswith("tt_um_"):
                 errors.append(
                     "Top module must start with 'tt_um_' (e.g. tt_um_my_project)"
@@ -183,8 +188,13 @@ class ProjectInfo:
 
             if "source_files" not in project_section:
                 errors.append("Missing key 'source_files' in 'project' section")
-            elif len(project_section["source_files"]) == 0:
-                errors.append("No source files specified")
+            elif (
+                not isinstance(project_section["source_files"], list)
+                or len(project_section["source_files"]) == 0
+            ):
+                errors.append("'source_files' must be a non-empty list")
+            elif not all(isinstance(f, str) for f in project_section["source_files"]):
+                errors.append("Every entry in 'source_files' must be a string")
             else:
                 self.source_files = project_section["source_files"]
 
@@ -201,6 +211,10 @@ class ProjectInfo:
         # Validate pinout section
         if "pinout" not in yaml_data:
             errors.append("Missing 'pinout' section")
+        elif yaml_data["pinout"] is None:
+            errors.append("Please fill in the 'pinout' section")
+        elif not isinstance(yaml_data["pinout"], dict):
+            errors.append("'pinout' section must be a mapping of pin names to signals")
         else:
             self.pinout = PinoutSection(yaml_data["pinout"], errors, require_pinout)
 

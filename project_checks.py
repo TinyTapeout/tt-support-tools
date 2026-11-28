@@ -40,11 +40,16 @@ def check_info_yaml(project_dir: str, pdk: str) -> list[str]:
     with open(os.path.join(tt_tools_dir, tile_sizes_yaml), "r") as f:
         tile_sizes = yaml.safe_load(f)
 
+    if not isinstance(yaml_data, dict):
+        return ["info.yaml must contain a YAML mapping"]
+
     try:
         _ = ProjectInfo(yaml_data, tile_sizes, require_pinout=True)
-    except Exception as e:
-        if isinstance(e, ProjectYamlError):
-            return e.errors
+    except ProjectYamlError as e:
+        return e.errors
+    except (AttributeError, TypeError) as e:
+        # A section or value has the wrong type (e.g. an empty 'source_files:')
+        return [f"Invalid structure in info.yaml: {e}"]
 
     return []  # No errors
 

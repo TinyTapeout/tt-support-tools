@@ -62,6 +62,12 @@ def tile_sizes():
     }
 
 
+def assert_errors(yaml_data, tile_sizes, expected, **kwargs):
+    with pytest.raises(ProjectYamlError) as exc_info:
+        ProjectInfo(yaml_data, tile_sizes, **kwargs)
+    assert exc_info.value.errors == expected
+
+
 class TestProjectInfoYamlVersion:
     """Test YAML version validation"""
 
@@ -266,8 +272,60 @@ class TestProjectInfoNonWokwiLanguage:
 
     def test_empty_source_files(self, valid_yaml_data, tile_sizes):
         valid_yaml_data["project"]["source_files"] = []
-        with pytest.raises(ProjectYamlError, match="No source files specified"):
-            ProjectInfo(valid_yaml_data, tile_sizes)
+        assert_errors(
+            valid_yaml_data, tile_sizes, ["'source_files' must be a non-empty list"]
+        )
+
+    @pytest.mark.parametrize("value", ["test.v", None])
+    def test_source_files_not_a_list(self, valid_yaml_data, tile_sizes, value):
+        valid_yaml_data["project"]["source_files"] = value
+        assert_errors(
+            valid_yaml_data, tile_sizes, ["'source_files' must be a non-empty list"]
+        )
+
+    def test_source_files_entry_not_a_string(self, valid_yaml_data, tile_sizes):
+        valid_yaml_data["project"]["source_files"] = ["test.v", 3]
+        assert_errors(
+            valid_yaml_data,
+            tile_sizes,
+            ["Every entry in 'source_files' must be a string"],
+        )
+
+    def test_top_module_not_a_string(self, valid_yaml_data, tile_sizes):
+        valid_yaml_data["project"]["top_module"] = 1
+        assert_errors(
+            valid_yaml_data,
+            tile_sizes,
+            ["'top_module' in 'project' section must be a string"],
+        )
+
+    def test_tiles_not_a_string(self, valid_yaml_data, tile_sizes):
+        valid_yaml_data["project"]["tiles"] = ["1x1"]
+        assert_errors(
+            valid_yaml_data,
+            tile_sizes,
+            ["Invalid value for 'tiles' in 'project' section: ['1x1']"],
+        )
+
+    def test_project_section_not_a_mapping(self, valid_yaml_data, tile_sizes):
+        valid_yaml_data["project"] = ["a", "list"]
+        assert_errors(
+            valid_yaml_data,
+            tile_sizes,
+            ["'project' section must be a mapping of keys to values"],
+        )
+
+    def test_type_errors_keep_other_errors(self, valid_yaml_data, tile_sizes):
+        valid_yaml_data["project"]["title"] = ""
+        valid_yaml_data["project"]["source_files"] = "test.v"
+        assert_errors(
+            valid_yaml_data,
+            tile_sizes,
+            [
+                "Project title cannot be empty",
+                "'source_files' must be a non-empty list",
+            ],
+        )
 
 
 class TestProjectInfoClockHz:
@@ -296,6 +354,20 @@ class TestProjectInfoPinoutSection:
         del valid_yaml_data["pinout"]
         with pytest.raises(ProjectYamlError, match="Missing 'pinout' section"):
             ProjectInfo(valid_yaml_data, tile_sizes)
+
+    def test_empty_pinout_section(self, valid_yaml_data, tile_sizes):
+        valid_yaml_data["pinout"] = None
+        assert_errors(
+            valid_yaml_data, tile_sizes, ["Please fill in the 'pinout' section"]
+        )
+
+    def test_pinout_section_not_a_mapping(self, valid_yaml_data, tile_sizes):
+        valid_yaml_data["pinout"] = ["ui[0]"]
+        assert_errors(
+            valid_yaml_data,
+            tile_sizes,
+            ["'pinout' section must be a mapping of pin names to signals"],
+        )
 
     def test_missing_ui_pin(self, valid_yaml_data, tile_sizes):
         del valid_yaml_data["pinout"]["ui[0]"]
